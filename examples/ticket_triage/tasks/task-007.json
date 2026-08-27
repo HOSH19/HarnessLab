@@ -1,0 +1,8 @@
+{
+  "task_id": "task-007",
+  "ticket_id": "T-007",
+  "prompt": "Triage ticket T-007",
+  "expected_category": "technical",
+  "required_reply_terms": ["sync", "504"],
+  "expected_nodes": ["agent", "tools"]
+}

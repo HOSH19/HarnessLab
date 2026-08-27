@@ -1,0 +1,14 @@
+name: with_retry
+execution:
+  max_turns: 15
+  stop_on_tool_error: false
+tooling:
+  retry_count: 2
+  tool_timeout_s: 30
+  error_format: verbose
+context:
+  history_limit: null
+observability:
+  langsmith_project: harnesslab-with_retry
+  trace_metadata:
+    harness_version: "1.0"

@@ -1,0 +1,14 @@
+name: with_context_trim
+execution:
+  max_turns: 15
+  stop_on_tool_error: false
+tooling:
+  retry_count: 0
+  tool_timeout_s: 30
+  error_format: minimal
+context:
+  history_limit: 8
+observability:
+  langsmith_project: harnesslab-with_context_trim
+  trace_metadata:
+    harness_version: "1.0"

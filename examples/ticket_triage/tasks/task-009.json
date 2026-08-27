@@ -1,0 +1,8 @@
+{
+  "task_id": "task-009",
+  "ticket_id": "T-009",
+  "prompt": "Triage ticket T-009",
+  "expected_category": "technical",
+  "required_reply_terms": ["api", "rate"],
+  "expected_nodes": ["agent", "tools"]
+}

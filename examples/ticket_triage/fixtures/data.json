@@ -1,0 +1,116 @@
+{
+  "tickets": [
+    {
+      "id": "T-001",
+      "subject": "Cannot reset password",
+      "body": "I clicked forgot password but never received the email. Account: user@example.com",
+      "expected_category": "account"
+    },
+    {
+      "id": "T-002",
+      "subject": "Billing charged twice",
+      "body": "I was charged $29.99 twice on March 1 for subscription renewal.",
+      "expected_category": "billing"
+    },
+    {
+      "id": "T-003",
+      "subject": "App crashes on launch",
+      "body": "After the latest update, the mobile app crashes immediately on iOS 18.",
+      "expected_category": "technical"
+    },
+    {
+      "id": "T-004",
+      "subject": "Refund request",
+      "body": "I cancelled within 7 days and want a full refund for order #8821.",
+      "expected_category": "billing"
+    },
+    {
+      "id": "T-005",
+      "subject": "Two-factor auth locked out",
+      "body": "Lost my authenticator app and cannot log in to my account.",
+      "expected_category": "account"
+    },
+    {
+      "id": "T-006",
+      "subject": "Invoice missing tax breakdown",
+      "body": "My March invoice does not show tax details for expense reporting.",
+      "expected_category": "billing"
+    },
+    {
+      "id": "T-007",
+      "subject": "Sync failure on desktop",
+      "body": "Desktop app shows sync error code 504 since yesterday evening.",
+      "expected_category": "technical"
+    },
+    {
+      "id": "T-008",
+      "subject": "Change account email",
+      "body": "Need to update login email from old@work.com to new@work.com.",
+      "expected_category": "account"
+    },
+    {
+      "id": "T-009",
+      "subject": "API rate limit errors",
+      "body": "Production API started returning 429 errors after we doubled traffic.",
+      "expected_category": "technical"
+    },
+    {
+      "id": "T-010",
+      "subject": "Cancel annual subscription",
+      "body": "Please cancel annual plan and confirm no future renewals for account 4412.",
+      "expected_category": "billing"
+    }
+  ],
+  "kb": [
+    {
+      "id": "KB-001",
+      "title": "Password reset",
+      "content": "Users can reset passwords via Settings > Security > Reset Password. Check spam folder for reset emails."
+    },
+    {
+      "id": "KB-002",
+      "title": "Duplicate charges",
+      "content": "Duplicate charges are refunded within 5 business days. Provide order ID and bank statement."
+    },
+    {
+      "id": "KB-003",
+      "title": "iOS crash troubleshooting",
+      "content": "Force quit app, clear cache, reinstall from App Store. Known issue in v3.2.1 fixed in v3.2.2."
+    },
+    {
+      "id": "KB-004",
+      "title": "Refund policy",
+      "content": "Full refund within 7 days of purchase. Cancellations after 7 days are prorated."
+    },
+    {
+      "id": "KB-005",
+      "title": "2FA recovery",
+      "content": "Contact support with government ID for 2FA reset. Allow 24 hours for verification."
+    },
+    {
+      "id": "KB-006",
+      "title": "Invoice tax details",
+      "content": "Tax breakdown appears on downloadable PDF invoices under Billing > Invoices."
+    },
+    {
+      "id": "KB-007",
+      "title": "Desktop sync errors",
+      "content": "For sync error 504, sign out, clear local cache, and sign back in. Retry after 10 minutes."
+    },
+    {
+      "id": "KB-008",
+      "title": "Change login email",
+      "content": "Email changes require verification from both old and new addresses in Account Settings."
+    },
+    {
+      "id": "KB-009",
+      "title": "API rate limits",
+      "content": "Default limit is 1000 requests/minute. Upgrade plan or request temporary limit increase."
+    },
+    {
+      "id": "KB-010",
+      "title": "Cancel subscription",
+      "content": "Annual plans can be cancelled anytime; access remains until period end. No auto-renew after cancellation."
+    }
+  ]
+}

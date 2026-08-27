@@ -1,0 +1,8 @@
+{
+  "task_id": "task-004",
+  "ticket_id": "T-004",
+  "prompt": "Triage ticket T-004",
+  "expected_category": "billing",
+  "required_reply_terms": ["refund"],
+  "expected_nodes": ["agent", "tools"]
+}

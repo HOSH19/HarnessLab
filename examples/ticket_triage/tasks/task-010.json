@@ -1,0 +1,8 @@
+{
+  "task_id": "task-010",
+  "ticket_id": "T-010",
+  "prompt": "Triage ticket T-010",
+  "expected_category": "billing",
+  "required_reply_terms": ["cancel", "subscription"],
+  "expected_nodes": ["agent", "tools"]
+}

@@ -1,0 +1,8 @@
+{
+  "task_id": "task-003",
+  "ticket_id": "T-003",
+  "prompt": "Triage ticket T-003",
+  "expected_category": "technical",
+  "required_reply_terms": ["crash", "app"],
+  "expected_nodes": ["agent", "tools"]
+}

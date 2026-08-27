@@ -1,0 +1,8 @@
+{
+  "task_id": "task-005",
+  "ticket_id": "T-005",
+  "prompt": "Triage ticket T-005",
+  "expected_category": "account",
+  "required_reply_terms": ["2fa", "authenticator"],
+  "expected_nodes": ["agent", "tools"]
+}
