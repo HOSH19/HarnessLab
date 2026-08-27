@@ -33,12 +33,12 @@ harnesslab compare examples/ticket_triage --local -o report.html
 ```mermaid
 flowchart TB
     subgraph harnesslab [HarnessLab]
-        config[config/]
-        graph[graph/]
-        middleware[middleware/]
-        eval[eval/]
-        experiments[experiments/]
-        cli[cli/]
+        configPkg[config/]
+        graphPkg[graph/]
+        middlewarePkg[middleware/]
+        evalPkg[eval/]
+        experimentsPkg[experiments/]
+        cliPkg[cli/]
     end
 
     subgraph external [External]
@@ -47,13 +47,13 @@ flowchart TB
         OAI[OpenAI API]
     end
 
-    cli --> experiments
-    experiments --> graph
-    graph --> middleware
-    graph --> LG
-    experiments --> eval
-    experiments --> LS
-    graph --> OAI
+    cliPkg --> experimentsPkg
+    experimentsPkg --> graphPkg
+    graphPkg --> middlewarePkg
+    graphPkg --> LG
+    experimentsPkg --> evalPkg
+    experimentsPkg --> LS
+    graphPkg --> OAI
 ```
 
 ## Harness A/B flow
@@ -109,9 +109,11 @@ flowchart LR
 ```mermaid
 flowchart LR
     Run[LangSmith Run] --> TP[task_pass]
+    Run --> GT[graph_trajectory]
     Run --> EF[efficiency]
     Run --> FF[failure_fingerprint]
     TP --> Score[experiment score]
+    GT --> Score
     EF --> Score
     FF --> Score
 ```
