@@ -115,22 +115,25 @@ mindmap
 ### Out of scope
 
 ```mermaid
-flowchart TB
-    Root((Out of scope))
-    Root --> Excluded[v0.1 excluded]
-    Root --> Deferred[deferred v2]
-
-    Excluded --> E1[Langfuse]
-    Excluded --> E2[multi agent orchestration]
-    Excluded --> E3[LLM summarization middleware]
-    Excluded --> E4[charting libraries]
-    Excluded --> E5[production sandboxing]
-
-    Deferred --> D1[verification node]
-    Deferred --> D2[human approval interrupts]
-    Deferred --> D3[harnesslab init scaffolder]
-    Deferred --> D4[graph trajectory LLM judge]
-    Deferred --> D5[Harness Card manifest export]
+mindmap
+  root((Out of scope))
+    Deferred middleware
+      verification node
+      LLM summarization middleware
+    Deferred workflow
+      human approval interrupts
+    Deferred tooling
+      harnesslab init scaffolder
+      Harness Card manifest export
+    Deferred evals
+      graph trajectory LLM judge
+    Excluded integrations
+      Langfuse
+    Excluded orchestration
+      multi agent orchestration
+    Excluded infra
+      charting libraries
+      production sandboxing
 ```
 
 ## Architecture boundaries

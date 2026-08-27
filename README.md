@@ -166,23 +166,25 @@ mindmap
 ## Out of scope (v0.1)
 
 ```mermaid
-flowchart TB
-    Root((Not in v0.1))
-    Root --> Deferred[Deferred]
-    Root --> Excluded[Explicitly excluded]
-
-    Deferred --> D1[verification middleware]
-    Deferred --> D2[LLM summarization]
-    Deferred --> D3[human in the loop]
-    Deferred --> D4[persistent memory]
-    Deferred --> D5[graph trajectory LLM judge]
-
-    Excluded --> E1[Langfuse]
-    Excluded --> E2[multi agent orchestration]
-    Excluded --> E3[PyPI publish]
-    Excluded --> E4[harnesslab init scaffolder]
-    Excluded --> E5[charting libraries]
-    Excluded --> E6[production sandboxing]
+mindmap
+  root((Not in v0.1))
+    Deferred middleware
+      verification middleware
+      LLM summarization
+    Deferred runtime
+      human in the loop
+      persistent memory
+    Deferred evals
+      graph trajectory LLM judge
+    Excluded integrations
+      Langfuse
+      PyPI publish
+    Excluded orchestration
+      multi agent orchestration
+    Excluded tooling
+      harnesslab init scaffolder
+      charting libraries
+      production sandboxing
 ```
 
 ## Project layout
