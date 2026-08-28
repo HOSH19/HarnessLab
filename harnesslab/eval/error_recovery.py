@@ -1,10 +1,22 @@
-"""Error recovery evaluator for agent runs."""
+"""Error recovery evaluator for agent runs.
 
-from harnesslab.eval.types import EvalExample, EvalRun
+Scores runs based on error_count versus per-task tolerance.
+Does not re-execute agents or inspect trace logs.
+"""
+
+from langsmith.schemas import Example, Run
 
 
-def error_recovery(run: EvalRun, example: EvalExample) -> dict:
-    """Score whether the agent stayed within acceptable error limits."""
+def error_recovery(run: Run, example: Example) -> dict:
+    """Score whether the agent stayed within acceptable error limits.
+
+    Args:
+        run: LangSmith run with error_count in outputs.
+        example: Dataset example with optional max_acceptable_errors.
+
+    Returns:
+        Dict with normalized score and error budget comment.
+    """
     outputs = run.outputs or {}
     reference = example.outputs or {}
     error_count = int(outputs.get("error_count", 0))

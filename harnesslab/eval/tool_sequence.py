@@ -1,11 +1,16 @@
-"""Tool call sequence evaluator for experiment runs."""
+"""Tool call sequence evaluator for LangSmith experiments.
+
+Scores whether observed tool invocations contain expected tools
+in order. Uses message and trajectory data attached to run outputs.
+"""
+
+from langsmith.schemas import Example, Run
 
 from harnesslab.eval.trajectory import _is_subsequence
-from harnesslab.eval.types import EvalExample, EvalRun
 from harnesslab.graph.extract import extract_tool_names_from_outputs
 
 
-def tool_sequence(run: EvalRun, example: EvalExample) -> dict:
+def tool_sequence(run: Run, example: Example) -> dict:
     """Score tool invocation order against expected tool subsequence.
 
     Args:

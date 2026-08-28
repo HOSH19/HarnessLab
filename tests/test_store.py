@@ -76,7 +76,7 @@ def test_serialize_result_row_includes_core_fields() -> None:
 def test_save_experiment_run_roundtrip(tmp_path: Path) -> None:
     """Single-harness runs write manifest, results, and summary JSON."""
     row = _FakeRow("T-001", {"task_pass": 1.0, "tool_sequence": 0.5})
-    metadata = {"langfuse_mode": False, "model": "gpt-4o-mini"}
+    metadata = {"langsmith_mode": False, "model": "gpt-4o-mini"}
 
     run_dir = save_experiment_run("minimal", [row], out_dir=tmp_path, metadata=metadata)
 
@@ -87,7 +87,7 @@ def test_save_experiment_run_roundtrip(tmp_path: Path) -> None:
 
     assert manifest["arms"] == ["minimal"]
     assert manifest["task_count"] == 1
-    assert manifest["langfuse_mode"] is False
+    assert manifest["langsmith_mode"] is False
     assert manifest["model"] == "gpt-4o-mini"
     assert len(results) == 1
     assert results[0]["inputs"]["ticket_id"] == "T-001"
@@ -105,7 +105,7 @@ def test_save_compare_run_roundtrip(tmp_path: Path) -> None:
     run_dir = save_compare_run(
         comparisons,
         out_dir=tmp_path,
-        metadata={"langfuse_mode": True, "compare_by": "harness", "harnesses": ["minimal", "retry"]},
+        metadata={"langsmith_mode": True, "compare_by": "harness", "harnesses": ["minimal", "retry"]},
     )
 
     assert run_dir.name.endswith("_harness")
@@ -116,7 +116,7 @@ def test_save_compare_run_roundtrip(tmp_path: Path) -> None:
 
     assert manifest["arms"] == ["minimal", "retry"]
     assert manifest["task_count"] == 1
-    assert manifest["langfuse_mode"] is True
+    assert manifest["langsmith_mode"] is True
     assert len(minimal) == 1
     assert len(retry) == 1
     assert summary["minimal"]["task_pass"] == 1.0

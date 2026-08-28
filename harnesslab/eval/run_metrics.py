@@ -11,10 +11,6 @@ from typing import Any
 
 def run_latency_seconds(run: Any) -> float:
     """Return wall-clock duration for a run in seconds."""
-    outputs = getattr(run, "outputs", None) or {}
-    if isinstance(outputs, dict) and outputs.get("_latency_ms") is not None:
-        return float(outputs["_latency_ms"]) / 1000.0
-
     total_time = getattr(run, "total_time", None)
     if total_time is not None:
         return float(total_time)
@@ -28,10 +24,6 @@ def run_latency_seconds(run: Any) -> float:
 
 def run_total_tokens(run: Any) -> int:
     """Return total token count when present on the run or its metadata."""
-    outputs = getattr(run, "outputs", None) or {}
-    if isinstance(outputs, dict) and outputs.get("_total_tokens") is not None:
-        return int(outputs["_total_tokens"])
-
     tokens = getattr(run, "total_tokens", None)
     if tokens is not None:
         return int(tokens)

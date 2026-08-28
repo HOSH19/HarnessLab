@@ -6,30 +6,31 @@ from pathlib import Path
 import pytest
 
 from harnesslab.config.env import (
-    LangfuseConfigError,
+    LangSmithConfigError,
     _find_env_file,
-    disable_langfuse_tracing,
+    disable_langsmith_tracing,
     load_local_env,
-    validate_langfuse_upload_config,
+    validate_langsmith_upload_config,
 )
 
 
-def test_disable_langfuse_tracing_sets_env() -> None:
-    """Local mode disables Langfuse tracing environment flags."""
-    os.environ["LANGFUSE_TRACING_ENABLED"] = "true"
+def test_disable_langsmith_tracing_sets_env(monkeypatch) -> None:
+    """Local mode disables LangSmith tracing environment flags."""
+    monkeypatch.setenv("LANGSMITH_TRACING", "true")
+    monkeypatch.setenv("LANGCHAIN_TRACING_V2", "true")
 
-    disable_langfuse_tracing()
+    disable_langsmith_tracing()
 
-    assert os.environ["LANGFUSE_TRACING_ENABLED"] == "false"
+    assert os.environ["LANGSMITH_TRACING"] == "false"
+    assert os.environ["LANGCHAIN_TRACING_V2"] == "false"
 
 
-def test_validate_langfuse_upload_config_requires_keys(monkeypatch) -> None:
-    """Upload validation fails when Langfuse keys are missing."""
-    monkeypatch.delenv("LANGFUSE_PUBLIC_KEY", raising=False)
-    monkeypatch.delenv("LANGFUSE_SECRET_KEY", raising=False)
+def test_validate_langsmith_upload_config_requires_api_key(monkeypatch) -> None:
+    """Upload validation fails when the API key is missing."""
+    monkeypatch.delenv("LANGSMITH_API_KEY", raising=False)
 
-    with pytest.raises(LangfuseConfigError, match="LANGFUSE_PUBLIC_KEY"):
-        validate_langfuse_upload_config()
+    with pytest.raises(LangSmithConfigError, match="LANGSMITH_API_KEY"):
+        validate_langsmith_upload_config()
 
 
 def test_find_env_file_walks_up_from_search_root(tmp_path: Path, monkeypatch) -> None:
@@ -38,7 +39,7 @@ def test_find_env_file_walks_up_from_search_root(tmp_path: Path, monkeypatch) ->
     nested = tmp_path / "a" / "b"
     nested.mkdir(parents=True)
     env_file = tmp_path / ".env"
-    env_file.write_text("LANGFUSE_PUBLIC_KEY=test\n", encoding="utf-8")
+    env_file.write_text("LANGSMITH_API_KEY=test\n", encoding="utf-8")
 
     assert _find_env_file(nested) == env_file
 
