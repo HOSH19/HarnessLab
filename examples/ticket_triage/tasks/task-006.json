@@ -6,7 +6,10 @@
   "max_acceptable_errors": 0,
   "expected_category": "technical",
   "required_reply_terms": ["sla", "escalat", "503"],
-  "expected_nodes": ["agent", "tools"],
+  "expected_nodes": [
+    "agent", "tools", "agent", "tools", "agent", "tools",
+    "agent", "tools", "agent", "tools", "agent", "tools"
+  ],
   "expected_tools": [
     "read_ticket",
     "check_sla",

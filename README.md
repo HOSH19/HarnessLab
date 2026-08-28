@@ -93,8 +93,11 @@ harnesslab compare examples/ticket_triage --dataset triage-v2 -o report.html
 # Cheapest LangSmith upload (1 harness × 1 task)
 harnesslab compare examples/ticket_triage --task T-011 -o report.html
 
-# Model compare
-harnesslab compare examples/ticket_triage --by models --local
+# Model compare on one harness (default: nano, mini, turbo × 2 tasks)
+harnesslab compare examples/ticket_triage --by models --harness minimal --dataset triage-v3 -o report.html
+
+# Create/sync a LangSmith dataset first
+harnesslab dataset upload examples/ticket_triage --name triage-v3
 
 pytest -q
 ```

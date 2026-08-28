@@ -26,11 +26,22 @@ def task_pass(run: Run, example: Example) -> dict:
     reply = str(outputs.get("final_reply", "")).lower()
 
     category_ok = expected_category.lower() in classification if expected_category else True
-    terms_ok = all(term.lower() in reply for term in required_terms)
+    if required_terms:
+        matched_terms = sum(1 for term in required_terms if term.lower() in reply)
+        terms_score = matched_terms / len(required_terms)
+        terms_ok = matched_terms == len(required_terms)
+    else:
+        terms_score = 1.0
+        terms_ok = True
 
-    passed = category_ok and terms_ok
+    category_score = 1.0 if category_ok else 0.0
+    score = round(0.5 * category_score + 0.5 * terms_score, 2)
+
     return {
         "key": "task_pass",
-        "score": 1.0 if passed else 0.0,
-        "comment": f"category_ok={category_ok}, terms_ok={terms_ok}",
+        "score": score,
+        "comment": (
+            f"category_ok={category_ok}, terms_ok={terms_ok}, "
+            f"terms_score={terms_score:.2f}, score={score:.2f}"
+        ),
     }

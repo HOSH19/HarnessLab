@@ -27,6 +27,33 @@ def test_graph_trajectory_scores_expected_nodes() -> None:
     assert result["score"] == 1.0
 
 
+def test_graph_trajectory_partial_credit_for_incomplete_loop() -> None:
+    """Incomplete trajectories receive proportional partial credit."""
+    run = _FakeRun(
+        {
+            "graph_trajectory": {
+                "steps": [["agent"], ["tools"], ["agent"], ["tools"]],
+            }
+        }
+    )
+    example = _FakeExample(
+        {
+            "expected_nodes": [
+                "agent",
+                "tools",
+                "agent",
+                "tools",
+                "agent",
+                "tools",
+                "agent",
+                "tools",
+            ]
+        }
+    )
+    result = graph_trajectory(run, example)
+    assert result["score"] == 0.5
+
+
 def test_flatten_steps_skips_interrupt_marker() -> None:
     """Flattened trajectory ignores interrupt markers."""
     flattened = _flatten_steps({"steps": [["agent", "__interrupt__"], ["tools"]]})

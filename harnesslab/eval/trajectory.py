@@ -30,6 +30,20 @@ def _is_subsequence(expected: list[str], actual: list[str]) -> bool:
     return False
 
 
+def _subsequence_progress(expected: list[str], actual: list[str]) -> float:
+    """Return fraction of expected nodes matched in order (1.0 when complete)."""
+    if not expected:
+        return 1.0
+
+    index = 0
+    for node in actual:
+        if node == expected[index]:
+            index += 1
+            if index == len(expected):
+                return 1.0
+    return index / len(expected)
+
+
 def graph_trajectory(run: Run, example: Example) -> dict:
     """Score graph node trajectory against expected node subsequence.
 
@@ -38,7 +52,7 @@ def graph_trajectory(run: Run, example: Example) -> dict:
         example: Dataset example with expected_nodes reference.
 
     Returns:
-        Dict with score and comment describing node sequence match.
+        Dict with partial score and comment describing node sequence match.
     """
     outputs = run.outputs or {}
     reference = example.outputs or {}
@@ -46,10 +60,11 @@ def graph_trajectory(run: Run, example: Example) -> dict:
     trajectory = outputs.get("graph_trajectory", {})
 
     actual_nodes = _flatten_steps(trajectory)
-    matched = _is_subsequence(expected_nodes, actual_nodes)
+    score = _subsequence_progress(expected_nodes, actual_nodes)
+    matched = score == 1.0
 
     return {
         "key": "graph_trajectory",
-        "score": 1.0 if matched else 0.0,
-        "comment": f"expected={expected_nodes}, actual={actual_nodes}",
+        "score": score,
+        "comment": f"matched={matched}, progress={score:.2f}, actual={actual_nodes}",
     }

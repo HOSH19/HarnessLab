@@ -5,6 +5,8 @@
   "stress": true,
   "expected_category": "billing",
   "required_reply_terms": ["account", "charge", "dispute"],
-  "expected_nodes": ["agent", "tools"],
+  "expected_nodes": [
+    "agent", "tools", "agent", "tools", "agent", "tools", "agent", "tools"
+  ],
   "expected_tools": ["read_ticket", "search_kb", "classify", "draft_reply"]
 }
