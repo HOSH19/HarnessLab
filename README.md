@@ -21,14 +21,21 @@ flowchart LR
 
 ```bash
 cd harnesslab
-python -m venv .venv && source .venv/bin/activate
+conda create -n harnesslab python=3.11 -y && conda activate harnesslab
 pip install -e ".[dev]"
 
-export OPENAI_API_KEY=...
-export LANGSMITH_API_KEY=...
-export LANGSMITH_TRACING=true
+cp .env.example .env
+# edit .env with your keys (this file is gitignored)
 
-harnesslab compare examples/ticket_triage --local -o report.html
+harnesslab compare examples/ticket_triage --local --tasks 2 -o report.html
+```
+
+Or with `venv`:
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+cp .env.example .env
 ```
 
 ## Architecture
@@ -249,6 +256,9 @@ harnesslab/
 | `LANGSMITH_API_KEY` | yes (unless `--local`) | — |
 | `LANGSMITH_TRACING` | recommended | `true` |
 | `HARNESSLAB_MODEL` | no | `gpt-4o-mini` |
+
+Put these in a local `.env` file (gitignored) or export them in your shell.
+GitHub Actions uses repository secrets instead of `.env`.
 
 ## Research context
 

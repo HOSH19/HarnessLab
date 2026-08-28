@@ -9,6 +9,10 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
+from harnesslab.config.env import load_local_env
+
+load_local_env()
+
 from examples.ticket_triage.graph import build_ticket_triage_graph
 from harnesslab.config.loader import load_harness_config, load_harness_dir
 from harnesslab.experiments.dataset import upload_dataset
