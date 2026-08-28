@@ -59,6 +59,22 @@ def _example_paths(example: Path) -> tuple[Path, Path]:
     return harness_dir, tasks_dir
 
 
+def _apply_smoke_limits(
+    *,
+    smoke: bool,
+    compare_by: CompareBy,
+    harness: str,
+    tasks: int | None,
+    task: str | None,
+) -> tuple[str, int | None, str | None]:
+    """Cap harness arms and tasks for low LangSmith trace usage."""
+    if not smoke or task is not None:
+        return harness, tasks, task
+    limited_harness = "minimal,retry" if compare_by == "harness" else harness
+    limited_tasks = tasks if tasks is not None else 2
+    return limited_harness, limited_tasks, task
+
+
 def _compare_metadata(
     *,
     example: Path,
@@ -71,6 +87,7 @@ def _compare_metadata(
     tasks: int | None,
     ticket_id: str | None,
     model: str | None = None,
+    smoke: bool = False,
 ) -> dict:
     """Build metadata persisted alongside local experiment results."""
     return {
@@ -80,6 +97,7 @@ def _compare_metadata(
         "harness": harness,
         "models": models,
         "langsmith_mode": not local,
+        "smoke": smoke,
         "task_count": task_count,
         "tasks_limit": tasks,
         "ticket_id": ticket_id,
@@ -94,6 +112,11 @@ def run_command(
     local: bool = typer.Option(False, "--local", help="Skip LangSmith upload"),
     tasks: int | None = typer.Option(None, "--tasks", help="Limit number of tasks"),
     task: str | None = typer.Option(None, "--task", help="Single ticket id (e.g. T-011)"),
+    smoke: bool = typer.Option(
+        False,
+        "--smoke",
+        help="Low-trace LangSmith run: 2 harness arms and 2 tasks (ignored if --task is set)",
+    ),
     model: str | None = typer.Option(None, "--model", help="Model override for this run"),
     runs_dir: Path = typer.Option(Path(".harnesslab/runs"), "--runs-dir", help="Local results directory"),
 ) -> None:
@@ -105,6 +128,16 @@ def run_command(
         except LangSmithConfigError as exc:
             raise typer.BadParameter(str(exc)) from exc
 
+    _, tasks_limit, ticket_id = _apply_smoke_limits(
+        smoke=smoke,
+        compare_by="harness",
+        harness=harness,
+        tasks=tasks,
+        task=task,
+    )
+    if smoke and task is None and tasks is None:
+        console.print("[dim]Smoke mode: limiting to 2 tasks[/dim]")
+
     harness_dir, tasks_dir = _example_paths(example)
     config = load_harness_config(harness_dir / f"{harness}.yaml")
     resolved_model = model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
@@ -115,8 +148,8 @@ def run_command(
         config,
         tasks_dir,
         upload_results=not local,
-        task_limit=tasks,
-        ticket_id=task,
+        task_limit=tasks_limit,
+        ticket_id=ticket_id,
         dataset_name=_default_dataset_name(example),
         model=resolved_model,
     )
@@ -133,8 +166,9 @@ def run_command(
             harness=config.name,
             models=[resolved_model],
             task_count=len(rows),
-            tasks=tasks,
-            ticket_id=task,
+            tasks=tasks_limit,
+            ticket_id=ticket_id,
+            smoke=smoke,
         ),
     )
     console.print(f"[green]Completed {len(rows)} task(s)[/green]")
@@ -168,6 +202,11 @@ def compare_command(
         "--model",
         help="Model override (default: HARNESSLAB_MODEL from .env)",
     ),
+    smoke: bool = typer.Option(
+        False,
+        "--smoke",
+        help="Low-trace LangSmith run: 2 harness arms and 2 tasks (ignored if --task is set)",
+    ),
     runs_dir: Path = typer.Option(Path(".harnesslab/runs"), "--runs-dir", help="Local results directory"),
 ) -> None:
     """Compare models or harness variants on stress tasks and write a report."""
@@ -177,6 +216,20 @@ def compare_command(
             validate_langsmith_upload_config()
         except LangSmithConfigError as exc:
             raise typer.BadParameter(str(exc)) from exc
+
+    harness, tasks_limit, ticket_id = _apply_smoke_limits(
+        smoke=smoke,
+        compare_by=compare_by,
+        harness=harness,
+        tasks=tasks,
+        task=task,
+    )
+    if smoke and task is None:
+        console.print(
+            "[dim]Smoke mode: "
+            + ("2 harness arms (minimal, retry), 2 tasks" if compare_by == "harness" else "2 tasks")
+            + "[/dim]"
+        )
 
     harness_dir, tasks_dir = _example_paths(example)
     all_configs = load_harness_dir(harness_dir)
@@ -210,8 +263,8 @@ def compare_command(
         harness_names=harness_names,
         model_names=model_names,
         upload_results=not local,
-        task_limit=tasks,
-        ticket_id=task,
+        task_limit=tasks_limit,
+        ticket_id=ticket_id,
         dataset_name=_default_dataset_name(example),
     )
 
@@ -229,9 +282,10 @@ def compare_command(
             harness=harness_names[0] if compare_by == "models" else None,
             models=model_names if compare_by == "models" else None,
             task_count=len(next(iter(comparisons.values()))) if comparisons else 0,
-            tasks=tasks,
-            ticket_id=task,
+            tasks=tasks_limit,
+            ticket_id=ticket_id,
             model=model_names[0] if compare_by == "harness" else None,
+            smoke=smoke,
         ),
     )
     console.print(f"[green]Report written to {report_path}[/green]")

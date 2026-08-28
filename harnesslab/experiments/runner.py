@@ -108,6 +108,7 @@ def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
         "classification": parsed["classification"] or state.get("classification", ""),
         "final_reply": parsed["final_reply"] or state.get("final_reply", ""),
         "error_count": state.get("error_count", 0),
+        "messages": messages,
         "graph_trajectory": trajectory["outputs"],
     }
 

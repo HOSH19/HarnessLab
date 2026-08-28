@@ -72,7 +72,10 @@ cp .env.example .env   # set OPENAI_API_KEY, LANGSMITH_API_KEY
 # Harness compare (local)
 harnesslab compare examples/ticket_triage --local -o report.html
 
-# One ticket, LangSmith upload
+# Low-trace LangSmith upload (2 harnesses × 2 tasks)
+harnesslab compare examples/ticket_triage --smoke -o report.html
+
+# Cheapest LangSmith upload (1 harness × 1 task)
 harnesslab compare examples/ticket_triage --task T-011 -o report.html
 
 # Model compare
@@ -91,6 +94,19 @@ pytest -q
 | `HARNESSLAB_MODEL` | no | `gpt-4.1-nano` |
 
 APAC users: `LANGSMITH_ENDPOINT=https://apac.api.smith.langchain.com`. GitHub Actions needs `OPENAI_API_KEY` as a repo secret.
+
+## Saving LangSmith traces
+
+LangSmith counts **every span** (each `agent`, `tools`, and `ChatOpenAI` node), not just top-level experiment rows. A full harness compare (3 harnesses × 6 tasks) can use **100–200+ traces**.
+
+| Goal | Command | Approx. top-level runs |
+|---|---|---|
+| Dev / free | `--local` | 0 LangSmith traces |
+| Cheapest upload | `--task T-011` | 3 experiments × 1 task |
+| Balanced smoke | `--smoke` | 2 harnesses × 2 tasks |
+| Full stress suite | default | 3 harnesses × 6 tasks |
+
+Use `--local` while iterating; upload with `--smoke` or `--task` when you need the LangSmith dashboard.
 
 ## License
 
