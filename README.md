@@ -28,19 +28,33 @@ flowchart LR
 
 ## LangSmith dashboard
 
-When you run `compare` without `--local`, LangSmith hosts the full experiment view. The screenshot below shows three experiments on the `harnesslab-ticket-triage` dataset — one per harness variant.
+When you run `compare` **without** `--local`, every run is stored in LangSmith — traces, evaluator scores, latency, and token usage. HarnessLab does not maintain a separate database; LangSmith is the system of record. A local `report.html` is also written, but the dataset and experiments persist in your LangSmith project (`harnesslab-ticket-triage`) until you delete them.
 
-![LangSmith experiment comparison for harnesslab-ticket-triage](docs/images/langsmith-dashboard.png)
+The screenshot below shows three experiments (13 tasks each) — one per harness variant:
+
+![LangSmith experiment comparison across three harness variants](docs/images/langsmith-dashboard.png)
 
 | UI area | What it shows |
 |---|---|
-| **Experiments tab** | All runs for this dataset. Each row is one harness variant (`harnesslab-minimal`, `with_retry`, `with_context_trim`). |
-| **Feedback chart** | Average evaluator scores per experiment. Here `task_pass` ≈ 0.67 (2 of 3 tasks correct); the other metrics are 1.0 because the agent completed without errors. |
-| **Latency chart** | P50 and P99 response time per harness. `with_context_trim` is fastest here — trimming history reduced round-trip time even though correctness was unchanged. |
-| **Tokens chart** | Input/output token usage per experiment — useful for spotting harnesses that bloat context. |
-| **Experiment table** | Click any row to drill into individual task runs, full message traces, tool calls, and per-evaluator comments. |
+| **Experiments tab** | All runs for this dataset. Each row is one harness variant. Progress `13/13` means every task completed. |
+| **Feedback chart** | Average evaluator scores per experiment. Aggregate bars look similar because most tasks are easy — harness differences show up on stress tasks and in per-row drill-down. |
+| **Latency chart** | P50 and P99 response time per harness. Here `with_context_trim` (#6) has the lowest P50; `minimal` (#4) has the highest P99. |
+| **Tokens chart** | Input/output token usage per experiment. |
+| **Experiment table** | Click a row to open per-task scores. Look at `task_pass` and `tool_sequence` averages — not just `efficiency` / `error_recovery`, which stay at 1.0 when runs finish cleanly. |
 
-The local `report.html` is a summary table. **LangSmith is where the detail lives** — per-run traces, node-by-node graph execution, and evaluator breakdowns.
+### Per-task scores
+
+Click an experiment row to see **individual trial results**. This is where harness differences actually appear — aggregate charts smooth them out.
+
+![LangSmith per-task evaluator scores for one experiment](docs/images/langsmith-per-task.png)
+
+In this `with_context_trim` run, `task_pass` averages **0.69** and `tool_sequence` **0.77** — several tasks score 0.0 (red) even though experiment-level `error_recovery` and `efficiency` are 1.0. That pattern is expected:
+
+- **`error_recovery` / `efficiency` / `failure_fingerprint` at 1.0** — the agent finished without crashing; these measure completion and resource use, not answer correctness.
+- **`task_pass` / `tool_sequence` below 1.0** — the agent gave a wrong category, missed reply terms, or skipped a tool in the expected sequence.
+- **Harness comparison** — open the same per-task view for `minimal` vs `with_retry` vs `with_context_trim` and compare rows 11–13 (stress tasks) side by side.
+
+The local `report.html` mirrors this with a per-task breakdown table. **LangSmith is where traces live** — click any red row to open the full agent loop for that task.
 
 ### Agent loop trace
 
