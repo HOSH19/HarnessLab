@@ -8,6 +8,8 @@ version = "0.1.0"
 description = "Declare harness variants as YAML, run LangGraph A/B experiments, score with LangSmith."
 readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "HarnessLab contributors" }]
 dependencies = [
     "langgraph>=0.4",
     "langchain>=0.3",
@@ -19,6 +21,11 @@ dependencies = [
     "typer>=0.12",
     "rich>=13.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/HOSH19/HarnessLab"
+Repository = "https://github.com/HOSH19/HarnessLab"
+Documentation = "https://github.com/HOSH19/HarnessLab/blob/main/IMPLEMENTATION_PLAN.md"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.24"]

@@ -1,8 +1,11 @@
 # HarnessLab
 
+[![CI](https://github.com/HOSH19/HarnessLab/actions/workflows/ci.yml/badge.svg)](https://github.com/HOSH19/HarnessLab/actions/workflows/ci.yml)
+
 > Declare harness variants as YAML. Run LangGraph A/B experiments. Score with LangSmith.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for phased delivery, scope, and architecture boundaries.
+See [docs/DEMO.md](docs/DEMO.md) for example terminal output and report preview.
 
 ```mermaid
 flowchart LR
@@ -134,6 +137,37 @@ harnesslab compare examples/ticket_triage --local --tasks 2
 harnesslab dataset upload examples/ticket_triage --name harnesslab-ticket-triage
 ```
 
+## CI
+
+```mermaid
+flowchart LR
+    Push[push to main] --> Unit[pytest]
+    Unit --> Smoke[compare --local --tasks 2]
+    Smoke --> Artifact[report.html artifact]
+```
+
+| Job | Runs on | Needs |
+|---|---|---|
+| `unit-tests` | every push + PR | nothing |
+| `smoke-compare` | push to `main` + manual dispatch | `OPENAI_API_KEY` secret |
+
+Add `OPENAI_API_KEY` under **Settings → Secrets and variables → Actions** to enable the smoke job.
+
+## Demo output
+
+```text
+Evaluating harness: minimal
+Evaluating harness: with_retry
+Report written to report.html
+```
+
+| Harness | task_pass | graph_trajectory | efficiency | failure_fingerprint |
+|---|---|---|---|---|
+| minimal | varies | varies | varies | varies |
+| with_retry | varies | varies | varies | varies |
+
+Full example: [docs/DEMO.md](docs/DEMO.md)
+
 ## In scope (v0.1)
 
 ```mermaid
@@ -178,7 +212,6 @@ mindmap
       graph trajectory LLM judge
     Excluded integrations
       Langfuse
-      PyPI publish
     Excluded orchestration
       multi agent orchestration
     Excluded tooling

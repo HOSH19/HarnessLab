@@ -11,9 +11,9 @@ gantt
     section Phase1
     Core harness + CLI draft           :done, p1, 2026-08-27, 7d
     section Phase2
-    Evals + 10 tasks + dataset upload  :active, p2, 2026-08-27, 7d
+    Evals + 10 tasks + dataset upload  :done, p2, 2026-08-27, 7d
     section Phase3
-    CI + polish + optional PyPI        :p3, after p2, 7d
+    CI + polish + optional PyPI        :active, p3, 2026-08-28, 7d
 ```
 
 ## Phase 1 — Core harness (complete)
@@ -36,7 +36,7 @@ flowchart LR
 | HTML comparison report | done |
 | README with architecture diagrams | done |
 
-## Phase 2 — Evals and dataset (current)
+## Phase 2 — Evals and dataset (complete)
 
 ```mermaid
 flowchart TB
@@ -60,7 +60,7 @@ flowchart TB
 | `--tasks` limit flag for smoke runs | done |
 | Unit tests for trajectory + extraction | done |
 
-## Phase 3 — Portfolio polish (next)
+## Phase 3 — Portfolio polish (current)
 
 ```mermaid
 flowchart LR
@@ -72,9 +72,11 @@ flowchart LR
 
 | Deliverable | Status |
 |---|---|
-| GitHub Actions smoke workflow | pending |
-| README demo GIF or recorded output | pending |
-| Optional PyPI publish | pending |
+| GitHub Actions unit test workflow | done |
+| GitHub Actions smoke compare workflow | done |
+| README CI badge + demo docs | done |
+| MIT LICENSE | done |
+| Optional PyPI publish workflow | done |
 | Verification middleware (`verify.py`) | deferred |
 | Human-in-the-loop interrupts | deferred |
 | Persistent checkpointer sessions | deferred |
@@ -227,5 +229,5 @@ References:
 
 - [x] Phase 1 core harness + CLI
 - [x] Phase 2 graph trajectory evals + 10 tasks
-- [ ] Phase 3 CI workflow
-- [ ] Phase 3 optional PyPI publish
+- [x] Phase 3 CI workflow
+- [x] Phase 3 optional PyPI publish workflow
