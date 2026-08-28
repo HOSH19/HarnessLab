@@ -32,7 +32,11 @@ from harnesslab.eval.trajectory import graph_trajectory
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.tasks import load_tasks
-from harnesslab.graph.extract import extract_fields_from_messages
+from harnesslab.graph.extract import (
+    extract_fields_from_messages,
+    format_display_output,
+    serialize_messages,
+)
 
 CompareDimension = Literal["harness", "models"]
 
@@ -103,12 +107,15 @@ def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
     messages = state.get("messages", [])
     parsed = extract_fields_from_messages(messages)
     trajectory = extract_langgraph_trajectory_from_thread(graph, config)
+    classification = parsed["classification"] or state.get("classification", "")
+    final_reply = parsed["final_reply"] or state.get("final_reply", "")
 
     return {
-        "classification": parsed["classification"] or state.get("classification", ""),
-        "final_reply": parsed["final_reply"] or state.get("final_reply", ""),
+        "output": format_display_output(classification, final_reply),
+        "classification": classification,
+        "final_reply": final_reply,
         "error_count": state.get("error_count", 0),
-        "messages": messages,
+        "messages": serialize_messages(messages),
         "graph_trajectory": trajectory["outputs"],
     }
 

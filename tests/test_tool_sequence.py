@@ -55,6 +55,34 @@ def test_tool_sequence_matches_expected_subsequence() -> None:
     assert result["score"] == 1.0
 
 
+def test_tool_sequence_partial_credit_for_missing_tail() -> None:
+    """Missing trailing tools receive proportional partial credit."""
+    run = _FakeRun(
+        {
+            "graph_trajectory": {
+                "results": [
+                    {
+                        "messages": [
+                            {
+                                "role": "assistant",
+                                "tool_calls": [
+                                    {"function": {"name": "read_ticket"}},
+                                    {"function": {"name": "search_kb"}},
+                                ],
+                            },
+                            {"role": "tool", "name": "read_ticket"},
+                            {"role": "tool", "name": "search_kb"},
+                        ]
+                    }
+                ]
+            }
+        }
+    )
+    example = _FakeExample({"expected_tools": ["read_ticket", "search_kb", "classify", "draft_reply"]})
+    result = tool_sequence(run, example)
+    assert result["score"] == 0.5
+
+
 def test_tool_sequence_fails_on_wrong_order() -> None:
     """Out-of-order tool calls fail the subsequence check."""
     run = _FakeRun(

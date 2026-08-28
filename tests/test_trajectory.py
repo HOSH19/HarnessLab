@@ -1,6 +1,7 @@
 """Graph trajectory evaluator tests."""
 
-from harnesslab.eval.trajectory import _flatten_steps, _is_subsequence, graph_trajectory
+from harnesslab.eval.sequence import is_subsequence
+from harnesslab.eval.trajectory import _flatten_steps, graph_trajectory
 
 
 class _FakeRun:
@@ -15,8 +16,8 @@ class _FakeExample:
 
 def test_is_subsequence_matches_in_order() -> None:
     """Expected nodes must appear in order within actual nodes."""
-    assert _is_subsequence(["agent", "tools"], ["trim_context", "agent", "tools", "agent"]) is True
-    assert _is_subsequence(["tools", "agent"], ["agent", "tools"]) is False
+    assert is_subsequence(["agent", "tools"], ["trim_context", "agent", "tools", "agent"]) is True
+    assert is_subsequence(["tools", "agent"], ["agent", "tools"]) is False
 
 
 def test_graph_trajectory_scores_expected_nodes() -> None:

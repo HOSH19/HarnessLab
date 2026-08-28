@@ -39,3 +39,11 @@ def run_child_count(run: Any) -> int:
     """Return number of child runs when available."""
     children = getattr(run, "child_runs", None) or []
     return len(children)
+
+
+def trajectory_agent_tool_steps(outputs: dict[str, Any]) -> int:
+    """Count agent and tools nodes in a graph trajectory attached to run outputs."""
+    from harnesslab.eval.trajectory import _flatten_steps
+
+    nodes = _flatten_steps(outputs.get("graph_trajectory", {}))
+    return len([node for node in nodes if node in {"agent", "tools"}])

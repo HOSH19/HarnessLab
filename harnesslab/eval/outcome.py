@@ -27,10 +27,13 @@ def task_pass(run: Run, example: Example) -> dict:
 
     category_ok = expected_category.lower() in classification if expected_category else True
     if required_terms:
-        matched_terms = sum(1 for term in required_terms if term.lower() in reply)
-        terms_score = matched_terms / len(required_terms)
-        terms_ok = matched_terms == len(required_terms)
+        matched_terms = [term for term in required_terms if term.lower() in reply]
+        missing_terms = [term for term in required_terms if term.lower() not in reply]
+        terms_score = len(matched_terms) / len(required_terms)
+        terms_ok = not missing_terms
     else:
+        matched_terms = []
+        missing_terms = []
         terms_score = 1.0
         terms_ok = True
 
@@ -42,6 +45,6 @@ def task_pass(run: Run, example: Example) -> dict:
         "score": score,
         "comment": (
             f"category_ok={category_ok}, terms_ok={terms_ok}, "
-            f"terms_score={terms_score:.2f}, score={score:.2f}"
+            f"terms_score={terms_score:.2f}, missing_terms={missing_terms}, score={score:.2f}"
         ),
     }

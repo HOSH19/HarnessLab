@@ -31,13 +31,32 @@ def _to_json_serializable(value: Any) -> Any:
     return str(value)
 
 
+def _run_outputs(row: Any) -> dict[str, Any]:
+    """Read target outputs from a result row or nested run object."""
+    outputs = row_value(row, "outputs", None)
+    if outputs:
+        return outputs if isinstance(outputs, dict) else _to_json_serializable(outputs)
+
+    run = row_value(row, "run", None)
+    if run is None:
+        return {}
+
+    run_outputs = getattr(run, "outputs", None)
+    if run_outputs is None and isinstance(run, dict):
+        run_outputs = run.get("outputs")
+    if not run_outputs:
+        return {}
+
+    return run_outputs if isinstance(run_outputs, dict) else _to_json_serializable(run_outputs)
+
+
 def serialize_result_row(row: Any) -> dict[str, Any]:
     """Convert a LangSmith experiment result row to a JSON-serializable dict."""
     example = row_value(row, "example", {}) or {}
     example_inputs = getattr(example, "inputs", None) or example.get("inputs", {}) or {}
     example_id = getattr(example, "id", None) or example.get("id")
 
-    outputs = row_value(row, "outputs", {}) or {}
+    outputs = _run_outputs(row)
     run = row_value(row, "run", None)
     run_id = row_value(row, "run_id")
     if run is not None:

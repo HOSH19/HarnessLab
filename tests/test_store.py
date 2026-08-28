@@ -73,6 +73,22 @@ def test_serialize_result_row_includes_core_fields() -> None:
     assert "latency_ms=1200" in payload["evaluation_results"]["efficiency"]["comment"]
 
 
+def test_serialize_result_row_reads_nested_run_outputs() -> None:
+    """Serialized rows fall back to nested run.outputs when row.outputs is empty."""
+    row = _FakeRow("T-018", {"task_pass": 1.0})
+    row.outputs = {}
+    row.run.outputs = {
+        "output": "technical: Escalated outage",
+        "classification": "technical",
+        "final_reply": "Escalated outage",
+    }
+
+    payload = serialize_result_row(row)
+
+    assert payload["outputs"]["final_reply"] == "Escalated outage"
+    assert payload["outputs"]["output"] == "technical: Escalated outage"
+
+
 def test_save_experiment_run_roundtrip(tmp_path: Path) -> None:
     """Single-harness runs write manifest, results, and summary JSON."""
     row = _FakeRow("T-001", {"task_pass": 1.0, "tool_sequence": 0.5})

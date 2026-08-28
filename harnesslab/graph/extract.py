@@ -20,6 +20,62 @@ def _parse_tool_content(content: Any) -> dict:
         return {"raw": content}
 
 
+def _tool_calls_from_message(message: Any) -> list:
+    """Return tool call objects from a LangChain message or serialized dict."""
+    if isinstance(message, dict):
+        return message.get("tool_calls", []) or []
+    return getattr(message, "tool_calls", None) or []
+
+
+def _tool_name_from_call(call: Any) -> str | None:
+    """Extract a tool name from a tool call object or dict."""
+    if isinstance(call, dict):
+        if call.get("name"):
+            return str(call["name"])
+        function = call.get("function", {})
+        if isinstance(function, dict) and function.get("name"):
+            return str(function["name"])
+        return None
+    name = getattr(call, "name", None)
+    if name:
+        return str(name)
+    return None
+
+
+def serialize_messages(messages: list) -> list[dict[str, Any]]:
+    """Convert LangChain messages into JSON-safe dicts for LangSmith outputs."""
+    serialized: list[dict[str, Any]] = []
+    for message in messages:
+        if isinstance(message, dict):
+            serialized.append(message)
+            continue
+
+        role = getattr(message, "type", "unknown")
+        entry: dict[str, Any] = {
+            "role": role,
+            "content": getattr(message, "content", ""),
+        }
+        tool_calls = _tool_calls_from_message(message)
+        if tool_calls:
+            entry["tool_calls"] = [
+                {"name": name}
+                for call in tool_calls
+                if (name := _tool_name_from_call(call)) is not None
+            ]
+        tool_name = getattr(message, "name", None)
+        if tool_name:
+            entry["name"] = tool_name
+        serialized.append(entry)
+    return serialized
+
+
+def format_display_output(classification: str, reply: str) -> str:
+    """Build a clean LangSmith output string without message role prefixes."""
+    if classification and reply:
+        return f"{classification}: {reply}"
+    return reply or classification or ""
+
+
 def extract_fields_from_messages(messages: list) -> dict[str, str]:
     """Extract classification and final reply from tool messages.
 
@@ -33,11 +89,17 @@ def extract_fields_from_messages(messages: list) -> dict[str, str]:
     final_reply = ""
 
     for message in messages:
-        tool_name = getattr(message, "name", None)
+        tool_name = None
+        if isinstance(message, dict):
+            tool_name = message.get("name")
+        else:
+            tool_name = getattr(message, "name", None)
         if not tool_name:
             continue
 
-        payload = _parse_tool_content(getattr(message, "content", ""))
+        payload = _parse_tool_content(
+            message.get("content", "") if isinstance(message, dict) else getattr(message, "content", "")
+        )
         if tool_name == "classify":
             classification = str(payload.get("category", classification))
         if tool_name == "draft_reply":
@@ -71,15 +133,10 @@ def extract_tool_names_from_messages(messages: list) -> list[str]:
     """
     names: list[str] = []
     for message in messages:
-        tool_calls = getattr(message, "tool_calls", None)
-        if tool_calls:
-            for call in tool_calls:
-                if isinstance(call, dict):
-                    name = call.get("name")
-                else:
-                    name = getattr(call, "name", None)
-                if name:
-                    names.append(str(name))
+        for call in _tool_calls_from_message(message):
+            name = _tool_name_from_call(call)
+            if name:
+                names.append(name)
     return names
 
 

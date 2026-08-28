@@ -6,7 +6,7 @@ in order. Uses message and trajectory data attached to run outputs.
 
 from langsmith.schemas import Example, Run
 
-from harnesslab.eval.trajectory import _is_subsequence
+from harnesslab.eval.sequence import subsequence_progress
 from harnesslab.graph.extract import extract_tool_names_from_outputs
 
 
@@ -31,10 +31,14 @@ def tool_sequence(run: Run, example: Example) -> dict:
 
     outputs = run.outputs or {}
     actual_tools = extract_tool_names_from_outputs(outputs)
-    matched = _is_subsequence(list(expected_tools), actual_tools)
+    score = subsequence_progress(list(expected_tools), actual_tools)
+    matched = score == 1.0
 
     return {
         "key": "tool_sequence",
-        "score": 1.0 if matched else 0.0,
-        "comment": f"expected={list(expected_tools)}, actual={actual_tools}",
+        "score": round(score, 2),
+        "comment": (
+            f"matched={matched}, progress={score:.2f}, "
+            f"expected={list(expected_tools)}, actual={actual_tools}"
+        ),
     }

@@ -6,6 +6,8 @@ in order. Uses trajectory data attached to run outputs by the runner.
 
 from langsmith.schemas import Example, Run
 
+from harnesslab.eval.sequence import subsequence_progress
+
 
 def _flatten_steps(graph_trajectory: dict) -> list[str]:
     """Flatten nested graph trajectory step lists into one node sequence."""
@@ -14,34 +16,6 @@ def _flatten_steps(graph_trajectory: dict) -> list[str]:
     for step_group in steps:
         flattened.extend(step_group)
     return [node for node in flattened if node != "__interrupt__"]
-
-
-def _is_subsequence(expected: list[str], actual: list[str]) -> bool:
-    """Return True when expected node names appear in order inside actual."""
-    if not expected:
-        return True
-
-    index = 0
-    for node in actual:
-        if node == expected[index]:
-            index += 1
-            if index == len(expected):
-                return True
-    return False
-
-
-def _subsequence_progress(expected: list[str], actual: list[str]) -> float:
-    """Return fraction of expected nodes matched in order (1.0 when complete)."""
-    if not expected:
-        return 1.0
-
-    index = 0
-    for node in actual:
-        if node == expected[index]:
-            index += 1
-            if index == len(expected):
-                return 1.0
-    return index / len(expected)
 
 
 def graph_trajectory(run: Run, example: Example) -> dict:
@@ -60,7 +34,7 @@ def graph_trajectory(run: Run, example: Example) -> dict:
     trajectory = outputs.get("graph_trajectory", {})
 
     actual_nodes = _flatten_steps(trajectory)
-    score = _subsequence_progress(expected_nodes, actual_nodes)
+    score = subsequence_progress(expected_nodes, actual_nodes)
     matched = score == 1.0
 
     return {
