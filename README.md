@@ -206,8 +206,8 @@ Use `--by` to choose the comparison dimension:
 
 | `--by` | Varies | Fixed |
 |---|---|---|
-| **`models`** (default) | Cheap models (`gpt-4.1-nano`, `gpt-4o-mini`, `gpt-3.5-turbo`) | Harness (`--harness minimal`) + stress tasks |
-| **`harness`** | Harness configs (comma-separated `--harness`) | Model (`HARNESSLAB_MODEL` in `.env`) + stress tasks |
+| **`harness`** (default) | Harness configs (`minimal`, `with_retry`, `with_context_trim`) | Model (`HARNESSLAB_MODEL` in `.env`) + stress tasks |
+| **`models`** | Cheap models (`gpt-4.1-nano`, `gpt-4o-mini`, `gpt-3.5-turbo`) | Harness (`--harness minimal`) + stress tasks |
 
 Filter to one ticket with `--task T-011`. Results are always saved locally under `.harnesslab/runs/` and optionally uploaded to LangSmith.
 
@@ -219,18 +219,17 @@ conda env create -f environment.yml
 conda activate harnesslab
 cp .env.example .env
 
-# Compare cheap models on all stress tasks (local)
-harnesslab compare examples/ticket_triage --by models --local -o report.html
+# Compare harnesses on stress tasks (default, local)
+harnesslab compare examples/ticket_triage --local -o report.html
 
-# Single ticket, model comparison
-harnesslab compare examples/ticket_triage --by models --task T-011 --local
+# Single ticket, harness comparison
+harnesslab compare examples/ticket_triage --task T-011 --local
 
-# Compare harnesses on one model
-harnesslab compare examples/ticket_triage --by harness \
-  --harness minimal,with_retry,with_context_trim --local
+# Compare cheap models on one harness
+harnesslab compare examples/ticket_triage --by models --local
 
 # LangSmith upload + local JSON archive
-harnesslab compare examples/ticket_triage --by models -o report.html
+harnesslab compare examples/ticket_triage -o report.html
 ```
 
 ```bash
@@ -240,10 +239,11 @@ pytest -q
 ## CLI
 
 ```bash
-harnesslab compare examples/ticket_triage --by models
+harnesslab compare examples/ticket_triage
 harnesslab compare examples/ticket_triage --by harness --harness minimal,with_retry
-harnesslab compare examples/ticket_triage --by models --task T-011
-harnesslab compare examples/ticket_triage --models gpt-4.1-nano,gpt-3.5-turbo
+harnesslab compare examples/ticket_triage --by models --harness minimal
+harnesslab compare examples/ticket_triage --task T-011
+harnesslab compare examples/ticket_triage --by models --models gpt-4.1-nano,gpt-3.5-turbo
 harnesslab run examples/ticket_triage --harness minimal --task T-011
 harnesslab dataset upload examples/ticket_triage
 ```
@@ -253,7 +253,7 @@ harnesslab dataset upload examples/ticket_triage
 ```mermaid
 flowchart LR
     Push[push to main] --> Unit[pytest]
-    Unit --> Smoke[compare --by models --task T-011]
+    Unit --> Smoke[compare --task T-011]
     Smoke --> Artifact[report.html artifact]
 ```
 

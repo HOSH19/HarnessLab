@@ -144,14 +144,14 @@ def run_command(
 def compare_command(
     example: Path = typer.Argument(..., help="Path to example project"),
     compare_by: CompareBy = typer.Option(
-        "models",
+        "harness",
         "--by",
-        help="Compare across models (same harness/tasks) or harnesses (same model)",
+        help="Compare across harnesses (same model) or models (same harness)",
     ),
     harness: str = typer.Option(
-        "minimal",
+        "minimal,with_retry,with_context_trim",
         "--harness",
-        help="Harness name; one value when --by models, comma-separated when --by harness",
+        help="Harness name(s); comma-separated when --by harness, single value when --by models",
     ),
     models: str | None = typer.Option(
         None,
