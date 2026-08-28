@@ -31,9 +31,9 @@ class ContextConfig(BaseModel):
 
 
 class ObservabilityConfig(BaseModel):
-    """Controls LangSmith tracing metadata for a harness variant."""
+    """Controls Langfuse tracing metadata for a harness variant."""
 
-    langsmith_project: str | None = None
+    langfuse_session: str | None = None
     trace_metadata: dict[str, Any] = Field(default_factory=dict)
 
 

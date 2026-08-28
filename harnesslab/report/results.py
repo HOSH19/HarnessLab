@@ -1,4 +1,4 @@
-"""Shared helpers for parsing LangSmith experiment result rows."""
+"""Shared helpers for parsing experiment result rows."""
 
 from typing import Any
 
@@ -31,6 +31,11 @@ def row_value(row: Any, key: str, default: Any = None) -> Any:
 def evaluation_results(row: Any) -> list:
     """Return evaluator result items from an experiment row."""
     feedback = row_value(row, "evaluation_results", {}) or {}
+    if isinstance(feedback, dict) and feedback and "results" not in feedback:
+        return [
+            {"key": key, "score": value.get("score"), "comment": value.get("comment")}
+            for key, value in feedback.items()
+        ]
     return getattr(feedback, "results", None) or feedback.get("results", []) or []
 
 

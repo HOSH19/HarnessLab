@@ -32,7 +32,7 @@ def _to_json_serializable(value: Any) -> Any:
 
 
 def serialize_result_row(row: Any) -> dict[str, Any]:
-    """Convert a LangSmith experiment result row to a JSON-serializable dict."""
+    """Convert an experiment result row to a JSON-serializable dict."""
     example = row_value(row, "example", {}) or {}
     example_inputs = getattr(example, "inputs", None) or example.get("inputs", {}) or {}
     example_id = getattr(example, "id", None) or example.get("id")

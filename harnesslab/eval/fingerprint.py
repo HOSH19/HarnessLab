@@ -1,12 +1,7 @@
-"""Failure category classifier for agent runs.
-
-Maps run errors and outputs to harness-relevant failure fingerprints.
-Does not re-execute agents or modify traces.
-"""
-
-from langsmith.schemas import Example, Run
+"""Failure category classifier for agent runs."""
 
 from harnesslab.eval.run_metrics import run_latency_seconds
+from harnesslab.eval.types import EvalExample, EvalRun
 
 FAILURE_CATEGORIES = (
     "TIMEOUT",
@@ -18,8 +13,8 @@ FAILURE_CATEGORIES = (
 )
 
 
-def _classify_failure(run: Run) -> str:
-    """Derive a failure category from a LangSmith run."""
+def _classify_failure(run: EvalRun) -> str:
+    """Derive a failure category from a run."""
     if run.error:
         error_text = str(run.error).lower()
         if "timeout" in error_text:
@@ -32,22 +27,14 @@ def _classify_failure(run: Run) -> str:
     if outputs.get("classification") and outputs.get("final_reply"):
         return "SUCCESS"
 
-    if (run_latency_seconds(run)) > 60:
+    if run_latency_seconds(run) > 60:
         return "MAX_TURNS"
 
     return "WRONG_ANSWER"
 
 
-def failure_fingerprint(run: Run, example: Example) -> dict:
-    """Score run outcome by failure category fingerprint.
-
-    Args:
-        run: LangSmith run to classify.
-        example: Dataset example (unused, required by LangSmith API).
-
-    Returns:
-        Dict with score 1.0 for SUCCESS else 0.0 and category comment.
-    """
+def failure_fingerprint(run: EvalRun, example: EvalExample) -> dict:
+    """Score run outcome by failure category fingerprint."""
     _ = example
     category = _classify_failure(run)
     return {

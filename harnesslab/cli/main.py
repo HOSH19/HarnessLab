@@ -12,10 +12,10 @@ import typer
 from rich.console import Console
 
 from harnesslab.config.env import (
-    LangSmithConfigError,
-    disable_langsmith_tracing,
+    LangfuseConfigError,
+    disable_langfuse_tracing,
     load_local_env,
-    validate_langsmith_upload_config,
+    validate_langfuse_upload_config,
 )
 from harnesslab.config.model_catalog import DEFAULT_CHEAP_MODELS, DEFAULT_MODEL, parse_model_list
 
@@ -37,16 +37,16 @@ CompareBy = Literal["harness", "models"]
 
 
 def _bootstrap_env(*, local: bool, example: Path | None = None) -> None:
-    """Load .env and disable LangSmith uploads for local-only commands."""
+    """Load .env and disable Langfuse uploads for local-only commands."""
     if local:
-        disable_langsmith_tracing()
+        disable_langfuse_tracing()
     load_local_env(example=example)
     if local:
-        disable_langsmith_tracing()
+        disable_langfuse_tracing()
 
 
 def _default_dataset_name(example: Path) -> str:
-    """Derive a stable LangSmith dataset name from an example directory."""
+    """Derive a stable Langfuse dataset name from an example directory."""
     return f"{example.name.replace('_', '-')}-stress"
 
 
@@ -79,7 +79,7 @@ def _compare_metadata(
         "arms": arms,
         "harness": harness,
         "models": models,
-        "langsmith_mode": not local,
+        "langfuse_mode": not local,
         "task_count": task_count,
         "tasks_limit": tasks,
         "ticket_id": ticket_id,
@@ -91,7 +91,7 @@ def _compare_metadata(
 def run_command(
     example: Path = typer.Argument(..., help="Path to example project"),
     harness: str = typer.Option(..., "--harness", "-h", help="Harness config name"),
-    local: bool = typer.Option(False, "--local", help="Skip LangSmith upload"),
+    local: bool = typer.Option(False, "--local", help="Skip Langfuse upload"),
     tasks: int | None = typer.Option(None, "--tasks", help="Limit number of tasks"),
     task: str | None = typer.Option(None, "--task", help="Single ticket id (e.g. T-011)"),
     model: str | None = typer.Option(None, "--model", help="Model override for this run"),
@@ -101,8 +101,8 @@ def run_command(
     _bootstrap_env(local=local, example=example)
     if not local:
         try:
-            validate_langsmith_upload_config()
-        except LangSmithConfigError as exc:
+            validate_langfuse_upload_config()
+        except LangfuseConfigError as exc:
             raise typer.BadParameter(str(exc)) from exc
 
     harness_dir, tasks_dir = _example_paths(example)
@@ -120,7 +120,7 @@ def run_command(
         dataset_name=_default_dataset_name(example),
         model=resolved_model,
     )
-    rows = list(results)
+    rows = results
     run_path = save_experiment_run(
         resolved_model if model else config.name,
         rows,
@@ -160,7 +160,7 @@ def compare_command(
         help=f"Cheap models to compare (default: {', '.join(DEFAULT_CHEAP_MODELS)})",
     ),
     output: Path = typer.Option(Path("report.html"), "--output", "-o"),
-    local: bool = typer.Option(False, "--local", help="Skip LangSmith upload"),
+    local: bool = typer.Option(False, "--local", help="Skip Langfuse upload"),
     tasks: int | None = typer.Option(None, "--tasks", help="Limit number of stress tasks"),
     task: str | None = typer.Option(None, "--task", help="Single ticket id (e.g. T-011)"),
     model: str | None = typer.Option(
@@ -174,8 +174,8 @@ def compare_command(
     _bootstrap_env(local=local, example=example)
     if not local:
         try:
-            validate_langsmith_upload_config()
-        except LangSmithConfigError as exc:
+            validate_langfuse_upload_config()
+        except LangfuseConfigError as exc:
             raise typer.BadParameter(str(exc)) from exc
 
     harness_dir, tasks_dir = _example_paths(example)
@@ -243,7 +243,7 @@ def dataset_command(
     example: Path = typer.Argument(..., help="Path to example project"),
     name: str = typer.Option("triage-stress", "--name", help="Dataset name"),
 ) -> None:
-    """Upload stress task fixtures to a LangSmith dataset."""
+    """Upload stress task fixtures to a Langfuse dataset."""
     load_local_env()
 
     _, tasks_dir = _example_paths(example)
