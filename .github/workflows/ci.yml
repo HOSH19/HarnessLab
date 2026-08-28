@@ -45,7 +45,7 @@ jobs:
           LANGSMITH_TRACING: "false"
         run: |
           harnesslab compare examples/ticket_triage \
-            --task T-011 \
+            --task T-018 \
             --local \
             --output report.html
 

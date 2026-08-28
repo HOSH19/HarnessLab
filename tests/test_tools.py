@@ -10,7 +10,7 @@ from examples.ticket_triage.tools import check_sla, escalate_ticket, search_kb
 
 def test_check_sla_returns_fixture_data() -> None:
     """check_sla reads SLA tier and deadline from ticket fixtures."""
-    result = json.loads(check_sla.invoke({"ticket_id": "T-016"}))
+    result = json.loads(check_sla.invoke({"ticket_id": "T-018"}))
     assert result["sla_tier"] == "priority"
     assert result["deadline_hours"] == 4
 
@@ -25,7 +25,7 @@ def test_check_sla_defaults_for_standard_tickets() -> None:
 def test_escalate_ticket_returns_confirmation() -> None:
     """escalate_ticket records escalation reason."""
     result = json.loads(
-        escalate_ticket.invoke({"ticket_id": "T-016", "reason": "priority outage"})
+        escalate_ticket.invoke({"ticket_id": "T-018", "reason": "priority outage"})
     )
     assert result["escalated"] is True
     assert result["reason"] == "priority outage"

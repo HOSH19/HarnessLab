@@ -22,6 +22,14 @@ def _get_or_create_dataset(client: Client, dataset_name: str):
         return datasets[0]
 
 
+def _task_signature(tasks: list[dict]) -> list[tuple[str, str]]:
+    """Build a stable signature from task ticket ids and prompts."""
+    return [
+        (task["inputs"].get("ticket_id", ""), task["inputs"].get("prompt", ""))
+        for task in tasks
+    ]
+
+
 def ensure_dataset(
     tasks_dir: Path,
     dataset_name: str,
@@ -47,8 +55,16 @@ def ensure_dataset(
 
     dataset = _get_or_create_dataset(client, dataset_name)
     existing_examples = list(client.list_examples(dataset_id=dataset.id))
+    existing_signature = [
+        (
+            (example.inputs or {}).get("ticket_id", ""),
+            (example.inputs or {}).get("prompt", ""),
+        )
+        for example in existing_examples
+    ]
+    target_signature = _task_signature(tasks)
 
-    if len(existing_examples) != len(tasks):
+    if existing_signature != target_signature:
         for example in existing_examples:
             client.delete_example(example_id=example.id)
         for task in tasks:

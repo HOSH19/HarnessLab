@@ -22,7 +22,7 @@ Harness YAML → compiled LangGraph agent → LangSmith `evaluate()` per task �
 
 **Harness variants:** `minimal` (no middleware), `retry` (tool retries), `trim` (message history cap).
 
-**Stress suite:** 6 tasks (T-011–T-016) — flaky tools, long history, ambiguous tickets, multi-search, SLA escalation.
+**Stress suite:** 2 tasks (T-018 tool-budget pressure, T-019 adversarial prompt).
 
 Agent policy lives in `examples/ticket_triage/rules.py` (read → KB search → classify → reply; optional `check_sla` / `escalate_ticket` for SLA/outage tickets).
 
@@ -30,7 +30,7 @@ Agent policy lives in `examples/ticket_triage/rules.py` (read → KB search → 
 
 Without `--local`, traces and scores live in LangSmith (project `triage`, dataset `ticket-triage-stress`). A local `report.html` is also written.
 
-Three harness experiments on 6 stress tasks:
+Three harness experiments on 9 stress tasks:
 
 ![LangSmith experiment comparison across three harness variants](docs/images/langsmith-dashboard.png)
 
@@ -61,7 +61,7 @@ Trace for ticket **T-015** under the `trim` harness: `trim_context` → `agent` 
 
 ## Compare modes
 
-Both modes run the **same stress tasks** (2 by default, or filter with `--task` / `--tasks`).
+Both modes run the **same 2 stress tasks** (or filter with `--task`).
 
 | `--by` | What varies | What stays fixed | Default run |
 |---|---|---|---|
@@ -69,12 +69,6 @@ Both modes run the **same stress tasks** (2 by default, or filter with `--task` 
 | **`models`** | Cheap models (`nano`, `mini`, `turbo`) | Single `--harness` (default `minimal`) | 3 models × 2 tasks |
 
 Default model compare arms: `gpt-4.1-nano`, `gpt-4.1-mini`, `gpt-3.5-turbo`. Override with `--models nano,mini`.
-
-Full stress suite (6 tasks, all harnesses):
-
-```bash
-harnesslab compare examples/ticket_triage --harness minimal,retry,trim --tasks 6 -o report.html
-```
 
 ```bash
 cd harnesslab
@@ -91,7 +85,7 @@ harnesslab compare examples/ticket_triage -o report.html
 harnesslab compare examples/ticket_triage --dataset triage-v2 -o report.html
 
 # Cheapest LangSmith upload (1 harness × 1 task)
-harnesslab compare examples/ticket_triage --task T-011 -o report.html
+harnesslab compare examples/ticket_triage --task T-018 -o report.html
 
 # Model compare on one harness (default: nano, mini, turbo × 2 tasks)
 harnesslab compare examples/ticket_triage --by models --harness minimal --dataset triage-v3 -o report.html
@@ -115,14 +109,13 @@ APAC users: `LANGSMITH_ENDPOINT=https://apac.api.smith.langchain.com`. GitHub Ac
 
 ## Saving LangSmith traces
 
-LangSmith counts **every span** (each `agent`, `tools`, and `ChatOpenAI` node), not just top-level experiment rows. A full harness compare (3 harnesses × 6 tasks) can use **100–200+ traces**.
+LangSmith counts **every span** (each `agent`, `tools`, and `ChatOpenAI` node), not just top-level experiment rows.
 
 | Goal | Command | Approx. top-level runs |
 |---|---|---|
 | Dev / free | `--local` | 0 LangSmith traces |
-| Cheapest upload | `--task T-011` | 2 experiments × 1 task |
+| Cheapest upload | `--task T-018` | 2 experiments × 1 task |
 | Default upload | (no flags) | 2 harnesses × 2 tasks |
-| Full stress suite | `--harness minimal,retry,trim --tasks 6` | 3 harnesses × 6 tasks |
 
 Use `--local` while iterating; upload with the default compare or `--task` when you need the LangSmith dashboard.
 

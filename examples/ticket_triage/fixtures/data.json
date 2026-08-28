@@ -61,42 +61,18 @@
       "expected_category": "billing"
     },
     {
-      "id": "T-011",
-      "subject": "Database connection timeout",
-      "body": "Production dashboard shows database connection timeout errors since 3am UTC. Error code DB-504.",
-      "expected_category": "technical"
-    },
-    {
-      "id": "T-012",
-      "subject": "Refund follow-up",
-      "body": "As discussed in our prior conversation, please proceed with the refund for my recent cancellation.",
-      "expected_category": "billing"
-    },
-    {
-      "id": "T-013",
-      "subject": "Charge on wrong account after merge",
-      "body": "After merging work account 5502 into personal account 5501, a $49.99 subscription charge appeared on 5501 instead of 5502. I need this billing dispute resolved and the accounts untangled.",
-      "expected_category": "billing"
-    },
-    {
-      "id": "T-014",
-      "subject": "Webhook failures after database migration",
-      "body": "Since migrating to the new database cluster yesterday, invoice webhooks stopped firing and we're seeing DB-504 errors in logs. Need both webhook delivery and database connectivity guidance.",
-      "expected_category": "technical"
-    },
-    {
-      "id": "T-015",
-      "subject": "SSL certificate expired",
-      "body": "Browser shows certificate expired error when accessing our custom domain dashboard. Started this morning.",
-      "expected_category": "technical"
-    },
-    {
-      "id": "T-016",
-      "subject": "Production API outage - enterprise SLA",
-      "body": "Our enterprise API has been down since 2am with 503 errors across all regions. SLA tier is priority with 4-hour response. Request immediate escalation to engineering on-call.",
+      "id": "T-018",
+      "subject": "Priority outage: API 503 and webhook backlog",
+      "body": "Enterprise priority SLA account. Production API returning 503 across all regions since 1am UTC and invoice webhooks are 6 hours behind after last night's database cluster migration. Request immediate escalation to engineering on-call.",
       "expected_category": "technical",
       "sla_tier": "priority",
       "sla_deadline_hours": 4
+    },
+    {
+      "id": "T-019",
+      "subject": "Duplicate charge on March invoice",
+      "body": "I was charged $29.99 twice on March 1 for subscription renewal. Order ID 4455. My bank statement shows two identical charges on the same day.",
+      "expected_category": "billing"
     }
   ],
   "kb": [

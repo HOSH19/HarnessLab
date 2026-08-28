@@ -35,10 +35,10 @@ def test_read_ticket_flaky_integration() -> None:
     init_flaky_tools({"read_ticket": 1})
 
     with pytest.raises(RuntimeError, match="read_ticket"):
-        read_ticket.invoke({"ticket_id": "T-011"})
+        read_ticket.invoke({"ticket_id": "T-001"})
 
-    result = json.loads(read_ticket.invoke({"ticket_id": "T-011"}))
-    assert result["id"] == "T-011"
+    result = json.loads(read_ticket.invoke({"ticket_id": "T-001"}))
+    assert result["id"] == "T-001"
 
 
 def test_flaky_reset_between_runs() -> None:
