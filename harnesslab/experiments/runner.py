@@ -11,22 +11,49 @@ from pathlib import Path
 from typing import Any
 
 from agentevals.graph_trajectory.utils import extract_langgraph_trajectory_from_thread
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from langsmith import evaluate
 
 from harnesslab.config.env import disable_langsmith_tracing
 
+from examples.ticket_triage.flaky import init_flaky_tools
+
 from harnesslab.config.models import HarnessConfig
 from harnesslab.eval.efficiency import efficiency
+from harnesslab.eval.error_recovery import error_recovery
 from harnesslab.eval.fingerprint import failure_fingerprint
 from harnesslab.eval.outcome import task_pass
+from harnesslab.eval.step_count import step_count
+from harnesslab.eval.tool_sequence import tool_sequence
 from harnesslab.eval.trajectory import graph_trajectory
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.tasks import load_tasks
 from harnesslab.graph.extract import extract_fields_from_messages
 
-EVALUATORS = [task_pass, graph_trajectory, efficiency, failure_fingerprint]
+EVALUATORS = [
+    task_pass,
+    graph_trajectory,
+    tool_sequence,
+    error_recovery,
+    step_count,
+    efficiency,
+    failure_fingerprint,
+]
+
+
+def _build_initial_messages(prompt: str, conversation_history: list[dict] | None) -> list:
+    """Build message list from optional prior turns plus the task prompt."""
+    messages: list = []
+    for turn in conversation_history or []:
+        role = turn.get("role", "human")
+        content = turn.get("content", "")
+        if role in {"human", "user"}:
+            messages.append(HumanMessage(content=content))
+        elif role in {"ai", "assistant"}:
+            messages.append(AIMessage(content=content))
+    messages.append(HumanMessage(content=prompt))
+    return messages
 
 
 def _invoke_config(harness: HarnessConfig) -> dict:
@@ -74,10 +101,15 @@ def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessC
         """Run the agent on a single task input."""
         prompt = inputs.get("prompt", "")
         ticket_id = inputs.get("ticket_id", "")
+        flaky_tools = inputs.get("flaky_tools")
+        conversation_history = inputs.get("conversation_history")
         config = _invoke_config(harness)
+        if flaky_tools:
+            config["configurable"]["flaky_tools"] = flaky_tools
+        init_flaky_tools(flaky_tools)
         state = graph.invoke(
             {
-                "messages": [HumanMessage(content=prompt)],
+                "messages": _build_initial_messages(prompt, conversation_history),
                 "ticket_id": ticket_id,
                 "classification": "",
                 "final_reply": "",

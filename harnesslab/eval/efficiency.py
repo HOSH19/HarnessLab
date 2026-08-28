@@ -19,17 +19,18 @@ def efficiency(run: Run, example: Example) -> dict:
     Returns:
         Dict with normalized efficiency score and metadata comment.
     """
-    _ = example
+    reference = example.outputs or {}
+    expected_max_steps = int(reference.get("expected_max_steps", 12))
     latency_ms = run_latency_seconds(run) * 1000
     tokens = run_total_tokens(run)
     child_count = run_child_count(run)
 
     score = 1.0
-    if latency_ms > 30_000:
+    if latency_ms > 20_000:
         score -= 0.3
-    if tokens > 4000:
+    if tokens > 3000:
         score -= 0.3
-    if child_count > 20:
+    if child_count > expected_max_steps:
         score -= 0.2
 
     score = max(0.0, score)

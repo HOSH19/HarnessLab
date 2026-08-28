@@ -8,6 +8,8 @@ from pathlib import Path
 
 from langchain_core.tools import tool
 
+from examples.ticket_triage.flaky import maybe_fail
+
 FIXTURES_PATH = Path(__file__).parent / "fixtures" / "data.json"
 
 
@@ -26,6 +28,7 @@ def read_ticket(ticket_id: str) -> str:
     Returns:
         JSON string with ticket subject and body.
     """
+    maybe_fail("read_ticket")
     fixtures = _load_fixtures()
     for ticket in fixtures["tickets"]:
         if ticket["id"] == ticket_id:
@@ -43,6 +46,7 @@ def search_kb(query: str) -> str:
     Returns:
         JSON string with matching KB article summaries.
     """
+    maybe_fail("search_kb")
     fixtures = _load_fixtures()
     query_lower = query.lower()
     matches = [
@@ -64,6 +68,7 @@ def classify(category: str, ticket_id: str) -> str:
     Returns:
         Confirmation message with assigned category.
     """
+    maybe_fail("classify")
     allowed = {"account", "billing", "technical"}
     if category not in allowed:
         return json.dumps({"error": f"Invalid category. Use one of: {allowed}"})
@@ -81,6 +86,7 @@ def draft_reply(ticket_id: str, reply: str) -> str:
     Returns:
         Confirmation with the drafted reply.
     """
+    maybe_fail("draft_reply")
     return json.dumps({"ticket_id": ticket_id, "reply": reply})
 
 

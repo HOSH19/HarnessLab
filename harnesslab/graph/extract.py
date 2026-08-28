@@ -47,3 +47,72 @@ def extract_fields_from_messages(messages: list) -> dict[str, str]:
         "classification": classification,
         "final_reply": final_reply,
     }
+
+
+def _tool_names_from_openai_message(message: dict) -> list[str]:
+    """Extract tool names from one OpenAI-format trajectory message."""
+    names: list[str] = []
+    for call in message.get("tool_calls", []) or []:
+        function = call.get("function", {}) if isinstance(call, dict) else {}
+        name = function.get("name") if isinstance(function, dict) else None
+        if name:
+            names.append(str(name))
+    return names
+
+
+def extract_tool_names_from_messages(messages: list) -> list[str]:
+    """Extract tool invocation names in order from LangChain messages.
+
+    Args:
+        messages: LangGraph message list from final state or run outputs.
+
+    Returns:
+        Ordered list of tool names observed in the message history.
+    """
+    names: list[str] = []
+    for message in messages:
+        tool_calls = getattr(message, "tool_calls", None)
+        if tool_calls:
+            for call in tool_calls:
+                if isinstance(call, dict):
+                    name = call.get("name")
+                else:
+                    name = getattr(call, "name", None)
+                if name:
+                    names.append(str(name))
+    return names
+
+
+def extract_tool_names_from_trajectory(graph_trajectory: dict) -> list[str]:
+    """Extract tool names from graph trajectory result messages.
+
+    Args:
+        graph_trajectory: Trajectory dict attached to run outputs by the runner.
+
+    Returns:
+        Ordered list of tool names parsed from trajectory messages.
+    """
+    names: list[str] = []
+    results = graph_trajectory.get("results", []) if graph_trajectory else []
+    for result in results:
+        if not isinstance(result, dict):
+            continue
+        for message in result.get("messages", []) or []:
+            if isinstance(message, dict):
+                names.extend(_tool_names_from_openai_message(message))
+    return names
+
+
+def extract_tool_names_from_outputs(outputs: dict) -> list[str]:
+    """Extract tool names from run outputs using messages or trajectory data.
+
+    Args:
+        outputs: LangSmith run outputs dict.
+
+    Returns:
+        Ordered list of tool names from the best available source.
+    """
+    messages = outputs.get("messages")
+    if messages:
+        return extract_tool_names_from_messages(messages)
+    return extract_tool_names_from_trajectory(outputs.get("graph_trajectory", {}))

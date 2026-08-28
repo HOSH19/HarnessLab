@@ -59,6 +59,24 @@
       "subject": "Cancel annual subscription",
       "body": "Please cancel annual plan and confirm no future renewals for account 4412.",
       "expected_category": "billing"
+    },
+    {
+      "id": "T-011",
+      "subject": "Database connection timeout",
+      "body": "Production dashboard shows database connection timeout errors since 3am UTC. Error code DB-504.",
+      "expected_category": "technical"
+    },
+    {
+      "id": "T-012",
+      "subject": "Refund follow-up",
+      "body": "As discussed in our prior conversation, please proceed with the refund for my recent cancellation.",
+      "expected_category": "billing"
+    },
+    {
+      "id": "T-013",
+      "subject": "Charge on wrong account after merge",
+      "body": "After merging work account 5502 into personal account 5501, a $49.99 subscription charge appeared on 5501 instead of 5502. I need this billing dispute resolved and the accounts untangled.",
+      "expected_category": "billing"
     }
   ],
   "kb": [
@@ -111,6 +129,21 @@
       "id": "KB-010",
       "title": "Cancel subscription",
       "content": "Annual plans can be cancelled anytime; access remains until period end. No auto-renew after cancellation."
+    },
+    {
+      "id": "KB-011",
+      "title": "Database connection timeouts",
+      "content": "DB-504 indicates connection pool exhaustion. Restart app servers and scale read replicas. Check status page for incidents."
+    },
+    {
+      "id": "KB-012",
+      "title": "Annual plan refund requests",
+      "content": "Annual plan refunds within 7 days require order ID and verified account number. Prorated refunds after 7 days."
+    },
+    {
+      "id": "KB-013",
+      "title": "Merged account billing disputes",
+      "content": "When work and personal accounts are merged, charges may post to the surviving account. Provide both account IDs and dispute the charge for reallocation."
     }
   ]
 }

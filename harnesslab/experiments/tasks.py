@@ -25,11 +25,29 @@ def load_tasks(tasks_dir: Path) -> list[dict]:
                 "inputs": {
                     "prompt": raw["prompt"],
                     "ticket_id": raw["ticket_id"],
+                    **({"flaky_tools": raw["flaky_tools"]} if "flaky_tools" in raw else {}),
+                    **(
+                        {"conversation_history": raw["conversation_history"]}
+                        if "conversation_history" in raw
+                        else {}
+                    ),
                 },
                 "outputs": {
                     "expected_category": raw["expected_category"],
                     "required_reply_terms": raw["required_reply_terms"],
                     "expected_nodes": raw.get("expected_nodes", []),
+                    **({"expected_tools": raw["expected_tools"]} if "expected_tools" in raw else {}),
+                    **(
+                        {"expected_max_steps": raw["expected_max_steps"]}
+                        if "expected_max_steps" in raw
+                        else {}
+                    ),
+                    **(
+                        {"max_acceptable_errors": raw["max_acceptable_errors"]}
+                        if "max_acceptable_errors" in raw
+                        else {}
+                    ),
+                    **({"stress": raw["stress"]} if "stress" in raw else {}),
                 },
             }
         )

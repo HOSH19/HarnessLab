@@ -42,6 +42,27 @@ When you run `compare` without `--local`, LangSmith hosts the full experiment vi
 
 The local `report.html` is a summary table. **LangSmith is where the detail lives** — per-run traces, node-by-node graph execution, and evaluator breakdowns.
 
+### Agent loop trace
+
+Click any experiment row, then a task run, to open the **trace view**. This is the full agent loop for a single task — the screenshot below shows task `T-003` under the `minimal` harness:
+
+![LangSmith trace view showing the agent loop for a single task run](docs/images/langsmith-trace.png)
+
+| UI area | What it shows |
+|---|---|
+| **Trace tree (left)** | The LangGraph execution tree. Each `agent` node is an LLM call (`gpt-4o-mini`); each `tools` node is a tool invocation (`read_ticket`, `search_kb`, `classify`, `draft_reply`). `should_continue` is the routing edge that decides whether to call more tools or stop. |
+| **Feedback tab (right)** | Per-run evaluator scores for this task — `task_pass`, `graph_trajectory`, `efficiency`, and `failure_fingerprint`. |
+| **Input** | The task prompt sent to the agent (`Triage ticket T-003`). |
+| **Output** | What the agent produced: `classification`, `final_reply`, `error_count`, and the raw `graph_trajectory` message history. |
+
+One task run typically looks like:
+
+```
+agent → tools (read_ticket) → agent → tools (search_kb) → agent → tools (classify) → agent → tools (draft_reply) → agent → end
+```
+
+Each `agent` step is the LLM deciding what to do next; each `tools` step executes that decision. The harness wraps this loop with retry middleware, context trimming, and turn limits — without changing the agent logic itself.
+
 ## Architecture
 
 ```mermaid
@@ -126,10 +147,16 @@ flowchart LR
 flowchart LR
     Run[LangSmith Run] --> TP[task_pass]
     Run --> GT[graph_trajectory]
+    Run --> TS[tool_sequence]
+    Run --> ER[error_recovery]
+    Run --> SC[step_count]
     Run --> EF[efficiency]
     Run --> FF[failure_fingerprint]
     TP --> Score[experiment score]
     GT --> Score
+    TS --> Score
+    ER --> Score
+    SC --> Score
     EF --> Score
     FF --> Score
 ```
@@ -138,8 +165,30 @@ flowchart LR
 |---|---|
 | `task_pass` | Correct category + required reply terms |
 | `graph_trajectory` | Expected graph nodes appear in order |
-| `efficiency` | Latency, tokens, step count |
+| `tool_sequence` | Expected tool calls appear in order (`read_ticket` → …) |
+| `error_recovery` | `error_count` within acceptable limit (retry stress) |
+| `step_count` | Child run count vs per-task step budget |
+| `efficiency` | Latency, tokens, steps (tighter thresholds) |
 | `failure_fingerprint` | TIMEOUT / TOOL_ERROR / WRONG_ANSWER / SUCCESS |
+
+### Stress tasks (11–13)
+
+Three tasks are tagged `"stress": true` to expose harness differences without extra LLM cost:
+
+| Task | Scenario | What diverges |
+|---|---|---|
+| **task-011** | `read_ticket` fails once (`flaky_tools`) | `with_retry` recovers; `minimal` may fail |
+| **task-012** | 20-message conversation history | `with_context_trim` may drop early context |
+| **task-013** | Ambiguous billing + account ticket | Stricter `task_pass` terms |
+
+```bash
+# Include stress tasks (tasks 11–13 are the last three)
+harnesslab compare examples/ticket_triage \
+  --harness minimal,with_retry,with_context_trim \
+  --tasks 13 --local -o report.html
+```
+
+The HTML report now includes a **per-task breakdown** table below the summary averages.
 
 ## Quick start
 

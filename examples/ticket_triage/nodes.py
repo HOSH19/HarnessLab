@@ -10,6 +10,8 @@ from langchain_core.messages import SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
 
+from langchain_core.runnables import RunnableConfig
+
 from examples.ticket_triage.tools import TOOLS
 from harnesslab.graph.state import AgentState
 
@@ -48,13 +50,14 @@ def call_model(state: AgentState) -> dict:
 _tool_node = ToolNode(TOOLS)
 
 
-def call_tools(state: AgentState) -> dict:
+def call_tools(state: AgentState, config: RunnableConfig | None = None) -> dict:
     """Execute tool calls from the latest assistant message.
 
     Args:
         state: Current graph state with pending tool calls.
+        config: LangGraph runnable config (passed through to ToolNode).
 
     Returns:
         State update with tool result messages.
     """
-    return _tool_node.invoke(state)
+    return _tool_node.invoke(state, config)

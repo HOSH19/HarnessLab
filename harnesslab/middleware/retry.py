@@ -6,6 +6,8 @@ Does not modify tool definitions or agent prompts.
 
 from collections.abc import Callable
 
+from langchain_core.runnables import RunnableConfig
+
 from harnesslab.config.models import ToolingConfig
 from harnesslab.graph.state import AgentState
 
@@ -25,13 +27,15 @@ def make_retry_wrapper(
     """
     retries = config.retry_count
 
-    def retrying_tool_node(state: AgentState) -> dict:
+    def retrying_tool_node(state: AgentState, config: RunnableConfig | None = None) -> dict:
         """Execute tools with up to retry_count attempts on error."""
         last_error: Exception | None = None
         attempts = retries + 1
 
         for _ in range(attempts):
             try:
+                if config is not None:
+                    return tool_node(state, config)
                 return tool_node(state)
             except Exception as exc:
                 last_error = exc

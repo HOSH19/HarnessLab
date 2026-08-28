@@ -1,8 +1,13 @@
 """Output extraction tests."""
 
-from langchain_core.messages import ToolMessage
+from langchain_core.messages import AIMessage, ToolMessage
 
-from harnesslab.graph.extract import extract_fields_from_messages
+from harnesslab.graph.extract import (
+    extract_fields_from_messages,
+    extract_tool_names_from_messages,
+    extract_tool_names_from_outputs,
+    extract_tool_names_from_trajectory,
+)
 
 
 def test_extract_fields_from_tool_messages() -> None:
@@ -22,3 +27,56 @@ def test_extract_fields_from_tool_messages() -> None:
     fields = extract_fields_from_messages(messages)
     assert fields["classification"] == "account"
     assert "reset password" in fields["final_reply"]
+
+
+def test_extract_tool_names_from_messages() -> None:
+    """Tool names are collected from assistant and tool messages."""
+    messages = [
+        AIMessage(
+            content="",
+            tool_calls=[
+                {"name": "lookup_ticket", "args": {}, "id": "1", "type": "tool_call"},
+                {"name": "classify", "args": {}, "id": "2", "type": "tool_call"},
+            ],
+        ),
+        ToolMessage(content="{}", name="lookup_ticket", tool_call_id="1"),
+        ToolMessage(content="{}", name="classify", tool_call_id="2"),
+    ]
+    assert extract_tool_names_from_messages(messages) == [
+        "lookup_ticket",
+        "classify",
+    ]
+
+
+def test_extract_tool_names_from_trajectory() -> None:
+    """Trajectory result messages expose tool names in OpenAI format."""
+    trajectory = {
+        "results": [
+            {
+                "messages": [
+                    {
+                        "role": "assistant",
+                        "tool_calls": [{"function": {"name": "draft_reply"}}],
+                    },
+                    {"role": "tool", "name": "draft_reply"},
+                ]
+            }
+        ]
+    }
+    assert extract_tool_names_from_trajectory(trajectory) == ["draft_reply"]
+
+
+def test_extract_tool_names_from_outputs_prefers_messages() -> None:
+    """Direct messages in outputs take precedence over trajectory data."""
+    outputs = {
+        "messages": [
+            AIMessage(
+                content="",
+                tool_calls=[
+                    {"name": "classify", "args": {}, "id": "1", "type": "tool_call"},
+                ],
+            )
+        ],
+        "graph_trajectory": {"results": []},
+    }
+    assert extract_tool_names_from_outputs(outputs) == ["classify"]

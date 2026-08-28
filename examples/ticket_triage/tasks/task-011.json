@@ -1,0 +1,13 @@
+{
+  "task_id": "task-011",
+  "ticket_id": "T-011",
+  "prompt": "Triage ticket T-011",
+  "flaky_tools": {
+    "read_ticket": 1
+  },
+  "stress": true,
+  "expected_category": "technical",
+  "required_reply_terms": ["database", "timeout"],
+  "expected_nodes": ["agent", "tools"],
+  "expected_tools": ["read_ticket", "search_kb", "classify", "draft_reply"]
+}
