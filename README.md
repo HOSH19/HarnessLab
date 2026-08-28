@@ -24,6 +24,8 @@ Harness YAML → compiled LangGraph agent → LangSmith `evaluate()` per task �
 
 **Stress suite:** 6 tasks (T-011–T-016) — flaky tools, long history, ambiguous tickets, multi-search, SLA escalation.
 
+Agent policy lives in `examples/ticket_triage/rules.py` (read → KB search → classify → reply; optional `check_sla` / `escalate_ticket` for SLA/outage tickets).
+
 ## LangSmith dashboard
 
 Without `--local`, traces and scores live in LangSmith (project `triage`, dataset `ticket-triage-stress`). A local `report.html` is also written.
@@ -55,14 +57,18 @@ In this `trim` run, `task_pass` averages **0.50** and `tool_sequence` **0.00** w
 
 ![LangSmith trace view showing the agent loop for a single task run](docs/images/langsmith-trace.png)
 
-Trace for ticket **T-015** under the `trim` harness: `trim_context` → `agent` (`gpt-4.1-nano`) → `tools` (`read_ticket`, `check_sla`, `search_kb`, `classify`) → repeat until done. The right panel shows evaluator scores and structured output (`classification`, `final_reply`, `graph_trajectory`).
+Trace for ticket **T-015** under the `trim` harness: `trim_context` → `agent` → `tools` (`read_ticket`, `search_kb`, `classify`, `draft_reply`) with flaky `search_kb` retries. The right panel shows evaluator scores and structured output (`classification`, `final_reply`, `graph_trajectory`).
 
 ## Compare modes
 
-| `--by` | Varies | Fixed |
-|---|---|---|
-| **`harness`** (default) | `minimal`, `retry`, `trim` | Model (`HARNESSLAB_MODEL` in `.env`) |
-| **`models`** | `nano`, `mini`, `turbo` | Harness (`--harness minimal`) |
+Both modes run the **same stress tasks** (all 6 by default, or filter with `--task`, `--tasks`, `--smoke`).
+
+| `--by` | What varies | What stays fixed | Example |
+|---|---|---|---|
+| **`harness`** (default) | Harness YAML (`minimal`, `retry`, `trim`) | Model from `HARNESSLAB_MODEL` | 3 harnesses × 1 model |
+| **`models`** | Cheap models (`nano`, `mini`, `turbo`) | Single `--harness` (default `minimal`) | 3 models × 1 harness |
+
+Default model compare arms: `gpt-4.1-nano`, `gpt-4.1-mini`, `gpt-3.5-turbo` (all cheaper than `gpt-4o-mini`). Override with `--models nano,mini`.
 
 ```bash
 cd harnesslab

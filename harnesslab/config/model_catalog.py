@@ -1,10 +1,10 @@
 """Cheap model catalog for HarnessLab model-comparison experiments."""
 
 # OpenAI models suitable for low-cost harness and model A/B testing.
-# Avoid premium models (gpt-4o, gpt-4.1, o-series) in default compare runs.
+# All defaults are cheaper than gpt-4o-mini; override with --models if needed.
 DEFAULT_CHEAP_MODELS: tuple[str, ...] = (
     "gpt-4.1-nano",
-    "gpt-4o-mini",
+    "gpt-4.1-mini",
     "gpt-3.5-turbo",
 )
 
@@ -13,7 +13,7 @@ DEFAULT_MODEL = DEFAULT_CHEAP_MODELS[0]
 # Short labels for experiment names (what varies in model-comparison runs).
 MODEL_SHORT_NAMES: dict[str, str] = {
     "gpt-4.1-nano": "nano",
-    "gpt-4o-mini": "mini",
+    "gpt-4.1-mini": "mini",
     "gpt-3.5-turbo": "turbo",
 }
 

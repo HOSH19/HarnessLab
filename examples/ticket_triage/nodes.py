@@ -11,22 +11,10 @@ from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
 
+from examples.ticket_triage.rules import SYSTEM_PROMPT
 from examples.ticket_triage.tools import TOOLS
 from harnesslab.config.model_catalog import DEFAULT_MODEL
 from harnesslab.graph.state import AgentState
-
-SYSTEM_PROMPT = """You are a support ticket triage agent.
-
-For each ticket:
-1. read_ticket to fetch details
-2. search_kb with keywords from the ticket (search again with different terms if multiple topics apply)
-3. classify into account, billing, or technical
-4. draft_reply referencing relevant KB guidance
-
-For priority or SLA-sensitive tickets, call check_sla before classifying.
-Escalate with escalate_ticket when the SLA is at risk or the issue is severe.
-
-Use tools in that order when applicable. Be concise."""
 
 
 def _model() -> ChatOpenAI:

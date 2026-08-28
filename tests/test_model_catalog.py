@@ -11,13 +11,13 @@ def test_parse_model_list_defaults_to_cheap_models() -> None:
 
 def test_parse_model_list_splits_custom_models() -> None:
     """Comma-separated models are trimmed and parsed."""
-    assert parse_model_list("gpt-4.1-nano, gpt-4o-mini") == ["gpt-4.1-nano", "gpt-4o-mini"]
+    assert parse_model_list("gpt-4.1-nano, gpt-4.1-mini") == ["gpt-4.1-nano", "gpt-4.1-mini"]
 
 
 def test_model_short_name_uses_one_word_labels() -> None:
     """Known models map to short experiment names."""
     assert model_short_name("gpt-4.1-nano") == "nano"
-    assert model_short_name("gpt-4o-mini") == "mini"
+    assert model_short_name("gpt-4.1-mini") == "mini"
     assert model_short_name("gpt-3.5-turbo") == "turbo"
 
 
