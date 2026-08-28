@@ -8,11 +8,12 @@ import json
 from pathlib import Path
 
 
-def load_tasks(tasks_dir: Path) -> list[dict]:
+def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
     """Load all task JSON files from a directory.
 
     Args:
         tasks_dir: Directory containing task-*.json files.
+        ticket_id: Optional filter to a single ticket (e.g. T-011).
 
     Returns:
         List of task dicts with inputs and outputs for LangSmith.
@@ -20,6 +21,8 @@ def load_tasks(tasks_dir: Path) -> list[dict]:
     tasks: list[dict] = []
     for path in sorted(tasks_dir.glob("task-*.json")):
         raw = json.loads(path.read_text())
+        if ticket_id is not None and raw.get("ticket_id") != ticket_id:
+            continue
         tasks.append(
             {
                 "inputs": {

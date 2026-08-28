@@ -90,4 +90,43 @@ def draft_reply(ticket_id: str, reply: str) -> str:
     return json.dumps({"ticket_id": ticket_id, "reply": reply})
 
 
-TOOLS = [read_ticket, search_kb, classify, draft_reply]
+@tool
+def check_sla(ticket_id: str) -> str:
+    """Check SLA tier and response deadline for a ticket.
+
+    Args:
+        ticket_id: Ticket identifier.
+
+    Returns:
+        JSON string with sla_tier and deadline_hours.
+    """
+    maybe_fail("check_sla")
+    fixtures = _load_fixtures()
+    for ticket in fixtures["tickets"]:
+        if ticket["id"] == ticket_id:
+            return json.dumps(
+                {
+                    "ticket_id": ticket_id,
+                    "sla_tier": ticket.get("sla_tier", "standard"),
+                    "deadline_hours": ticket.get("sla_deadline_hours", 48),
+                }
+            )
+    return json.dumps({"error": f"Ticket {ticket_id} not found"})
+
+
+@tool
+def escalate_ticket(ticket_id: str, reason: str) -> str:
+    """Escalate a ticket to senior support or engineering.
+
+    Args:
+        ticket_id: Ticket identifier.
+        reason: Why escalation is needed.
+
+    Returns:
+        Confirmation with escalation details.
+    """
+    maybe_fail("escalate_ticket")
+    return json.dumps({"ticket_id": ticket_id, "escalated": True, "reason": reason})
+
+
+TOOLS = [read_ticket, search_kb, classify, draft_reply, check_sla, escalate_ticket]

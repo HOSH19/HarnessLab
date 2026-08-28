@@ -20,6 +20,7 @@ build/
 *.egg
 
 report.html
+.harnesslab/
 .DS_Store
 .idea/
 .vscode/

@@ -27,6 +27,7 @@ def ensure_dataset(
     dataset_name: str,
     *,
     task_limit: int | None = None,
+    ticket_id: str | None = None,
 ) -> str:
     """Ensure a LangSmith dataset exists and matches local task fixtures.
 
@@ -34,12 +35,13 @@ def ensure_dataset(
         tasks_dir: Directory containing task-*.json fixtures.
         dataset_name: Name for the LangSmith dataset.
         task_limit: Optional cap on number of tasks to sync.
+        ticket_id: Optional filter to sync a single ticket fixture.
 
     Returns:
         Dataset name that was created or updated.
     """
     client = Client()
-    tasks = load_tasks(tasks_dir)
+    tasks = load_tasks(tasks_dir, ticket_id=ticket_id)
     if task_limit is not None:
         tasks = tasks[:task_limit]
 

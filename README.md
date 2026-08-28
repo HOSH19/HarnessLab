@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/HOSH19/HarnessLab/actions/workflows/ci.yml/badge.svg)](https://github.com/HOSH19/HarnessLab/actions/workflows/ci.yml)
 
-HarnessLab is a small framework for **A/B testing agent harnesses** — the infrastructure around an LLM agent (retries, context limits, turn caps) rather than the agent logic itself. You declare harness variants as YAML, run the same LangGraph agent under each one, score outcomes with LangSmith evaluators, and compare results side by side.
+HarnessLab is a small framework for **A/B testing agent harnesses and models** — the infrastructure around an LLM agent (retries, context limits, turn caps) and the model itself. You declare harness variants as YAML, run the same LangGraph agent under each configuration, score outcomes with LangSmith evaluators, and compare results across **models** or **harnesses** on stress tasks.
 
 The demo is a support **ticket triage agent**: read a ticket, search the knowledge base, classify it, and draft a reply. Three harness configs (`minimal`, `with_retry`, `with_context_trim`) wrap the same graph with different middleware so you can see whether infrastructure choices actually matter.
 
@@ -146,6 +146,8 @@ flowchart LR
 | `search_kb` | Match KB articles |
 | `classify` | Assign category |
 | `draft_reply` | Write customer reply |
+| `check_sla` | Look up SLA tier and deadline |
+| `escalate_ticket` | Escalate to senior support or engineering |
 
 ## Harness configs
 
@@ -185,63 +187,65 @@ flowchart LR
 | `efficiency` | Latency, tokens, steps (tighter thresholds) |
 | `failure_fingerprint` | TIMEOUT / TOOL_ERROR / WRONG_ANSWER / SUCCESS |
 
-### Stress tasks (11–13)
+### Stress tasks (6)
 
-Three tasks are tagged `"stress": true` to expose harness differences without extra LLM cost:
+All fixtures are stress scenarios (tickets T-011–T-016):
 
-| Task | Scenario | What diverges |
+| File | Ticket | Scenario |
 |---|---|---|
-| **task-011** | `read_ticket` fails once (`flaky_tools`) | `with_retry` recovers; `minimal` may fail |
-| **task-012** | 20-message conversation history | `with_context_trim` may drop early context |
-| **task-013** | Ambiguous billing + account ticket | Stricter `task_pass` terms |
+| **task-001** | T-011 | Flaky `read_ticket` (2 failures) |
+| **task-002** | T-012 | 24+ message conversation history |
+| **task-003** | T-013 | Ambiguous billing + account |
+| **task-004** | T-014 | Two required `search_kb` calls |
+| **task-005** | T-015 | Flaky `search_kb` (2 failures) |
+| **task-006** | T-016 | SLA check + escalation (6 tools) |
 
-```bash
-# Include stress tasks (tasks 11–13 are the last three)
-harnesslab compare examples/ticket_triage \
-  --harness minimal,with_retry,with_context_trim \
-  --tasks 13 --local -o report.html
-```
+## Compare modes
 
-The HTML report now includes a **per-task breakdown** table below the summary averages.
+Use `--by` to choose the comparison dimension:
+
+| `--by` | Varies | Fixed |
+|---|---|---|
+| **`models`** (default) | Cheap models (`gpt-4.1-nano`, `gpt-4o-mini`, `gpt-3.5-turbo`) | Harness (`--harness minimal`) + stress tasks |
+| **`harness`** | Harness configs (comma-separated `--harness`) | Model (`HARNESSLAB_MODEL` in `.env`) + stress tasks |
+
+Filter to one ticket with `--task T-011`. Results are always saved locally under `.harnesslab/runs/` and optionally uploaded to LangSmith.
 
 ## Quick start
 
 ```bash
 cd harnesslab
-conda env create -f environment.yml   # creates env + pip install -e ".[dev]"
+conda env create -f environment.yml
 conda activate harnesslab
-
-# OR if env already exists:
-# conda activate harnesslab && pip install -e ".[dev]"
-
 cp .env.example .env
-# edit .env with your keys (this file is gitignored)
 
-# Local mode — no LangSmith upload, writes report.html
-harnesslab compare examples/ticket_triage --local --tasks 3 -o report.html
+# Compare cheap models on all stress tasks (local)
+harnesslab compare examples/ticket_triage --by models --local -o report.html
 
-# Full mode — uploads experiments to LangSmith (see dashboard above)
-harnesslab compare examples/ticket_triage \
-  --harness minimal,with_retry,with_context_trim \
-  --tasks 3 \
-  -o report.html
+# Single ticket, model comparison
+harnesslab compare examples/ticket_triage --by models --task T-011 --local
+
+# Compare harnesses on one model
+harnesslab compare examples/ticket_triage --by harness \
+  --harness minimal,with_retry,with_context_trim --local
+
+# LangSmith upload + local JSON archive
+harnesslab compare examples/ticket_triage --by models -o report.html
 ```
 
-Verify install:
-
 ```bash
-which python    # should point inside conda env
-which pytest    # same env as python
 pytest -q
 ```
 
 ## CLI
 
 ```bash
-harnesslab run examples/ticket_triage --harness minimal
-harnesslab compare examples/ticket_triage --harness minimal,with_retry --output report.html
-harnesslab compare examples/ticket_triage --local --tasks 2
-harnesslab dataset upload examples/ticket_triage --name harnesslab-ticket-triage
+harnesslab compare examples/ticket_triage --by models
+harnesslab compare examples/ticket_triage --by harness --harness minimal,with_retry
+harnesslab compare examples/ticket_triage --by models --task T-011
+harnesslab compare examples/ticket_triage --models gpt-4.1-nano,gpt-3.5-turbo
+harnesslab run examples/ticket_triage --harness minimal --task T-011
+harnesslab dataset upload examples/ticket_triage
 ```
 
 ## CI
@@ -249,7 +253,7 @@ harnesslab dataset upload examples/ticket_triage --name harnesslab-ticket-triage
 ```mermaid
 flowchart LR
     Push[push to main] --> Unit[pytest]
-    Unit --> Smoke[compare --local --tasks 2]
+    Unit --> Smoke[compare --by models --task T-011]
     Smoke --> Artifact[report.html artifact]
 ```
 
@@ -290,9 +294,11 @@ harnesslab/
 | `LANGSMITH_API_KEY` | yes (unless `--local`) | — |
 | `LANGSMITH_ENDPOINT` | yes for non-US accounts | `https://api.smith.langchain.com` |
 | `LANGSMITH_TRACING` | recommended | `true` |
-| `HARNESSLAB_MODEL` | no | `gpt-4o-mini` |
+| `HARNESSLAB_MODEL` | no | `gpt-4.1-nano` |
 
 Put these in a local `.env` file (gitignored) or export them in your shell.
+
+**Recommended for cheap harness testing:** `HARNESSLAB_MODEL=gpt-4.1-nano` (set in `.env.example`). It costs less than `gpt-4o-mini` for tool-use loops and produces more variability — wrong categories, skipped tools, and turn-limit hits — which makes harness A/B differences easier to see. Use `gpt-4o-mini` when you want a more capable baseline.
 
 If LangSmith returns **403 Forbidden**, your account is likely in a different region — set `LANGSMITH_ENDPOINT` to your regional API URL (e.g. `https://apac.api.smith.langchain.com` for APAC).
 

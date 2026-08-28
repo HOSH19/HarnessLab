@@ -6,15 +6,17 @@ Does not implement scorer logic; delegates to eval package.
 
 import os
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from agentevals.graph_trajectory.utils import extract_langgraph_trajectory_from_thread
 from langchain_core.messages import AIMessage, HumanMessage
 from langsmith import evaluate
 
 from harnesslab.config.env import disable_langsmith_tracing
+from harnesslab.config.model_catalog import DEFAULT_MODEL, model_slug
 
 from examples.ticket_triage.flaky import init_flaky_tools
 
@@ -31,6 +33,8 @@ from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.tasks import load_tasks
 from harnesslab.graph.extract import extract_fields_from_messages
 
+CompareDimension = Literal["harness", "models"]
+
 EVALUATORS = [
     task_pass,
     graph_trajectory,
@@ -40,6 +44,24 @@ EVALUATORS = [
     efficiency,
     failure_fingerprint,
 ]
+
+
+@contextmanager
+def use_model(model: str | None) -> Iterator[None]:
+    """Temporarily set HARNESSLAB_MODEL for one experiment arm."""
+    if model is None:
+        yield
+        return
+
+    previous = os.environ.get("HARNESSLAB_MODEL")
+    os.environ["HARNESSLAB_MODEL"] = model
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("HARNESSLAB_MODEL", None)
+        else:
+            os.environ["HARNESSLAB_MODEL"] = previous
 
 
 def _build_initial_messages(prompt: str, conversation_history: list[dict] | None) -> list:
@@ -56,17 +78,21 @@ def _build_initial_messages(prompt: str, conversation_history: list[dict] | None
     return messages
 
 
-def _invoke_config(harness: HarnessConfig) -> dict:
+def _invoke_config(harness: HarnessConfig, *, model: str | None = None) -> dict:
     """Build LangGraph invoke config with recursion limit and metadata."""
     project = harness.observability.langsmith_project or f"harnesslab-{harness.name}"
     os.environ["LANGSMITH_PROJECT"] = project
 
+    configurable: dict[str, Any] = {
+        "thread_id": str(uuid.uuid4()),
+        "harness_name": harness.name,
+        **harness.observability.trace_metadata,
+    }
+    if model:
+        configurable["model"] = model
+
     return {
-        "configurable": {
-            "thread_id": str(uuid.uuid4()),
-            "harness_name": harness.name,
-            **harness.observability.trace_metadata,
-        },
+        "configurable": configurable,
         "recursion_limit": harness.execution.max_turns,
     }
 
@@ -86,15 +112,7 @@ def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
 
 
 def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessConfig):
-    """Create a LangSmith-compatible target function for a harness variant.
-
-    Args:
-        graph_factory: Callable that returns a compiled graph for a harness.
-        harness: Harness configuration for this experiment arm.
-
-    Returns:
-        Function mapping dataset inputs to agent outputs.
-    """
+    """Create a LangSmith-compatible target function for a harness variant."""
     graph = graph_factory(harness)
 
     def target(inputs: dict) -> dict:
@@ -103,7 +121,8 @@ def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessC
         ticket_id = inputs.get("ticket_id", "")
         flaky_tools = inputs.get("flaky_tools")
         conversation_history = inputs.get("conversation_history")
-        config = _invoke_config(harness)
+        model = os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
+        config = _invoke_config(harness, model=model)
         if flaky_tools:
             config["configurable"]["flaky_tools"] = flaky_tools
         init_flaky_tools(flaky_tools)
@@ -122,6 +141,31 @@ def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessC
     return target
 
 
+def _resolve_data(
+    tasks_dir: Path,
+    *,
+    upload_results: bool,
+    dataset_name: str | None,
+    task_limit: int | None,
+    ticket_id: str | None,
+) -> Any:
+    """Build LangSmith evaluate data from local tasks or a remote dataset."""
+    if upload_results:
+        resolved_dataset = dataset_name or f"harnesslab-{tasks_dir.parent.name.replace('_', '-')}-stress"
+        ensure_dataset(
+            tasks_dir,
+            resolved_dataset,
+            task_limit=task_limit,
+            ticket_id=ticket_id,
+        )
+        return resolved_dataset
+
+    data = tasks_to_examples(load_tasks(tasks_dir, ticket_id=ticket_id))
+    if task_limit is not None:
+        data = data[:task_limit]
+    return data
+
+
 def run_experiment(
     graph_factory: Callable[[HarnessConfig], Any],
     harness: HarnessConfig,
@@ -130,42 +174,91 @@ def run_experiment(
     upload_results: bool = True,
     max_concurrency: int = 1,
     task_limit: int | None = None,
+    ticket_id: str | None = None,
     dataset_name: str | None = None,
+    model: str | None = None,
+    experiment_prefix: str | None = None,
 ) -> Any:
-    """Run a LangSmith evaluation experiment for one harness variant.
+    """Run a LangSmith evaluation experiment for one harness variant."""
+    prefix = experiment_prefix or f"harnesslab-{harness.name}"
+    metadata: dict[str, Any] = {"harness": harness.model_dump()}
+    if model:
+        metadata["model"] = model
+        prefix = f"{prefix}-{model_slug(model)}"
 
-    Args:
-        graph_factory: Callable that builds a compiled graph.
-        harness: Harness configuration for this arm.
-        tasks_dir: Directory with task JSON fixtures.
-        upload_results: Whether to upload results to LangSmith.
-        max_concurrency: Parallel evaluation limit.
-        task_limit: Optional cap on number of tasks to run.
-        dataset_name: LangSmith dataset name when upload_results is True.
+    with use_model(model):
+        data = _resolve_data(
+            tasks_dir,
+            upload_results=upload_results,
+            dataset_name=dataset_name,
+            task_limit=task_limit,
+            ticket_id=ticket_id,
+        )
+        target = make_target(graph_factory, harness)
 
-    Returns:
-        LangSmith experiment results object.
-    """
-    if upload_results:
-        resolved_dataset = dataset_name or f"harnesslab-{tasks_dir.parent.name.replace('_', '-')}"
-        ensure_dataset(tasks_dir, resolved_dataset, task_limit=task_limit)
-        data: Any = resolved_dataset
-    else:
-        data = tasks_to_examples(load_tasks(tasks_dir))
-        if task_limit is not None:
-            data = data[:task_limit]
+        if not upload_results:
+            disable_langsmith_tracing()
 
-    target = make_target(graph_factory, harness)
+        return evaluate(
+            target,
+            data=data,
+            evaluators=EVALUATORS,
+            experiment_prefix=prefix,
+            metadata=metadata,
+            upload_results=upload_results,
+            max_concurrency=max_concurrency,
+        )
 
-    if not upload_results:
-        disable_langsmith_tracing()
 
-    return evaluate(
-        target,
-        data=data,
-        evaluators=EVALUATORS,
-        experiment_prefix=f"harnesslab-{harness.name}",
-        metadata={"harness": harness.model_dump()},
-        upload_results=upload_results,
-        max_concurrency=max_concurrency,
-    )
+def run_comparison(
+    graph_factory: Callable[[HarnessConfig], Any],
+    harness_dir: Path,
+    tasks_dir: Path,
+    all_configs: dict[str, HarnessConfig],
+    *,
+    compare_by: CompareDimension,
+    harness_names: list[str],
+    model_names: list[str],
+    upload_results: bool = True,
+    task_limit: int | None = None,
+    ticket_id: str | None = None,
+    dataset_name: str | None = None,
+) -> dict[str, list]:
+    """Run a comparison across harnesses or models."""
+    comparisons: dict[str, list] = {}
+
+    if compare_by == "models":
+        if len(harness_names) != 1:
+            raise ValueError("Model comparisons require exactly one --harness value.")
+        harness = all_configs[harness_names[0]]
+        for model in model_names:
+            results = run_experiment(
+                graph_factory,
+                harness,
+                tasks_dir,
+                upload_results=upload_results,
+                task_limit=task_limit,
+                ticket_id=ticket_id,
+                dataset_name=dataset_name,
+                model=model,
+            )
+            comparisons[model] = list(results)
+        return comparisons
+
+    fixed_model = os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
+    for name in harness_names:
+        if name not in all_configs:
+            raise ValueError(f"Unknown harness: {name}")
+        with use_model(fixed_model):
+            results = run_experiment(
+                graph_factory,
+                all_configs[name],
+                tasks_dir,
+                upload_results=upload_results,
+                task_limit=task_limit,
+                ticket_id=ticket_id,
+                dataset_name=dataset_name,
+                model=fixed_model,
+            )
+        comparisons[name] = list(results)
+    return comparisons

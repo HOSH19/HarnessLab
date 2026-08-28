@@ -1,8 +1,14 @@
 {
-  "task_id": "task-005",
-  "ticket_id": "T-005",
-  "prompt": "Triage ticket T-005",
-  "expected_category": "account",
-  "required_reply_terms": ["2fa", "authenticator"],
-  "expected_nodes": ["agent", "tools"]
+  "task_id": "task-015",
+  "ticket_id": "T-015",
+  "prompt": "Triage ticket T-015",
+  "flaky_tools": {
+    "search_kb": 2
+  },
+  "stress": true,
+  "max_acceptable_errors": 2,
+  "expected_category": "technical",
+  "required_reply_terms": ["ssl", "certificate"],
+  "expected_nodes": ["agent", "tools"],
+  "expected_tools": ["read_ticket", "search_kb", "classify", "draft_reply"]
 }

@@ -7,28 +7,31 @@ live here; harness middleware is applied by graph.builder.
 import os
 
 from langchain_core.messages import SystemMessage
+from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
 
-from langchain_core.runnables import RunnableConfig
-
 from examples.ticket_triage.tools import TOOLS
+from harnesslab.config.model_catalog import DEFAULT_MODEL
 from harnesslab.graph.state import AgentState
 
 SYSTEM_PROMPT = """You are a support ticket triage agent.
 
 For each ticket:
 1. read_ticket to fetch details
-2. search_kb with keywords from the ticket
+2. search_kb with keywords from the ticket (search again with different terms if multiple topics apply)
 3. classify into account, billing, or technical
 4. draft_reply referencing relevant KB guidance
 
-Use tools in that order. Be concise."""
+For priority or SLA-sensitive tickets, call check_sla before classifying.
+Escalate with escalate_ticket when the SLA is at risk or the issue is severe.
+
+Use tools in that order when applicable. Be concise."""
 
 
 def _model() -> ChatOpenAI:
     """Create the chat model from environment configuration."""
-    model_name = os.getenv("HARNESSLAB_MODEL", "gpt-4o-mini")
+    model_name = os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
     return ChatOpenAI(model=model_name, temperature=0)
 
 

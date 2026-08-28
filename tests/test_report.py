@@ -37,10 +37,17 @@ def test_render_comparison_html_includes_harness_names() -> None:
     assert "Per-task breakdown" in html
 
 
+def test_render_comparison_html_supports_model_dimension() -> None:
+    """Report HTML uses the requested comparison dimension label."""
+    html = render_comparison_html({"gpt-4.1-nano": []}, dimension="Model")
+    assert "Model Comparison" in html
+    assert "gpt-4.1-nano" in html
+
+
 def test_render_comparison_html_includes_per_task_rows() -> None:
-    """Per-task section lists harness, task, and parsed efficiency metrics."""
+    """Per-task section lists arm, task, and parsed efficiency metrics."""
     row = _FakeRow(
-        "T-001",
+        "T-011",
         {
             "task_pass": 1.0,
             "tool_sequence": 1.0,
@@ -51,7 +58,7 @@ def test_render_comparison_html_includes_per_task_rows() -> None:
         {"efficiency": "latency_ms=1200, tokens=500, steps=6"},
     )
     html = render_comparison_html({"minimal": [row]})
-    assert "T-001" in html
+    assert "T-011" in html
     assert "1200" in html
     assert "500" in html
     assert "0.80" in html

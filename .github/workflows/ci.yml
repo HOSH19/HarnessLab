@@ -45,8 +45,9 @@ jobs:
           LANGSMITH_TRACING: "false"
         run: |
           harnesslab compare examples/ticket_triage \
-            --harness minimal \
-            --tasks 2 \
+            --by models \
+            --task T-011 \
+            --models gpt-4.1-nano,gpt-4o-mini \
             --local \
             --output report.html
 

@@ -77,6 +77,26 @@
       "subject": "Charge on wrong account after merge",
       "body": "After merging work account 5502 into personal account 5501, a $49.99 subscription charge appeared on 5501 instead of 5502. I need this billing dispute resolved and the accounts untangled.",
       "expected_category": "billing"
+    },
+    {
+      "id": "T-014",
+      "subject": "Webhook failures after database migration",
+      "body": "Since migrating to the new database cluster yesterday, invoice webhooks stopped firing and we're seeing DB-504 errors in logs. Need both webhook delivery and database connectivity guidance.",
+      "expected_category": "technical"
+    },
+    {
+      "id": "T-015",
+      "subject": "SSL certificate expired",
+      "body": "Browser shows certificate expired error when accessing our custom domain dashboard. Started this morning.",
+      "expected_category": "technical"
+    },
+    {
+      "id": "T-016",
+      "subject": "Production API outage - enterprise SLA",
+      "body": "Our enterprise API has been down since 2am with 503 errors across all regions. SLA tier is priority with 4-hour response. Request immediate escalation to engineering on-call.",
+      "expected_category": "technical",
+      "sla_tier": "priority",
+      "sla_deadline_hours": 4
     }
   ],
   "kb": [
@@ -144,6 +164,26 @@
       "id": "KB-013",
       "title": "Merged account billing disputes",
       "content": "When work and personal accounts are merged, charges may post to the surviving account. Provide both account IDs and dispute the charge for reallocation."
+    },
+    {
+      "id": "KB-014",
+      "title": "Webhook delivery failures",
+      "content": "Verify webhook endpoint URL, retry queue, and signing secret. Check delivery logs under Developer > Webhooks > Events."
+    },
+    {
+      "id": "KB-015",
+      "title": "Database migration connection issues",
+      "content": "After cluster migration, update connection strings and verify pool settings. DB-504 indicates pool exhaustion — restart app servers and scale replicas."
+    },
+    {
+      "id": "KB-016",
+      "title": "SSL certificate renewal",
+      "content": "Custom domain SSL certificates renew automatically. If expired, re-verify domain ownership under Settings > Domains > SSL."
+    },
+    {
+      "id": "KB-017",
+      "title": "API outage escalation",
+      "content": "For regional 503 outages on priority SLA accounts, escalate to engineering on-call and reference status page incident ID."
     }
   ]
 }
