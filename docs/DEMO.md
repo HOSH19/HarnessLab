@@ -1,6 +1,6 @@
 # HarnessLab Demo
 
-Example output from a local smoke run.
+Example output from a local compare run (default: 2 harnesses × 2 tasks).
 
 ## Command
 
@@ -35,9 +35,9 @@ Report written to /path/to/report.html
 
 Scores vary by model and API latency. The comparison table is the primary artifact.
 
-## CI smoke
+## CI compare
 
-GitHub Actions runs the same smoke command on `main` pushes:
+GitHub Actions runs a single-task local compare on `main` pushes:
 
 ```bash
 harnesslab compare examples/ticket_triage --harness minimal --tasks 2 --local

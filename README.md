@@ -61,25 +61,31 @@ Trace for ticket **T-015** under the `trim` harness: `trim_context` → `agent` 
 
 ## Compare modes
 
-Both modes run the **same stress tasks** (all 6 by default, or filter with `--task`, `--tasks`, `--smoke`).
+Both modes run the **same stress tasks** (2 by default, or filter with `--task` / `--tasks`).
 
-| `--by` | What varies | What stays fixed | Example |
+| `--by` | What varies | What stays fixed | Default run |
 |---|---|---|---|
-| **`harness`** (default) | Harness YAML (`minimal`, `retry`, `trim`) | Model from `HARNESSLAB_MODEL` | 3 harnesses × 1 model |
-| **`models`** | Cheap models (`nano`, `mini`, `turbo`) | Single `--harness` (default `minimal`) | 3 models × 1 harness |
+| **`harness`** | Harness YAML (`minimal`, `retry`) | Model from `HARNESSLAB_MODEL` | 2 harnesses × 2 tasks |
+| **`models`** | Cheap models (`nano`, `mini`, `turbo`) | Single `--harness` (default `minimal`) | 3 models × 2 tasks |
 
-Default model compare arms: `gpt-4.1-nano`, `gpt-4.1-mini`, `gpt-3.5-turbo` (all cheaper than `gpt-4o-mini`). Override with `--models nano,mini`.
+Default model compare arms: `gpt-4.1-nano`, `gpt-4.1-mini`, `gpt-3.5-turbo`. Override with `--models nano,mini`.
+
+Full stress suite (6 tasks, all harnesses):
+
+```bash
+harnesslab compare examples/ticket_triage --harness minimal,retry,trim --tasks 6 -o report.html
+```
 
 ```bash
 cd harnesslab
 conda env create -f environment.yml && conda activate harnesslab
 cp .env.example .env   # set OPENAI_API_KEY, LANGSMITH_API_KEY
 
-# Harness compare (local)
+# Harness compare (local) — default 2 harnesses × 2 tasks
 harnesslab compare examples/ticket_triage --local -o report.html
 
-# Low-trace LangSmith upload (2 harnesses × 2 tasks)
-harnesslab compare examples/ticket_triage --smoke -o report.html
+# LangSmith upload (same default)
+harnesslab compare examples/ticket_triage -o report.html
 
 # Cheapest LangSmith upload (1 harness × 1 task)
 harnesslab compare examples/ticket_triage --task T-011 -o report.html
@@ -108,11 +114,11 @@ LangSmith counts **every span** (each `agent`, `tools`, and `ChatOpenAI` node), 
 | Goal | Command | Approx. top-level runs |
 |---|---|---|
 | Dev / free | `--local` | 0 LangSmith traces |
-| Cheapest upload | `--task T-011` | 3 experiments × 1 task |
-| Balanced smoke | `--smoke` | 2 harnesses × 2 tasks |
-| Full stress suite | default | 3 harnesses × 6 tasks |
+| Cheapest upload | `--task T-011` | 2 experiments × 1 task |
+| Default upload | (no flags) | 2 harnesses × 2 tasks |
+| Full stress suite | `--harness minimal,retry,trim --tasks 6` | 3 harnesses × 6 tasks |
 
-Use `--local` while iterating; upload with `--smoke` or `--task` when you need the LangSmith dashboard.
+Use `--local` while iterating; upload with the default compare or `--task` when you need the LangSmith dashboard.
 
 ## License
 

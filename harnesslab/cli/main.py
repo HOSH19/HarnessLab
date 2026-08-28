@@ -35,6 +35,9 @@ app = typer.Typer(
 
 CompareBy = Literal["harness", "models"]
 
+DEFAULT_COMPARE_HARNESSES = "minimal,retry"
+DEFAULT_TASK_LIMIT = 2
+
 
 def _bootstrap_env(*, local: bool, example: Path | None = None) -> None:
     """Load .env and disable LangSmith uploads for local-only commands."""
@@ -59,20 +62,11 @@ def _example_paths(example: Path) -> tuple[Path, Path]:
     return harness_dir, tasks_dir
 
 
-def _apply_smoke_limits(
-    *,
-    smoke: bool,
-    compare_by: CompareBy,
-    harness: str,
-    tasks: int | None,
-    task: str | None,
-) -> tuple[str, int | None, str | None]:
-    """Cap harness arms and tasks for low LangSmith trace usage."""
-    if not smoke or task is not None:
-        return harness, tasks, task
-    limited_harness = "minimal,retry" if compare_by == "harness" else harness
-    limited_tasks = tasks if tasks is not None else 2
-    return limited_harness, limited_tasks, task
+def _resolve_task_limit(tasks: int | None, task: str | None) -> int | None:
+    """Return task cap; single-ticket runs ignore the default limit."""
+    if task is not None:
+        return tasks
+    return DEFAULT_TASK_LIMIT if tasks is None else tasks
 
 
 def _compare_metadata(
@@ -87,7 +81,6 @@ def _compare_metadata(
     tasks: int | None,
     ticket_id: str | None,
     model: str | None = None,
-    smoke: bool = False,
 ) -> dict:
     """Build metadata persisted alongside local experiment results."""
     return {
@@ -97,7 +90,6 @@ def _compare_metadata(
         "harness": harness,
         "models": models,
         "langsmith_mode": not local,
-        "smoke": smoke,
         "task_count": task_count,
         "tasks_limit": tasks,
         "ticket_id": ticket_id,
@@ -110,13 +102,12 @@ def run_command(
     example: Path = typer.Argument(..., help="Path to example project"),
     harness: str = typer.Option(..., "--harness", "-h", help="Harness config name"),
     local: bool = typer.Option(False, "--local", help="Skip LangSmith upload"),
-    tasks: int | None = typer.Option(None, "--tasks", help="Limit number of tasks"),
-    task: str | None = typer.Option(None, "--task", help="Single ticket id (e.g. T-011)"),
-    smoke: bool = typer.Option(
-        False,
-        "--smoke",
-        help="Low-trace LangSmith run: 2 harness arms and 2 tasks (ignored if --task is set)",
+    tasks: int | None = typer.Option(
+        None,
+        "--tasks",
+        help=f"Limit number of tasks (default: {DEFAULT_TASK_LIMIT}; ignored when --task is set)",
     ),
+    task: str | None = typer.Option(None, "--task", help="Single ticket id (e.g. T-011)"),
     model: str | None = typer.Option(None, "--model", help="Model override for this run"),
     runs_dir: Path = typer.Option(Path(".harnesslab/runs"), "--runs-dir", help="Local results directory"),
 ) -> None:
@@ -128,15 +119,8 @@ def run_command(
         except LangSmithConfigError as exc:
             raise typer.BadParameter(str(exc)) from exc
 
-    _, tasks_limit, ticket_id = _apply_smoke_limits(
-        smoke=smoke,
-        compare_by="harness",
-        harness=harness,
-        tasks=tasks,
-        task=task,
-    )
-    if smoke and task is None and tasks is None:
-        console.print("[dim]Smoke mode: limiting to 2 tasks[/dim]")
+    tasks_limit = _resolve_task_limit(tasks, task)
+    ticket_id = task
 
     harness_dir, tasks_dir = _example_paths(example)
     config = load_harness_config(harness_dir / f"{harness}.yaml")
@@ -168,7 +152,6 @@ def run_command(
             task_count=len(rows),
             tasks=tasks_limit,
             ticket_id=ticket_id,
-            smoke=smoke,
         ),
     )
     console.print(f"[green]Completed {len(rows)} task(s)[/green]")
@@ -184,7 +167,7 @@ def compare_command(
         help="Compare across harnesses (same model) or models (same harness)",
     ),
     harness: str = typer.Option(
-        "minimal,retry,trim",
+        DEFAULT_COMPARE_HARNESSES,
         "--harness",
         help="Harness name(s); comma-separated when --by harness, single value when --by models",
     ),
@@ -195,17 +178,16 @@ def compare_command(
     ),
     output: Path = typer.Option(Path("report.html"), "--output", "-o"),
     local: bool = typer.Option(False, "--local", help="Skip LangSmith upload"),
-    tasks: int | None = typer.Option(None, "--tasks", help="Limit number of stress tasks"),
+    tasks: int | None = typer.Option(
+        None,
+        "--tasks",
+        help=f"Limit number of stress tasks (default: {DEFAULT_TASK_LIMIT}; ignored when --task is set)",
+    ),
     task: str | None = typer.Option(None, "--task", help="Single ticket id (e.g. T-011)"),
     model: str | None = typer.Option(
         None,
         "--model",
         help="Model override (default: HARNESSLAB_MODEL from .env)",
-    ),
-    smoke: bool = typer.Option(
-        False,
-        "--smoke",
-        help="Low-trace LangSmith run: 2 harness arms and 2 tasks (ignored if --task is set)",
     ),
     runs_dir: Path = typer.Option(Path(".harnesslab/runs"), "--runs-dir", help="Local results directory"),
 ) -> None:
@@ -217,19 +199,8 @@ def compare_command(
         except LangSmithConfigError as exc:
             raise typer.BadParameter(str(exc)) from exc
 
-    harness, tasks_limit, ticket_id = _apply_smoke_limits(
-        smoke=smoke,
-        compare_by=compare_by,
-        harness=harness,
-        tasks=tasks,
-        task=task,
-    )
-    if smoke and task is None:
-        console.print(
-            "[dim]Smoke mode: "
-            + ("2 harness arms (minimal, retry), 2 tasks" if compare_by == "harness" else "2 tasks")
-            + "[/dim]"
-        )
+    tasks_limit = _resolve_task_limit(tasks, task)
+    ticket_id = task
 
     harness_dir, tasks_dir = _example_paths(example)
     all_configs = load_harness_dir(harness_dir)
@@ -285,7 +256,6 @@ def compare_command(
             tasks=tasks_limit,
             ticket_id=ticket_id,
             model=model_names[0] if compare_by == "harness" else None,
-            smoke=smoke,
         ),
     )
     console.print(f"[green]Report written to {report_path}[/green]")

@@ -1,31 +1,25 @@
 """CLI helper tests."""
 
-from harnesslab.cli.main import _apply_smoke_limits
+from harnesslab.cli.main import DEFAULT_COMPARE_HARNESSES, DEFAULT_TASK_LIMIT, _resolve_task_limit
 
 
-def test_smoke_limits_harness_compare_to_two_arms_and_tasks() -> None:
-    """Smoke mode caps harness compare to minimal/retry and two tasks."""
-    harness, tasks, task = _apply_smoke_limits(
-        smoke=True,
-        compare_by="harness",
-        harness="minimal,retry,trim",
-        tasks=None,
-        task=None,
-    )
-    assert harness == "minimal,retry"
-    assert tasks == 2
-    assert task is None
+def test_default_task_limit_is_two() -> None:
+    """Compare runs default to two stress tasks."""
+    assert _resolve_task_limit(None, None) == DEFAULT_TASK_LIMIT
+    assert DEFAULT_TASK_LIMIT == 2
 
 
-def test_smoke_respects_explicit_task_filter() -> None:
-    """A single --task filter is already minimal and should not be overridden."""
-    harness, tasks, task = _apply_smoke_limits(
-        smoke=True,
-        compare_by="harness",
-        harness="minimal,retry,trim",
-        tasks=None,
-        task="T-011",
-    )
-    assert harness == "minimal,retry,trim"
-    assert tasks is None
-    assert task == "T-011"
+def test_single_task_filter_ignores_default_limit() -> None:
+    """A --task filter runs one ticket without applying the task cap."""
+    assert _resolve_task_limit(None, "T-011") is None
+    assert _resolve_task_limit(6, "T-011") == 6
+
+
+def test_explicit_tasks_override_default() -> None:
+    """--tasks overrides the default cap when no ticket filter is set."""
+    assert _resolve_task_limit(6, None) == 6
+
+
+def test_default_compare_harnesses_are_minimal_and_retry() -> None:
+    """Harness compare defaults to minimal and retry arms."""
+    assert DEFAULT_COMPARE_HARNESSES == "minimal,retry"
