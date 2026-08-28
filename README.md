@@ -21,8 +21,11 @@ flowchart LR
 
 ```bash
 cd harnesslab
-conda create -n harnesslab python=3.11 -y && conda activate harnesslab
-pip install -e ".[dev]"
+conda env create -f environment.yml   # creates env + pip install -e ".[dev]"
+conda activate harnesslab
+
+# OR if env already exists:
+# conda activate harnesslab && pip install -e ".[dev]"
 
 cp .env.example .env
 # edit .env with your keys (this file is gitignored)
@@ -30,12 +33,12 @@ cp .env.example .env
 harnesslab compare examples/ticket_triage --local --tasks 2 -o report.html
 ```
 
-Or with `venv`:
+Verify install:
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
-cp .env.example .env
+which python    # should point inside conda env, not /Library/Frameworks/...
+which pytest    # same env as python
+pytest -q       # expect: 8 passed
 ```
 
 ## Architecture
