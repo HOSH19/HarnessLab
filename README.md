@@ -2,14 +2,17 @@
 
 [![CI](https://github.com/HOSH19/HarnessLab/actions/workflows/ci.yml/badge.svg)](https://github.com/HOSH19/HarnessLab/actions/workflows/ci.yml)
 
-> Declare harness variants as YAML. Run LangGraph A/B experiments. Score with LangSmith.
+HarnessLab is a small framework for **A/B testing agent harnesses** — the infrastructure around an LLM agent (retries, context limits, turn caps) rather than the agent logic itself. You declare harness variants as YAML, run the same LangGraph agent under each one, score outcomes with LangSmith evaluators, and compare results side by side.
 
-See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for phased delivery, scope, and architecture boundaries.
-See [docs/DEMO.md](docs/DEMO.md) for example terminal output and report preview.
+The demo is a support **ticket triage agent**: read a ticket, search the knowledge base, classify it, and draft a reply. Three harness configs (`minimal`, `with_retry`, `with_context_trim`) wrap the same graph with different middleware so you can see whether infrastructure choices actually matter.
+
+See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for phased delivery notes and [docs/DEMO.md](docs/DEMO.md) for a local run walkthrough.
+
+## How it works
 
 ```mermaid
 flowchart LR
-    YAML[harnesses/*.yaml] --> Builder[graph_builder]
+    YAML[harnesses/*.yaml] --> Builder[graph builder]
     Graph[LangGraph agent] --> Builder
     Builder --> Run[invoke per task]
     Run --> LS[LangSmith traces]
@@ -17,29 +20,27 @@ flowchart LR
     Eval --> Report[HTML report]
 ```
 
-## Quick start
+1. **Harness YAML** defines execution limits, tool retry policy, and context trimming.
+2. **Graph builder** compiles the LangGraph agent with the selected middleware.
+3. **Runner** invokes the agent on each task and records traces in LangSmith.
+4. **Evaluators** score every run (correctness, trajectory, efficiency, failure type).
+5. **Compare** aggregates scores across harness variants into an HTML report.
 
-```bash
-cd harnesslab
-conda env create -f environment.yml   # creates env + pip install -e ".[dev]"
-conda activate harnesslab
+## LangSmith dashboard
 
-# OR if env already exists:
-# conda activate harnesslab && pip install -e ".[dev]"
+When you run `compare` without `--local`, LangSmith hosts the full experiment view. The screenshot below shows three experiments on the `harnesslab-ticket-triage` dataset — one per harness variant.
 
-cp .env.example .env
-# edit .env with your keys (this file is gitignored)
+![LangSmith experiment comparison for harnesslab-ticket-triage](docs/images/langsmith-dashboard.png)
 
-harnesslab compare examples/ticket_triage --local --tasks 2 -o report.html
-```
+| UI area | What it shows |
+|---|---|
+| **Experiments tab** | All runs for this dataset. Each row is one harness variant (`harnesslab-minimal`, `with_retry`, `with_context_trim`). |
+| **Feedback chart** | Average evaluator scores per experiment. Here `task_pass` ≈ 0.67 (2 of 3 tasks correct); the other metrics are 1.0 because the agent completed without errors. |
+| **Latency chart** | P50 and P99 response time per harness. `with_context_trim` is fastest here — trimming history reduced round-trip time even though correctness was unchanged. |
+| **Tokens chart** | Input/output token usage per experiment — useful for spotting harnesses that bloat context. |
+| **Experiment table** | Click any row to drill into individual task runs, full message traces, tool calls, and per-evaluator comments. |
 
-Verify install:
-
-```bash
-which python    # should point inside conda env, not /Library/Frameworks/...
-which pytest    # same env as python
-pytest -q       # expect: 8 passed
-```
+The local `report.html` is a summary table. **LangSmith is where the detail lives** — per-run traces, node-by-node graph execution, and evaluator breakdowns.
 
 ## Architecture
 
@@ -92,6 +93,8 @@ sequenceDiagram
 
 ## Example agent
 
+The ticket triage agent is a simple LangGraph loop: the LLM calls tools until it has classified the ticket and drafted a reply.
+
 ```mermaid
 flowchart LR
     Start([start]) --> Trim{history_limit?}
@@ -131,12 +134,43 @@ flowchart LR
     FF --> Score
 ```
 
-| Evaluator | Type | Measures |
-|---|---|---|
-| `task_pass` | deterministic | correct category + reply terms |
-| `graph_trajectory` | deterministic | expected graph nodes in order |
-| `efficiency` | deterministic | latency, tokens, steps |
-| `failure_fingerprint` | deterministic | TIMEOUT / TOOL_ERROR / WRONG_ANSWER / SUCCESS |
+| Evaluator | Measures |
+|---|---|
+| `task_pass` | Correct category + required reply terms |
+| `graph_trajectory` | Expected graph nodes appear in order |
+| `efficiency` | Latency, tokens, step count |
+| `failure_fingerprint` | TIMEOUT / TOOL_ERROR / WRONG_ANSWER / SUCCESS |
+
+## Quick start
+
+```bash
+cd harnesslab
+conda env create -f environment.yml   # creates env + pip install -e ".[dev]"
+conda activate harnesslab
+
+# OR if env already exists:
+# conda activate harnesslab && pip install -e ".[dev]"
+
+cp .env.example .env
+# edit .env with your keys (this file is gitignored)
+
+# Local mode — no LangSmith upload, writes report.html
+harnesslab compare examples/ticket_triage --local --tasks 3 -o report.html
+
+# Full mode — uploads experiments to LangSmith (see dashboard above)
+harnesslab compare examples/ticket_triage \
+  --harness minimal,with_retry,with_context_trim \
+  --tasks 3 \
+  -o report.html
+```
+
+Verify install:
+
+```bash
+which python    # should point inside conda env
+which pytest    # same env as python
+pytest -q
+```
 
 ## CLI
 
@@ -163,73 +197,6 @@ flowchart LR
 
 Add `OPENAI_API_KEY` under **Settings → Secrets and variables → Actions** to enable the smoke job.
 
-## Demo output
-
-```text
-Evaluating harness: minimal
-Evaluating harness: with_retry
-Report written to report.html
-```
-
-| Harness | task_pass | graph_trajectory | efficiency | failure_fingerprint |
-|---|---|---|---|---|
-| minimal | varies | varies | varies | varies |
-| with_retry | varies | varies | varies | varies |
-
-Full example: [docs/DEMO.md](docs/DEMO.md)
-
-## In scope (v0.1)
-
-```mermaid
-mindmap
-  root((HarnessLab v0.1))
-    Harness layers
-      max_turns
-      tool retry
-      context trim
-    Runtime
-      LangGraph StateGraph
-      MemorySaver checkpointer
-    Observability
-      LangSmith tracing
-      LangSmith evaluate
-    Evaluators
-      task_pass
-      graph_trajectory
-      efficiency
-      failure_fingerprint
-    Demo
-      ticket triage agent
-      3 harness YAML configs
-      10 task fixtures
-    Output
-      HTML comparison table
-      CLI run and compare
-```
-
-## Out of scope (v0.1)
-
-```mermaid
-mindmap
-  root((Not in v0.1))
-    Deferred middleware
-      verification middleware
-      LLM summarization
-    Deferred runtime
-      human in the loop
-      persistent memory
-    Deferred evals
-      graph trajectory LLM judge
-    Excluded integrations
-      Langfuse
-    Excluded orchestration
-      multi agent orchestration
-    Excluded tooling
-      harnesslab init scaffolder
-      charting libraries
-      production sandboxing
-```
-
 ## Project layout
 
 ```
@@ -248,6 +215,7 @@ harnesslab/
 │   ├── harnesses/      # YAML variants
 │   ├── tasks/          # eval fixtures
 │   └── fixtures/       # mock data
+├── docs/images/        # README screenshots
 └── tests/
 ```
 
@@ -257,10 +225,14 @@ harnesslab/
 |---|---|---|
 | `OPENAI_API_KEY` | yes | — |
 | `LANGSMITH_API_KEY` | yes (unless `--local`) | — |
+| `LANGSMITH_ENDPOINT` | yes for non-US accounts | `https://api.smith.langchain.com` |
 | `LANGSMITH_TRACING` | recommended | `true` |
 | `HARNESSLAB_MODEL` | no | `gpt-4o-mini` |
 
 Put these in a local `.env` file (gitignored) or export them in your shell.
+
+If LangSmith returns **403 Forbidden**, your account is likely in a different region — set `LANGSMITH_ENDPOINT` to your regional API URL (e.g. `https://apac.api.smith.langchain.com` for APAC).
+
 GitHub Actions uses repository secrets instead of `.env`.
 
 ## Research context

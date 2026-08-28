@@ -14,11 +14,14 @@ from agentevals.graph_trajectory.utils import extract_langgraph_trajectory_from_
 from langchain_core.messages import HumanMessage
 from langsmith import evaluate
 
+from harnesslab.config.env import disable_langsmith_tracing
+
 from harnesslab.config.models import HarnessConfig
 from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.fingerprint import failure_fingerprint
 from harnesslab.eval.outcome import task_pass
 from harnesslab.eval.trajectory import graph_trajectory
+from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.tasks import load_tasks
 from harnesslab.graph.extract import extract_fields_from_messages
@@ -95,6 +98,7 @@ def run_experiment(
     upload_results: bool = True,
     max_concurrency: int = 1,
     task_limit: int | None = None,
+    dataset_name: str | None = None,
 ) -> Any:
     """Run a LangSmith evaluation experiment for one harness variant.
 
@@ -105,15 +109,24 @@ def run_experiment(
         upload_results: Whether to upload results to LangSmith.
         max_concurrency: Parallel evaluation limit.
         task_limit: Optional cap on number of tasks to run.
+        dataset_name: LangSmith dataset name when upload_results is True.
 
     Returns:
         LangSmith experiment results object.
     """
-    data = tasks_to_examples(load_tasks(tasks_dir))
-    if task_limit is not None:
-        data = data[:task_limit]
+    if upload_results:
+        resolved_dataset = dataset_name or f"harnesslab-{tasks_dir.parent.name.replace('_', '-')}"
+        ensure_dataset(tasks_dir, resolved_dataset, task_limit=task_limit)
+        data: Any = resolved_dataset
+    else:
+        data = tasks_to_examples(load_tasks(tasks_dir))
+        if task_limit is not None:
+            data = data[:task_limit]
 
     target = make_target(graph_factory, harness)
+
+    if not upload_results:
+        disable_langsmith_tracing()
 
     return evaluate(
         target,

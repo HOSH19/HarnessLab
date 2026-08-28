@@ -6,6 +6,8 @@ Does not invoke models or re-run agents.
 
 from langsmith.schemas import Example, Run
 
+from harnesslab.eval.run_metrics import run_child_count, run_latency_seconds, run_total_tokens
+
 
 def efficiency(run: Run, example: Example) -> dict:
     """Score agent efficiency from run metadata.
@@ -18,9 +20,9 @@ def efficiency(run: Run, example: Example) -> dict:
         Dict with normalized efficiency score and metadata comment.
     """
     _ = example
-    latency_ms = (run.total_time or 0) * 1000
-    tokens = (run.total_tokens or 0)
-    child_count = len(run.child_runs or [])
+    latency_ms = run_latency_seconds(run) * 1000
+    tokens = run_total_tokens(run)
+    child_count = run_child_count(run)
 
     score = 1.0
     if latency_ms > 30_000:

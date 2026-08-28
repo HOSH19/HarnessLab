@@ -9,9 +9,12 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
-from harnesslab.config.env import load_local_env
-
-load_local_env()
+from harnesslab.config.env import (
+    LangSmithConfigError,
+    disable_langsmith_tracing,
+    load_local_env,
+    validate_langsmith_upload_config,
+)
 
 from examples.ticket_triage.graph import build_ticket_triage_graph
 from harnesslab.config.loader import load_harness_config, load_harness_dir
@@ -25,6 +28,20 @@ app = typer.Typer(
     help="Harness A/B experimentation for LangGraph agents.",
     no_args_is_help=True,
 )
+
+
+def _bootstrap_env(*, local: bool) -> None:
+    """Load .env and disable LangSmith uploads for local-only commands."""
+    if local:
+        disable_langsmith_tracing()
+    load_local_env()
+    if local:
+        disable_langsmith_tracing()
+
+
+def _default_dataset_name(example: Path) -> str:
+    """Derive a stable LangSmith dataset name from an example directory."""
+    return f"harnesslab-{example.name.replace('_', '-')}"
 
 
 def _example_paths(example: Path) -> tuple[Path, Path]:
@@ -44,6 +61,13 @@ def run_command(
     tasks: int | None = typer.Option(None, "--tasks", help="Limit number of tasks"),
 ) -> None:
     """Run one harness variant against all tasks in an example."""
+    _bootstrap_env(local=local)
+    if not local:
+        try:
+            validate_langsmith_upload_config()
+        except LangSmithConfigError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+
     harness_dir, tasks_dir = _example_paths(example)
     config = load_harness_config(harness_dir / f"{harness}.yaml")
 
@@ -54,6 +78,7 @@ def run_command(
         tasks_dir,
         upload_results=not local,
         task_limit=tasks,
+        dataset_name=_default_dataset_name(example),
     )
     rows = list(results)
     console.print(f"[green]Completed {len(rows)} task(s)[/green]")
@@ -72,6 +97,13 @@ def compare_command(
     tasks: int | None = typer.Option(None, "--tasks", help="Limit number of tasks"),
 ) -> None:
     """Compare multiple harness variants and write an HTML report."""
+    _bootstrap_env(local=local)
+    if not local:
+        try:
+            validate_langsmith_upload_config()
+        except LangSmithConfigError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+
     harness_dir, tasks_dir = _example_paths(example)
     all_configs = load_harness_dir(harness_dir)
     names = [name.strip() for name in harnesses.split(",") if name.strip()]
@@ -87,6 +119,7 @@ def compare_command(
             tasks_dir,
             upload_results=not local,
             task_limit=tasks,
+            dataset_name=_default_dataset_name(example),
         )
         comparisons[name] = list(results)
 
@@ -100,6 +133,8 @@ def dataset_command(
     name: str = typer.Option("harnesslab-ticket-triage", "--name", help="Dataset name"),
 ) -> None:
     """Upload task fixtures to a LangSmith dataset."""
+    load_local_env()
+
     _, tasks_dir = _example_paths(example)
     dataset_name = upload_dataset(tasks_dir, name)
     console.print(f"[green]Uploaded dataset: {dataset_name}[/green]")
