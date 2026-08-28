@@ -87,6 +87,9 @@ harnesslab compare examples/ticket_triage --local -o report.html
 # LangSmith upload (same default)
 harnesslab compare examples/ticket_triage -o report.html
 
+# New LangSmith dataset (experiments stay short: minimal-*, retry-*)
+harnesslab compare examples/ticket_triage --dataset triage-v2 -o report.html
+
 # Cheapest LangSmith upload (1 harness × 1 task)
 harnesslab compare examples/ticket_triage --task T-011 -o report.html
 

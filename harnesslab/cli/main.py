@@ -69,6 +69,13 @@ def _resolve_task_limit(tasks: int | None, task: str | None) -> int | None:
     return DEFAULT_TASK_LIMIT if tasks is None else tasks
 
 
+def _resolve_dataset_name(example: Path, dataset: str | None) -> str:
+    """Return explicit dataset name or the example-derived default."""
+    if dataset and dataset.strip():
+        return dataset.strip()
+    return _default_dataset_name(example)
+
+
 def _compare_metadata(
     *,
     example: Path,
@@ -81,7 +88,7 @@ def _compare_metadata(
     tasks: int | None,
     ticket_id: str | None,
     model: str | None = None,
-    experiment: str | None = None,
+    dataset: str | None = None,
 ) -> dict:
     """Build metadata persisted alongside local experiment results."""
     return {
@@ -95,7 +102,7 @@ def _compare_metadata(
         "tasks_limit": tasks,
         "ticket_id": ticket_id,
         "model": model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL),
-        "experiment": experiment,
+        "dataset": dataset,
     }
 
 
@@ -110,6 +117,11 @@ def run_command(
         help=f"Limit number of tasks (default: {DEFAULT_TASK_LIMIT}; ignored when --task is set)",
     ),
     task: str | None = typer.Option(None, "--task", help="Single ticket id (e.g. T-011)"),
+    dataset: str | None = typer.Option(
+        None,
+        "--dataset",
+        help="LangSmith dataset name (default: <example>-stress)",
+    ),
     model: str | None = typer.Option(None, "--model", help="Model override for this run"),
     runs_dir: Path = typer.Option(Path(".harnesslab/runs"), "--runs-dir", help="Local results directory"),
 ) -> None:
@@ -124,6 +136,8 @@ def run_command(
     tasks_limit = _resolve_task_limit(tasks, task)
     ticket_id = task
 
+    resolved_dataset = _resolve_dataset_name(example, dataset)
+
     harness_dir, tasks_dir = _example_paths(example)
     config = load_harness_config(harness_dir / f"{harness}.yaml")
     resolved_model = model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
@@ -136,7 +150,7 @@ def run_command(
         upload_results=not local,
         task_limit=tasks_limit,
         ticket_id=ticket_id,
-        dataset_name=_default_dataset_name(example),
+        dataset_name=resolved_dataset,
         model=resolved_model,
     )
     rows = list(results)
@@ -154,6 +168,7 @@ def run_command(
             task_count=len(rows),
             tasks=tasks_limit,
             ticket_id=ticket_id,
+            dataset=resolved_dataset,
         ),
     )
     console.print(f"[green]Completed {len(rows)} task(s)[/green]")
@@ -191,11 +206,10 @@ def compare_command(
         "--model",
         help="Model override (default: HARNESSLAB_MODEL from .env)",
     ),
-    experiment: str | None = typer.Option(
+    dataset: str | None = typer.Option(
         None,
-        "--experiment",
-        "-e",
-        help="LangSmith experiment name prefix (e.g. portfolio-v2 → portfolio-v2-minimal)",
+        "--dataset",
+        help="LangSmith dataset name (default: <example>-stress)",
     ),
     runs_dir: Path = typer.Option(Path(".harnesslab/runs"), "--runs-dir", help="Local results directory"),
 ) -> None:
@@ -209,6 +223,7 @@ def compare_command(
 
     tasks_limit = _resolve_task_limit(tasks, task)
     ticket_id = task
+    resolved_dataset = _resolve_dataset_name(example, dataset)
 
     harness_dir, tasks_dir = _example_paths(example)
     all_configs = load_harness_dir(harness_dir)
@@ -231,6 +246,7 @@ def compare_command(
         console.print(
             f"[bold]Comparing harnesses[/bold] on model [cyan]{model_names[0]}[/cyan]: "
             + ", ".join(harness_names)
+            + f"  [dim]dataset={resolved_dataset}[/dim]"
         )
 
     comparisons = run_comparison(
@@ -244,8 +260,7 @@ def compare_command(
         upload_results=not local,
         task_limit=tasks_limit,
         ticket_id=ticket_id,
-        dataset_name=_default_dataset_name(example),
-        experiment=experiment,
+        dataset_name=resolved_dataset,
     )
 
     dimension = "Model" if compare_by == "models" else "Harness"
@@ -265,7 +280,7 @@ def compare_command(
             tasks=tasks_limit,
             ticket_id=ticket_id,
             model=model_names[0] if compare_by == "harness" else None,
-            experiment=experiment,
+            dataset=resolved_dataset,
         ),
     )
     console.print(f"[green]Report written to {report_path}[/green]")

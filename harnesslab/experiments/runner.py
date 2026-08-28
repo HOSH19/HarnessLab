@@ -224,7 +224,6 @@ def run_comparison(
     task_limit: int | None = None,
     ticket_id: str | None = None,
     dataset_name: str | None = None,
-    experiment: str | None = None,
 ) -> dict[str, list]:
     """Run a comparison across harnesses or models."""
     comparisons: dict[str, list] = {}
@@ -234,9 +233,6 @@ def run_comparison(
             raise ValueError("Model comparisons require exactly one --harness value.")
         harness = all_configs[harness_names[0]]
         for model in model_names:
-            prefix = model_short_name(model)
-            if experiment:
-                prefix = f"{experiment}-{prefix}"
             results = run_experiment(
                 graph_factory,
                 harness,
@@ -246,7 +242,7 @@ def run_comparison(
                 ticket_id=ticket_id,
                 dataset_name=dataset_name,
                 model=model,
-                experiment_prefix=prefix,
+                experiment_prefix=model_short_name(model),
             )
             comparisons[model] = list(results)
         return comparisons
@@ -256,9 +252,6 @@ def run_comparison(
         if name not in all_configs:
             raise ValueError(f"Unknown harness: {name}")
         with use_model(fixed_model):
-            prefix = name
-            if experiment:
-                prefix = f"{experiment}-{name}"
             results = run_experiment(
                 graph_factory,
                 all_configs[name],
@@ -268,7 +261,7 @@ def run_comparison(
                 ticket_id=ticket_id,
                 dataset_name=dataset_name,
                 model=fixed_model,
-                experiment_prefix=prefix,
+                experiment_prefix=name,
             )
         comparisons[name] = list(results)
     return comparisons

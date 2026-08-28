@@ -23,3 +23,14 @@ def test_explicit_tasks_override_default() -> None:
 def test_default_compare_harnesses_are_minimal_and_retry() -> None:
     """Harness compare defaults to minimal and retry arms."""
     assert DEFAULT_COMPARE_HARNESSES == "minimal,retry"
+
+
+def test_resolve_dataset_name_uses_explicit_value() -> None:
+    """--dataset overrides the example-derived default."""
+    from pathlib import Path
+
+    from harnesslab.cli.main import _default_dataset_name, _resolve_dataset_name
+
+    example = Path("examples/ticket_triage")
+    assert _resolve_dataset_name(example, "triage-v2") == "triage-v2"
+    assert _resolve_dataset_name(example, None) == _default_dataset_name(example)
