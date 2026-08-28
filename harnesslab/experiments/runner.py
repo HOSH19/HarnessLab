@@ -19,6 +19,7 @@ from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.fingerprint import failure_fingerprint
 from harnesslab.eval.outcome import task_pass
 from harnesslab.eval.trajectory import graph_trajectory
+from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.tasks import load_tasks
 from harnesslab.graph.extract import extract_fields_from_messages
 
@@ -108,7 +109,7 @@ def run_experiment(
     Returns:
         LangSmith experiment results object.
     """
-    data = load_tasks(tasks_dir)
+    data = tasks_to_examples(load_tasks(tasks_dir))
     if task_limit is not None:
         data = data[:task_limit]
 
