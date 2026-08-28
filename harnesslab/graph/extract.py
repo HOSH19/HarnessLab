@@ -70,8 +70,8 @@ def serialize_messages(messages: list) -> list[dict[str, Any]]:
 
 
 def format_display_output(classification: str, reply: str) -> str:
-    """Build LangSmith Outputs column text to align with reference expected_category."""
-    del reply  # final_reply remains in run.outputs for evaluators
+    """Build LangSmith Outputs column text (classification label only)."""
+    del reply
     return classification or ""
 
 

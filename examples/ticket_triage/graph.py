@@ -35,4 +35,5 @@ def build_ticket_triage_graph(harness: HarnessConfig):
         harness,
         agent_node="agent",
         tools_node="tools",
+        require_complete_pipeline=True,
     )

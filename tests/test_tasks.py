@@ -14,7 +14,7 @@ def test_load_tasks_returns_inputs_and_outputs() -> None:
     assert "inputs" in tasks[0]
     assert "outputs" in tasks[0]
     assert "expected_category" in tasks[0]["outputs"]
-    assert tasks[0]["outputs"]["final_reply"].startswith("include:")
+    assert tasks[0]["outputs"]["reply_hint"].startswith("include:")
 
 
 def test_load_tasks_filters_by_ticket_id() -> None:

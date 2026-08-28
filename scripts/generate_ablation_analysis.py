@@ -44,7 +44,7 @@ def _task_row(record: dict) -> dict:
     ev = record["evaluation_results"]
     out = record["outputs"]
     reply_ev = ev.get("reply_text") or ev.get("final_reply") or {}
-    reply = reply_ev.get("value") or out.get("final_reply") or ""
+    reply = reply_ev.get("comment") or reply_ev.get("value") or out.get("final_reply") or ""
     return {
         "tid": tid,
         "task_pass": ev["task_pass"]["score"],

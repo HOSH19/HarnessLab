@@ -42,7 +42,7 @@ def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
                 },
                 "outputs": {
                     "expected_category": raw["expected_category"],
-                    "final_reply": reply_hint,
+                    "reply_hint": reply_hint,
                     "required_reply_terms": required_terms,
                     "expected_nodes": raw.get("expected_nodes", []),
                     **({"expected_tools": raw["expected_tools"]} if "expected_tools" in raw else {}),

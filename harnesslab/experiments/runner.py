@@ -11,6 +11,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Literal
 
+from langsmith.schemas import Example, Run
+
 from agentevals.graph_trajectory.utils import extract_langgraph_trajectory_from_thread
 from langchain_core.messages import AIMessage, HumanMessage
 from langsmith import evaluate
@@ -24,7 +26,7 @@ from harnesslab.config.models import HarnessConfig
 from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
 from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.error_recovery import error_recovery
-from harnesslab.eval.final_reply import final_reply
+from harnesslab.eval.final_reply import reply_text
 from harnesslab.eval.fingerprint import failure_fingerprint
 from harnesslab.eval.outcome import task_pass
 from harnesslab.eval.step_count import step_count
@@ -41,7 +43,7 @@ from harnesslab.graph.extract import (
 
 CompareDimension = Literal["harness", "models"]
 
-EVALUATORS = [
+_BASE_EVALUATORS = [
     task_pass,
     graph_trajectory,
     tool_sequence,
@@ -49,8 +51,29 @@ EVALUATORS = [
     step_count,
     efficiency,
     failure_fingerprint,
-    final_reply,
+    reply_text,
 ]
+
+
+def _safe_evaluator(evaluator: Callable) -> Callable:
+    """Wrap an evaluator so failures still produce feedback in LangSmith."""
+
+    def wrapped(run: Run, example: Example) -> dict:
+        try:
+            return evaluator(run, example)
+        except Exception as exc:  # noqa: BLE001 — evaluators must never abort a row
+            key = getattr(evaluator, "__name__", "evaluator")
+            return {
+                "key": key,
+                "score": 0.0,
+                "comment": f"evaluator_error: {exc}",
+            }
+
+    wrapped.__name__ = getattr(evaluator, "__name__", "wrapped_evaluator")
+    return wrapped
+
+
+EVALUATORS = [_safe_evaluator(fn) for fn in _BASE_EVALUATORS]
 
 
 @contextmanager
@@ -115,12 +138,29 @@ def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
 
     return {
         "output": format_display_output(classification, final_reply),
+        "expected_category": classification,
         "classification": classification,
         "final_reply": final_reply,
         "tool_names": tool_names,
         "error_count": state.get("error_count", 0),
         "graph_trajectory": trajectory["outputs"],
     }
+
+
+def _empty_outputs(*, error: str | None = None) -> dict:
+    """Return a minimal outputs dict when graph invocation fails."""
+    payload = {
+        "output": "",
+        "expected_category": "",
+        "classification": "",
+        "final_reply": "",
+        "tool_names": [],
+        "error_count": 1 if error else 0,
+        "graph_trajectory": {"steps": [], "results": [], "inputs": []},
+    }
+    if error:
+        payload["error"] = error
+    return payload
 
 
 def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessConfig):
@@ -138,17 +178,20 @@ def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessC
         if flaky_tools:
             config["configurable"]["flaky_tools"] = flaky_tools
         init_flaky_tools(flaky_tools)
-        state = graph.invoke(
-            {
-                "messages": _build_initial_messages(prompt, conversation_history),
-                "ticket_id": ticket_id,
-                "classification": "",
-                "final_reply": "",
-                "error_count": 0,
-            },
-            config=config,
-        )
-        return _extract_outputs(state, graph, config)
+        try:
+            state = graph.invoke(
+                {
+                    "messages": _build_initial_messages(prompt, conversation_history),
+                    "ticket_id": ticket_id,
+                    "classification": "",
+                    "final_reply": "",
+                    "error_count": 0,
+                },
+                config=config,
+            )
+            return _extract_outputs(state, graph, config)
+        except Exception as exc:  # noqa: BLE001 — always return outputs for evaluators
+            return _empty_outputs(error=str(exc))
 
     return target
 

@@ -16,7 +16,9 @@ def test_agent_rules_cover_sla_and_escalation() -> None:
     rules = AGENT_RULES.lower()
     assert "check_sla" in rules
     assert "escalate_ticket" in rules
-    assert "search_kb" in rules
+    assert "classify" in rules
+    assert "draft_reply" in rules
+    assert "must call classify" in rules
 
 
 def test_optional_tools_match_escalation_branch() -> None:

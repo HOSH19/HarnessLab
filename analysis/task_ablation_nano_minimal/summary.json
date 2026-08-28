@@ -1,11 +1,11 @@
 {
   "gpt-4.1-nano": {
-    "efficiency": 0.9988888888888889,
+    "efficiency": 1.0,
     "error_recovery": 1.0,
-    "failure_fingerprint": 0.5555555555555556,
-    "graph_trajectory": 0.7050925925925926,
+    "failure_fingerprint": 1.0,
+    "graph_trajectory": 0.8291666666666667,
     "step_count": 1.0,
-    "task_pass": 0.4677777777777778,
-    "tool_sequence": 0.5588888888888889
+    "task_pass": 0.7833333333333333,
+    "tool_sequence": 0.6377777777777778
   }
 }

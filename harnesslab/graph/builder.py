@@ -11,6 +11,7 @@ from langgraph.graph import END, StateGraph
 
 from harnesslab.config.models import HarnessConfig
 from harnesslab.graph.edges import should_continue
+from harnesslab.graph.pipeline import nudge_incomplete_pipeline, should_continue_with_nudge
 from harnesslab.middleware.context import make_trim_node
 
 
@@ -20,6 +21,7 @@ def compile_harnessed_graph(
     *,
     agent_node: str = "agent",
     tools_node: str = "tools",
+    require_complete_pipeline: bool = False,
 ) -> Any:
     """Compile a base graph with harness middleware applied.
 
@@ -42,7 +44,16 @@ def compile_harnessed_graph(
     else:
         graph.set_entry_point(agent_node)
 
-    graph.add_conditional_edges(agent_node, should_continue, {"tools": tools_node, "end": END})
+    if require_complete_pipeline:
+        graph.add_node("nudge", nudge_incomplete_pipeline)
+        graph.add_conditional_edges(
+            agent_node,
+            should_continue_with_nudge,
+            {"tools": tools_node, "nudge": "nudge", "end": END},
+        )
+        graph.add_edge("nudge", agent_node)
+    else:
+        graph.add_conditional_edges(agent_node, should_continue, {"tools": tools_node, "end": END})
     graph.add_edge(tools_node, agent_node)
 
     return graph.compile(checkpointer=MemorySaver())

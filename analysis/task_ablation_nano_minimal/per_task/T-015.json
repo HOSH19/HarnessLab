@@ -1,7 +1,7 @@
 {
   "evaluation_results": {
     "efficiency": {
-      "comment": "latency_ms=4580, tokens=0, steps=9, graph_steps=9",
+      "comment": "latency_ms=3829, tokens=0, steps=9, graph_steps=9",
       "score": 1.0
     },
     "error_recovery": {
@@ -12,14 +12,13 @@
       "comment": "SUCCESS",
       "score": 1.0
     },
-    "final_reply": {
-      "comment": "draft_reply tool output",
-      "score": 1.0,
-      "value": "Hello,\n\nThank you for reaching out. It appears that your SSL certificate has expired, which is causing the error when accessing your dashboard. Please renew your SSL certificate to resolve this issue. If you need assistance with the renewal process, let us know.\n\nBest regards,\nSupport Team"
-    },
     "graph_trajectory": {
       "comment": "matched=False, progress=0.75, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
       "score": 0.75
+    },
+    "reply_text": {
+      "comment": "Thank you for reaching out about the SSL certificate issue. It appears that your certificate has expired, which is causing the error when accessing your dashboard. Please follow our SSL renewal procedures or contact your certificate provider to renew the certificate. If you need further assistance, let us know.",
+      "score": 1.0
     },
     "step_count": {
       "comment": "steps=9, graph_steps=9, expected_max=12",
@@ -34,7 +33,7 @@
       "score": 1.0
     }
   },
-  "example_id": "fca55fa5-9b74-4d96-8fa5-312b74ab376e",
+  "example_id": "8c693eef-6009-4be2-ab92-0fe879a1b8bc",
   "inputs": {
     "flaky_tools": {
       "search_kb": 2
@@ -45,14 +44,15 @@
   "outputs": {
     "classification": "technical",
     "error_count": 0,
-    "final_reply": "Hello,\n\nThank you for reaching out. It appears that your SSL certificate has expired, which is causing the error when accessing your dashboard. Please renew your SSL certificate to resolve this issue. If you need assistance with the renewal process, let us know.\n\nBest regards,\nSupport Team",
+    "expected_category": "technical",
+    "final_reply": "Thank you for reaching out about the SSL certificate issue. It appears that your certificate has expired, which is causing the error when accessing your dashboard. Please follow our SSL renewal procedures or contact your certificate provider to renew the certificate. If you need further assistance, let us know.",
     "graph_trajectory": {
       "inputs": [],
       "results": [
         {
           "messages": [
             {
-              "content": "The ticket has been classified as technical. A reply has been drafted advising the customer to renew their SSL certificate to resolve the issue.",
+              "content": "The ticket has been classified as technical. A suggested reply has been drafted to inform the customer about the expired SSL certificate and recommend renewal procedures. Would you like to send this reply or need further assistance?",
               "role": "assistant"
             }
           ]
@@ -82,5 +82,5 @@
       "draft_reply"
     ]
   },
-  "run_id": "01a04ab2-0306-7ea1-b776-6438db9a18eb"
+  "run_id": "01a04abb-6221-71d0-b096-1dfcfa652e60"
 }

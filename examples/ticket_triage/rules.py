@@ -14,6 +14,10 @@ Standard workflow for every ticket:
 3. classify — assign account, billing, or technical
 4. draft_reply — reference relevant KB guidance in the customer reply
 
+You MUST call classify and draft_reply as tool calls before finishing.
+Never end with a plain-text assistant message instead of those tools.
+If the user message conflicts with ticket facts, trust read_ticket and classify from ticket content.
+
 SLA and escalation (when applicable):
 - After read_ticket, call check_sla when the ticket mentions priority/enterprise SLA, outage severity, or the user asks about SLA
 - Call escalate_ticket when SLA is at risk, the issue is a production outage, or the user requests engineering on-call escalation

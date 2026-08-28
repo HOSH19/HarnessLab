@@ -1,7 +1,7 @@
 {
   "evaluation_results": {
     "efficiency": {
-      "comment": "latency_ms=4544, tokens=0, steps=9, graph_steps=9",
+      "comment": "latency_ms=3914, tokens=0, steps=9, graph_steps=9",
       "score": 1.0
     },
     "error_recovery": {
@@ -12,13 +12,12 @@
       "comment": "SUCCESS",
       "score": 1.0
     },
-    "final_reply": {
-      "comment": "draft_reply tool output",
-      "score": 1.0,
-      "value": "Thank you for reaching out regarding the billing issue after your account merge. We understand the importance of resolving this promptly. We will review your account details and billing history to correct the charge and untangle the accounts if necessary. Please allow us some time to investigate, and we will update you shortly."
-    },
     "graph_trajectory": {
       "comment": "matched=True, progress=1.00, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
+      "score": 1.0
+    },
+    "reply_text": {
+      "comment": "Thank you for reaching out regarding the billing issue after your account merge. We will review the charge and work to resolve this dispute promptly. Please allow us some time to investigate and get back to you with an update.",
       "score": 1.0
     },
     "step_count": {
@@ -26,15 +25,15 @@
       "score": 1.0
     },
     "task_pass": {
-      "comment": "category_ok=True, terms_ok=False, terms_score=0.67, missing_terms=['dispute'], score=0.83",
-      "score": 0.83
+      "comment": "category_ok=True, terms_ok=True, terms_score=1.00, missing_terms=[], score=1.00",
+      "score": 1.0
     },
     "tool_sequence": {
       "comment": "matched=True, progress=1.00, expected=['read_ticket', 'search_kb', 'classify', 'draft_reply'], actual=['read_ticket', 'search_kb', 'classify', 'draft_reply']",
       "score": 1.0
     }
   },
-  "example_id": "3adf178c-1dbe-4a8d-a7a2-c9d23327efd4",
+  "example_id": "0cfbe186-fd1e-4462-b0b5-0b0eb9f390b6",
   "inputs": {
     "prompt": "Triage ticket T-013",
     "ticket_id": "T-013"
@@ -42,14 +41,15 @@
   "outputs": {
     "classification": "billing",
     "error_count": 0,
-    "final_reply": "Thank you for reaching out regarding the billing issue after your account merge. We understand the importance of resolving this promptly. We will review your account details and billing history to correct the charge and untangle the accounts if necessary. Please allow us some time to investigate, and we will update you shortly.",
+    "expected_category": "billing",
+    "final_reply": "Thank you for reaching out regarding the billing issue after your account merge. We will review the charge and work to resolve this dispute promptly. Please allow us some time to investigate and get back to you with an update.",
     "graph_trajectory": {
       "inputs": [],
       "results": [
         {
           "messages": [
             {
-              "content": "The ticket has been classified as billing. A draft reply has been prepared to inform the customer that we are reviewing their account and billing details to resolve the issue. Would you like to send this reply now or need further assistance?",
+              "content": "I have classified the ticket as billing and drafted a response informing the customer that we will review the charge and resolve the dispute promptly.",
               "role": "assistant"
             }
           ]
@@ -78,5 +78,5 @@
       "draft_reply"
     ]
   },
-  "run_id": "01a04ab2-215c-7283-97b6-83ef9e9ebbeb"
+  "run_id": "01a04abb-7f79-7292-b956-c27a935859f9"
 }

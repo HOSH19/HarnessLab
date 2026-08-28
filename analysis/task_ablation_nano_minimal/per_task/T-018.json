@@ -1,7 +1,7 @@
 {
   "evaluation_results": {
     "efficiency": {
-      "comment": "latency_ms=2652, tokens=0, steps=5, graph_steps=5",
+      "comment": "latency_ms=3720, tokens=0, steps=9, graph_steps=9",
       "score": 1.0
     },
     "error_recovery": {
@@ -9,32 +9,31 @@
       "score": 1.0
     },
     "failure_fingerprint": {
-      "comment": "WRONG_ANSWER",
-      "score": 0.0
-    },
-    "final_reply": {
-      "comment": "agent did not call draft_reply",
-      "score": 0.0,
-      "value": "(empty)"
+      "comment": "SUCCESS",
+      "score": 1.0
     },
     "graph_trajectory": {
-      "comment": "matched=False, progress=0.31, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent']",
-      "score": 0.3125
+      "comment": "matched=False, progress=0.56, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
+      "score": 0.5625
+    },
+    "reply_text": {
+      "comment": "The ticket has been classified as technical. Based on the urgency and the KB guidance, I will escalate this to engineering on-call for immediate attention to the API outage and webhook delivery issues.",
+      "score": 1.0
     },
     "step_count": {
-      "comment": "steps=5, graph_steps=5, expected_max=10",
+      "comment": "steps=9, graph_steps=9, expected_max=10",
       "score": 1.0
     },
     "task_pass": {
-      "comment": "category_ok=False, terms_ok=False, terms_score=0.00, missing_terms=['sla', '503', 'webhook', 'escalat'], score=0.00",
-      "score": 0.0
+      "comment": "category_ok=True, terms_ok=False, terms_score=0.50, missing_terms=['sla', '503'], score=0.75",
+      "score": 0.75
     },
     "tool_sequence": {
-      "comment": "matched=False, progress=0.00, expected=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'escalate_ticket', 'draft_reply'], actual=['check_sla', 'search_kb', 'search_kb', 'escalate_ticket']",
-      "score": 0.0
+      "comment": "matched=False, progress=0.71, expected=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'escalate_ticket', 'draft_reply'], actual=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'draft_reply']",
+      "score": 0.71
     }
   },
-  "example_id": "6d54e0d2-2784-489c-8b47-017a7d512011",
+  "example_id": "cb3c9c13-3730-41d8-a2c0-347a3b354f2b",
   "inputs": {
     "flaky_tools": {
       "escalate_ticket": 1,
@@ -44,16 +43,17 @@
     "ticket_id": "T-018"
   },
   "outputs": {
-    "classification": "",
+    "classification": "technical",
     "error_count": 0,
-    "final_reply": "",
+    "expected_category": "technical",
+    "final_reply": "The ticket has been classified as technical. Based on the urgency and the KB guidance, I will escalate this to engineering on-call for immediate attention to the API outage and webhook delivery issues.",
     "graph_trajectory": {
       "inputs": [],
       "results": [
         {
           "messages": [
             {
-              "content": "The SLA tier for ticket T-018 is priority with a 4-hour response deadline. Based on the issues identified\u2014API outage and webhook delivery failures\u2014I have escalated the ticket to engineering on-call for urgent resolution.",
+              "content": "I will now escalate this ticket to engineering on-call for immediate assistance with the API outage and webhook delivery failures.",
               "role": "assistant"
             }
           ]
@@ -66,17 +66,23 @@
           "tools",
           "agent",
           "tools",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
           "agent"
         ]
       ]
     },
-    "output": "",
+    "output": "technical",
     "tool_names": [
+      "read_ticket",
       "check_sla",
       "search_kb",
       "search_kb",
-      "escalate_ticket"
+      "classify",
+      "draft_reply"
     ]
   },
-  "run_id": "01a04ab1-d899-7d90-a06f-69ff93a834b9"
+  "run_id": "01a04abb-3af5-7a31-b7e6-2ceedfbe611c"
 }
