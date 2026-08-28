@@ -34,3 +34,14 @@ def test_resolve_dataset_name_uses_explicit_value() -> None:
     example = Path("examples/ticket_triage")
     assert _resolve_dataset_name(example, "triage-v2") == "triage-v2"
     assert _resolve_dataset_name(example, None) == _default_dataset_name(example)
+
+
+def test_dataset_upload_command_registered() -> None:
+    """Dataset upload is available as a nested CLI command."""
+    from typer.main import get_command
+
+    from harnesslab.cli.main import app
+
+    command = get_command(app)
+    subcommands = command.commands["dataset"].commands
+    assert "upload" in subcommands

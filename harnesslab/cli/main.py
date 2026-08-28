@@ -287,17 +287,27 @@ def compare_command(
     console.print(f"[green]Results saved to {run_path}[/green]")
 
 
-@app.command("dataset")
-def dataset_command(
+dataset_app = typer.Typer(help="LangSmith dataset commands.", no_args_is_help=True)
+
+
+def _upload_dataset(example: Path, name: str) -> None:
+    """Upload local task fixtures to a LangSmith dataset."""
+    load_local_env()
+    _, tasks_dir = _example_paths(example)
+    dataset_name = upload_dataset(tasks_dir, name)
+    console.print(f"[green]Uploaded dataset: {dataset_name}[/green]")
+
+
+@dataset_app.command("upload")
+def dataset_upload_command(
     example: Path = typer.Argument(..., help="Path to example project"),
     name: str = typer.Option("triage-stress", "--name", help="Dataset name"),
 ) -> None:
     """Upload stress task fixtures to a LangSmith dataset."""
-    load_local_env()
+    _upload_dataset(example, name)
 
-    _, tasks_dir = _example_paths(example)
-    dataset_name = upload_dataset(tasks_dir, name)
-    console.print(f"[green]Uploaded dataset: {dataset_name}[/green]")
+
+app.add_typer(dataset_app, name="dataset")
 
 
 def main() -> None:
