@@ -81,6 +81,7 @@ def _compare_metadata(
     tasks: int | None,
     ticket_id: str | None,
     model: str | None = None,
+    experiment: str | None = None,
 ) -> dict:
     """Build metadata persisted alongside local experiment results."""
     return {
@@ -94,6 +95,7 @@ def _compare_metadata(
         "tasks_limit": tasks,
         "ticket_id": ticket_id,
         "model": model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL),
+        "experiment": experiment,
     }
 
 
@@ -189,6 +191,12 @@ def compare_command(
         "--model",
         help="Model override (default: HARNESSLAB_MODEL from .env)",
     ),
+    experiment: str | None = typer.Option(
+        None,
+        "--experiment",
+        "-e",
+        help="LangSmith experiment name prefix (e.g. portfolio-v2 → portfolio-v2-minimal)",
+    ),
     runs_dir: Path = typer.Option(Path(".harnesslab/runs"), "--runs-dir", help="Local results directory"),
 ) -> None:
     """Compare models or harness variants on stress tasks and write a report."""
@@ -237,6 +245,7 @@ def compare_command(
         task_limit=tasks_limit,
         ticket_id=ticket_id,
         dataset_name=_default_dataset_name(example),
+        experiment=experiment,
     )
 
     dimension = "Model" if compare_by == "models" else "Harness"
@@ -256,6 +265,7 @@ def compare_command(
             tasks=tasks_limit,
             ticket_id=ticket_id,
             model=model_names[0] if compare_by == "harness" else None,
+            experiment=experiment,
         ),
     )
     console.print(f"[green]Report written to {report_path}[/green]")
