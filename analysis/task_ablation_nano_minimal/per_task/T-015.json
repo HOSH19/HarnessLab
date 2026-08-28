@@ -1,0 +1,86 @@
+{
+  "evaluation_results": {
+    "efficiency": {
+      "comment": "latency_ms=4580, tokens=0, steps=9, graph_steps=9",
+      "score": 1.0
+    },
+    "error_recovery": {
+      "comment": "error_count=0, max_acceptable=2",
+      "score": 1.0
+    },
+    "failure_fingerprint": {
+      "comment": "SUCCESS",
+      "score": 1.0
+    },
+    "final_reply": {
+      "comment": "draft_reply tool output",
+      "score": 1.0,
+      "value": "Hello,\n\nThank you for reaching out. It appears that your SSL certificate has expired, which is causing the error when accessing your dashboard. Please renew your SSL certificate to resolve this issue. If you need assistance with the renewal process, let us know.\n\nBest regards,\nSupport Team"
+    },
+    "graph_trajectory": {
+      "comment": "matched=False, progress=0.75, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
+      "score": 0.75
+    },
+    "step_count": {
+      "comment": "steps=9, graph_steps=9, expected_max=12",
+      "score": 1.0
+    },
+    "task_pass": {
+      "comment": "category_ok=True, terms_ok=True, terms_score=1.00, missing_terms=[], score=1.00",
+      "score": 1.0
+    },
+    "tool_sequence": {
+      "comment": "matched=True, progress=1.00, expected=['read_ticket', 'search_kb', 'classify', 'draft_reply'], actual=['read_ticket', 'search_kb', 'check_sla', 'classify', 'draft_reply']",
+      "score": 1.0
+    }
+  },
+  "example_id": "fca55fa5-9b74-4d96-8fa5-312b74ab376e",
+  "inputs": {
+    "flaky_tools": {
+      "search_kb": 2
+    },
+    "prompt": "Triage ticket T-015",
+    "ticket_id": "T-015"
+  },
+  "outputs": {
+    "classification": "technical",
+    "error_count": 0,
+    "final_reply": "Hello,\n\nThank you for reaching out. It appears that your SSL certificate has expired, which is causing the error when accessing your dashboard. Please renew your SSL certificate to resolve this issue. If you need assistance with the renewal process, let us know.\n\nBest regards,\nSupport Team",
+    "graph_trajectory": {
+      "inputs": [],
+      "results": [
+        {
+          "messages": [
+            {
+              "content": "The ticket has been classified as technical. A reply has been drafted advising the customer to renew their SSL certificate to resolve the issue.",
+              "role": "assistant"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        [
+          "__start__",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent"
+        ]
+      ]
+    },
+    "output": "technical",
+    "tool_names": [
+      "read_ticket",
+      "search_kb",
+      "check_sla",
+      "classify",
+      "draft_reply"
+    ]
+  },
+  "run_id": "01a04ab2-0306-7ea1-b776-6438db9a18eb"
+}

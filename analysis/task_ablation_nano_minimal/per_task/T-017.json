@@ -1,0 +1,82 @@
+{
+  "evaluation_results": {
+    "efficiency": {
+      "comment": "latency_ms=5046, tokens=0, steps=9, graph_steps=9",
+      "score": 1.0
+    },
+    "error_recovery": {
+      "comment": "error_count=0, max_acceptable=0",
+      "score": 1.0
+    },
+    "failure_fingerprint": {
+      "comment": "SUCCESS",
+      "score": 1.0
+    },
+    "final_reply": {
+      "comment": "draft_reply tool output",
+      "score": 1.0,
+      "value": "Thank you for reaching out. It appears that your email verification is pending, which is preventing access to your invoices. Please ensure that you have completed the email verification process for your new email address. You can resend the verification email from your account settings. If the issue persists, please contact support again, and we will assist you further."
+    },
+    "graph_trajectory": {
+      "comment": "matched=True, progress=1.00, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
+      "score": 1.0
+    },
+    "step_count": {
+      "comment": "steps=9, graph_steps=9, expected_max=12",
+      "score": 1.0
+    },
+    "task_pass": {
+      "comment": "category_ok=True, terms_ok=False, terms_score=0.75, missing_terms=['8823'], score=0.88",
+      "score": 0.88
+    },
+    "tool_sequence": {
+      "comment": "matched=True, progress=1.00, expected=['read_ticket', 'search_kb', 'classify', 'draft_reply'], actual=['read_ticket', 'search_kb', 'classify', 'draft_reply']",
+      "score": 1.0
+    }
+  },
+  "example_id": "e8aba043-90c0-4bd3-a1fe-1be2a6c5b300",
+  "inputs": {
+    "prompt": "Triage ticket T-017",
+    "ticket_id": "T-017"
+  },
+  "outputs": {
+    "classification": "account",
+    "error_count": 0,
+    "final_reply": "Thank you for reaching out. It appears that your email verification is pending, which is preventing access to your invoices. Please ensure that you have completed the email verification process for your new email address. You can resend the verification email from your account settings. If the issue persists, please contact support again, and we will assist you further.",
+    "graph_trajectory": {
+      "inputs": [],
+      "results": [
+        {
+          "messages": [
+            {
+              "content": "I have classified your issue as an account-related matter. Please ensure that you have completed the email verification process for your new email address. You can resend the verification email from your account settings. If the issue persists, contact support again, and we will assist you further.",
+              "role": "assistant"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        [
+          "__start__",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent"
+        ]
+      ]
+    },
+    "output": "account",
+    "tool_names": [
+      "read_ticket",
+      "search_kb",
+      "classify",
+      "draft_reply"
+    ]
+  },
+  "run_id": "01a04ab1-e2f5-7d73-9e46-07ecfd1ff73a"
+}

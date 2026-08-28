@@ -70,10 +70,9 @@ def serialize_messages(messages: list) -> list[dict[str, Any]]:
 
 
 def format_display_output(classification: str, reply: str) -> str:
-    """Build a clean LangSmith output string without message role prefixes."""
-    if classification and reply:
-        return f"{classification}: {reply}"
-    return reply or classification or ""
+    """Build LangSmith Outputs column text to align with reference expected_category."""
+    del reply  # final_reply remains in run.outputs for evaluators
+    return classification or ""
 
 
 def extract_fields_from_messages(messages: list) -> dict[str, str]:
@@ -172,4 +171,7 @@ def extract_tool_names_from_outputs(outputs: dict) -> list[str]:
     messages = outputs.get("messages")
     if messages:
         return extract_tool_names_from_messages(messages)
+    tool_names = outputs.get("tool_names")
+    if tool_names:
+        return [str(name) for name in tool_names]
     return extract_tool_names_from_trajectory(outputs.get("graph_trajectory", {}))

@@ -1,0 +1,21 @@
+{
+  "task_id": "task-016",
+  "ticket_id": "T-016",
+  "prompt": "Triage ticket T-016. Check SLA tier immediately and escalate to engineering on-call because this is a priority outage.",
+  "stress": true,
+  "max_acceptable_errors": 0,
+  "expected_category": "technical",
+  "required_reply_terms": ["sla", "escalat", "503"],
+  "expected_nodes": [
+    "agent", "tools", "agent", "tools", "agent", "tools",
+    "agent", "tools", "agent", "tools", "agent", "tools"
+  ],
+  "expected_tools": [
+    "read_ticket",
+    "check_sla",
+    "search_kb",
+    "classify",
+    "escalate_ticket",
+    "draft_reply"
+  ]
+}

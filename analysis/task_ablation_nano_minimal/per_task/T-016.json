@@ -1,0 +1,77 @@
+{
+  "evaluation_results": {
+    "efficiency": {
+      "comment": "latency_ms=3162, tokens=0, steps=5, graph_steps=5",
+      "score": 1.0
+    },
+    "error_recovery": {
+      "comment": "error_count=0, max_acceptable=0",
+      "score": 1.0
+    },
+    "failure_fingerprint": {
+      "comment": "WRONG_ANSWER",
+      "score": 0.0
+    },
+    "final_reply": {
+      "comment": "agent did not call draft_reply",
+      "score": 0.0,
+      "value": "(empty)"
+    },
+    "graph_trajectory": {
+      "comment": "matched=False, progress=0.42, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent']",
+      "score": 0.4166666666666667
+    },
+    "step_count": {
+      "comment": "steps=5, graph_steps=5, expected_max=12",
+      "score": 1.0
+    },
+    "task_pass": {
+      "comment": "category_ok=False, terms_ok=False, terms_score=0.00, missing_terms=['sla', 'escalat', '503'], score=0.00",
+      "score": 0.0
+    },
+    "tool_sequence": {
+      "comment": "matched=False, progress=0.33, expected=['read_ticket', 'check_sla', 'search_kb', 'classify', 'escalate_ticket', 'draft_reply'], actual=['read_ticket', 'check_sla', 'escalate_ticket']",
+      "score": 0.33
+    }
+  },
+  "example_id": "55ddb7bb-fd9b-4ce0-a9f7-0be674364a49",
+  "inputs": {
+    "prompt": "Triage ticket T-016. Check SLA tier immediately and escalate to engineering on-call because this is a priority outage.",
+    "ticket_id": "T-016"
+  },
+  "outputs": {
+    "classification": "",
+    "error_count": 0,
+    "final_reply": "",
+    "graph_trajectory": {
+      "inputs": [],
+      "results": [
+        {
+          "messages": [
+            {
+              "content": "The ticket T-016 has been escalated to engineering on-call due to the priority outage and SLA requirements.",
+              "role": "assistant"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        [
+          "__start__",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent"
+        ]
+      ]
+    },
+    "output": "",
+    "tool_names": [
+      "read_ticket",
+      "check_sla",
+      "escalate_ticket"
+    ]
+  },
+  "run_id": "01a04ab1-f6ac-7893-a5e7-0f4418355ffb"
+}

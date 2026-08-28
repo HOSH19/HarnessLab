@@ -1,0 +1,172 @@
+{
+  "evaluation_results": {
+    "efficiency": {
+      "comment": "latency_ms=2030, tokens=0, steps=3, graph_steps=3",
+      "score": 1.0
+    },
+    "error_recovery": {
+      "comment": "error_count=0, max_acceptable=0",
+      "score": 1.0
+    },
+    "failure_fingerprint": {
+      "comment": "WRONG_ANSWER",
+      "score": 0.0
+    },
+    "final_reply": {
+      "comment": "agent did not call draft_reply",
+      "score": 0.0,
+      "value": "(empty)"
+    },
+    "graph_trajectory": {
+      "comment": "matched=False, progress=0.38, actual=['__start__', 'agent', 'tools', 'agent']",
+      "score": 0.375
+    },
+    "step_count": {
+      "comment": "steps=3, graph_steps=3, expected_max=12",
+      "score": 1.0
+    },
+    "task_pass": {
+      "comment": "category_ok=False, terms_ok=False, terms_score=0.00, missing_terms=['7788', '9912', 'annual', 'refund'], score=0.00",
+      "score": 0.0
+    },
+    "tool_sequence": {
+      "comment": "matched=False, progress=0.25, expected=['read_ticket', 'search_kb', 'classify', 'draft_reply'], actual=['read_ticket', 'check_sla']",
+      "score": 0.25
+    }
+  },
+  "example_id": "9f4e3426-8c1d-4b1d-abf4-e6715da4b5bf",
+  "inputs": {
+    "conversation_history": [
+      {
+        "content": "Hi, I need help with account 7788. Please verify my identity before we continue.",
+        "role": "human"
+      },
+      {
+        "content": "Identity verified for account 7788. You are on the annual plan.",
+        "role": "ai"
+      },
+      {
+        "content": "Order #9912 was charged on March 15. I cancelled within 7 days and want a full refund under the annual plan policy we discussed.",
+        "role": "human"
+      },
+      {
+        "content": "Noted: account 7788, annual plan, order #9912, refund requested within 7-day window.",
+        "role": "ai"
+      },
+      {
+        "content": "Can you also explain how team permissions work?",
+        "role": "human"
+      },
+      {
+        "content": "Team permissions are managed under Settings > Team > Roles.",
+        "role": "ai"
+      },
+      {
+        "content": "What about SSO for enterprise?",
+        "role": "human"
+      },
+      {
+        "content": "SSO is available on Enterprise plans via SAML configuration.",
+        "role": "ai"
+      },
+      {
+        "content": "How do I export audit logs?",
+        "role": "human"
+      },
+      {
+        "content": "Audit logs export from Admin > Compliance > Export.",
+        "role": "ai"
+      },
+      {
+        "content": "Is there a mobile app dark mode?",
+        "role": "human"
+      },
+      {
+        "content": "Dark mode is in mobile app Settings > Appearance.",
+        "role": "ai"
+      },
+      {
+        "content": "What are your API rate limits?",
+        "role": "human"
+      },
+      {
+        "content": "Default API limit is 1000 requests per minute.",
+        "role": "ai"
+      },
+      {
+        "content": "Can I change my billing address online?",
+        "role": "human"
+      },
+      {
+        "content": "Billing address updates are under Billing > Payment Methods.",
+        "role": "ai"
+      },
+      {
+        "content": "Do you support webhooks for invoice events?",
+        "role": "human"
+      },
+      {
+        "content": "Invoice webhooks are documented in the developer portal.",
+        "role": "ai"
+      },
+      {
+        "content": "How do I add a new team member without admin access?",
+        "role": "human"
+      },
+      {
+        "content": "Team invites are under Settings > Team > Invite Member.",
+        "role": "ai"
+      },
+      {
+        "content": "Can I pause my subscription instead of cancelling?",
+        "role": "human"
+      },
+      {
+        "content": "Subscription pause is available on annual plans under Billing > Pause.",
+        "role": "ai"
+      },
+      {
+        "content": "Thanks. Please open a ticket for the refund we talked about at the start.",
+        "role": "human"
+      },
+      {
+        "content": "I will open ticket T-012 for your refund request.",
+        "role": "ai"
+      }
+    ],
+    "prompt": "Triage ticket T-012 using everything we discussed above.",
+    "ticket_id": "T-012"
+  },
+  "outputs": {
+    "classification": "",
+    "error_count": 0,
+    "final_reply": "",
+    "graph_trajectory": {
+      "inputs": [],
+      "results": [
+        {
+          "messages": [
+            {
+              "content": "The ticket T-012 is categorized under billing, with a standard SLA deadline of 48 hours. Would you like me to proceed with the refund process?",
+              "role": "assistant"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        [
+          "__start__",
+          "agent",
+          "tools",
+          "agent"
+        ]
+      ]
+    },
+    "output": "",
+    "tool_names": [
+      "read_ticket",
+      "check_sla"
+    ]
+  },
+  "run_id": "01a04ab2-331e-7552-b888-44f92bcb7236"
+}

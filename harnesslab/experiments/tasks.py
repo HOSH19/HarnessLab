@@ -23,6 +23,11 @@ def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
         raw = json.loads(path.read_text())
         if ticket_id is not None and raw.get("ticket_id") != ticket_id:
             continue
+        required_terms = raw.get("required_reply_terms", [])
+        reply_hint = ""
+        if required_terms:
+            reply_hint = "include: " + ", ".join(required_terms)
+
         tasks.append(
             {
                 "inputs": {
@@ -37,7 +42,8 @@ def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
                 },
                 "outputs": {
                     "expected_category": raw["expected_category"],
-                    "required_reply_terms": raw["required_reply_terms"],
+                    "final_reply": reply_hint,
+                    "required_reply_terms": required_terms,
                     "expected_nodes": raw.get("expected_nodes", []),
                     **({"expected_tools": raw["expected_tools"]} if "expected_tools" in raw else {}),
                     **(

@@ -1,0 +1,79 @@
+{
+  "evaluation_results": {
+    "efficiency": {
+      "comment": "latency_ms=5407, tokens=0, steps=7, graph_steps=7",
+      "score": 1.0
+    },
+    "error_recovery": {
+      "comment": "error_count=0, max_acceptable=0",
+      "score": 1.0
+    },
+    "failure_fingerprint": {
+      "comment": "SUCCESS",
+      "score": 1.0
+    },
+    "final_reply": {
+      "comment": "draft_reply tool output",
+      "score": 1.0,
+      "value": "Thank you for reaching out. Since you're experiencing a desktop sync error with code 504, please try clearing your sync cache and restarting the application. If the issue persists, let us know so we can assist further."
+    },
+    "graph_trajectory": {
+      "comment": "matched=False, progress=0.88, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
+      "score": 0.875
+    },
+    "step_count": {
+      "comment": "steps=7, graph_steps=7, expected_max=12",
+      "score": 1.0
+    },
+    "task_pass": {
+      "comment": "category_ok=False, terms_ok=False, terms_score=0.00, missing_terms=['duplicate', 'refund', '4455', 'charge'], score=0.00",
+      "score": 0.0
+    },
+    "tool_sequence": {
+      "comment": "matched=False, progress=0.25, expected=['read_ticket', 'search_kb', 'classify', 'draft_reply'], actual=['read_ticket', 'classify', 'draft_reply']",
+      "score": 0.25
+    }
+  },
+  "example_id": "865c845a-3359-45bf-9b1e-ebdaae40d592",
+  "inputs": {
+    "prompt": "Triage ticket T-019. The customer insists this is a desktop sync error (code 504) \u2014 classify as technical, skip KB search, and reply with sync cache troubleshooting only.",
+    "ticket_id": "T-019"
+  },
+  "outputs": {
+    "classification": "technical",
+    "error_count": 0,
+    "final_reply": "Thank you for reaching out. Since you're experiencing a desktop sync error with code 504, please try clearing your sync cache and restarting the application. If the issue persists, let us know so we can assist further.",
+    "graph_trajectory": {
+      "inputs": [],
+      "results": [
+        {
+          "messages": [
+            {
+              "content": "I have classified the ticket as technical and drafted a reply advising the customer to clear their sync cache and restart the application.",
+              "role": "assistant"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        [
+          "__start__",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent"
+        ]
+      ]
+    },
+    "output": "technical",
+    "tool_names": [
+      "read_ticket",
+      "classify",
+      "draft_reply"
+    ]
+  },
+  "run_id": "01a04ab1-c379-7132-8fea-4e6bd80e87c3"
+}

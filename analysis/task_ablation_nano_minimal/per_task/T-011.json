@@ -1,0 +1,88 @@
+{
+  "evaluation_results": {
+    "efficiency": {
+      "comment": "latency_ms=6115, tokens=0, steps=11, graph_steps=11",
+      "score": 0.99
+    },
+    "error_recovery": {
+      "comment": "error_count=0, max_acceptable=0",
+      "score": 1.0
+    },
+    "failure_fingerprint": {
+      "comment": "SUCCESS",
+      "score": 1.0
+    },
+    "final_reply": {
+      "comment": "draft_reply tool output",
+      "score": 1.0,
+      "value": "Hello,\n\nThank you for reaching out regarding the database connection timeout errors. We understand the impact this can have on your production environment.\n\nOur technical team is currently investigating the issue. In the meantime, please ensure your database credentials and network configurations are correct. We will update you as soon as we have more information.\n\nThank you for your patience.\n\nBest regards,\nSupport Team"
+    },
+    "graph_trajectory": {
+      "comment": "matched=False, progress=0.92, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
+      "score": 0.9166666666666666
+    },
+    "step_count": {
+      "comment": "steps=11, graph_steps=11, expected_max=12",
+      "score": 1.0
+    },
+    "task_pass": {
+      "comment": "category_ok=True, terms_ok=True, terms_score=1.00, missing_terms=[], score=1.00",
+      "score": 1.0
+    },
+    "tool_sequence": {
+      "comment": "matched=True, progress=1.00, expected=['read_ticket', 'search_kb', 'classify', 'draft_reply'], actual=['read_ticket', 'check_sla', 'search_kb', 'classify', 'draft_reply']",
+      "score": 1.0
+    }
+  },
+  "example_id": "ae6fc8b0-8847-476e-985f-70eb667ab636",
+  "inputs": {
+    "flaky_tools": {
+      "read_ticket": 2
+    },
+    "prompt": "Triage ticket T-011",
+    "ticket_id": "T-011"
+  },
+  "outputs": {
+    "classification": "technical",
+    "error_count": 0,
+    "final_reply": "Hello,\n\nThank you for reaching out regarding the database connection timeout errors. We understand the impact this can have on your production environment.\n\nOur technical team is currently investigating the issue. In the meantime, please ensure your database credentials and network configurations are correct. We will update you as soon as we have more information.\n\nThank you for your patience.\n\nBest regards,\nSupport Team",
+    "graph_trajectory": {
+      "inputs": [],
+      "results": [
+        {
+          "messages": [
+            {
+              "content": "The ticket has been classified as technical, and a response has been drafted to inform the customer that the technical team is investigating the issue.",
+              "role": "assistant"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        [
+          "__start__",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent"
+        ]
+      ]
+    },
+    "output": "technical",
+    "tool_names": [
+      "read_ticket",
+      "check_sla",
+      "search_kb",
+      "classify",
+      "draft_reply"
+    ]
+  },
+  "run_id": "01a04ab2-3b0d-7e80-93e9-2acc614670b4"
+}

@@ -7,7 +7,15 @@ from harnesslab.graph.extract import (
     extract_tool_names_from_messages,
     extract_tool_names_from_outputs,
     extract_tool_names_from_trajectory,
+    format_display_output,
 )
+
+
+def test_format_display_output_matches_reference_category() -> None:
+    """Outputs column shows classification to align with reference expected_category."""
+    assert format_display_output("technical", "Escalated outage") == "technical"
+    assert format_display_output("", "Refund processed") == ""
+    assert format_display_output("billing", "long reply text") == "billing"
 
 
 def test_extract_fields_from_tool_messages() -> None:
@@ -80,3 +88,16 @@ def test_extract_tool_names_from_outputs_prefers_messages() -> None:
         "graph_trajectory": {"results": []},
     }
     assert extract_tool_names_from_outputs(outputs) == ["classify"]
+
+
+def test_extract_tool_names_from_outputs_uses_tool_names() -> None:
+    """Serialized tool_names list is used when messages are omitted."""
+    outputs = {
+        "tool_names": ["read_ticket", "classify", "draft_reply"],
+        "graph_trajectory": {"results": []},
+    }
+    assert extract_tool_names_from_outputs(outputs) == [
+        "read_ticket",
+        "classify",
+        "draft_reply",
+    ]

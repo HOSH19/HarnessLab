@@ -78,7 +78,7 @@ def test_serialize_result_row_reads_nested_run_outputs() -> None:
     row = _FakeRow("T-018", {"task_pass": 1.0})
     row.outputs = {}
     row.run.outputs = {
-        "output": "technical: Escalated outage",
+        "output": "technical",
         "classification": "technical",
         "final_reply": "Escalated outage",
     }
@@ -86,7 +86,7 @@ def test_serialize_result_row_reads_nested_run_outputs() -> None:
     payload = serialize_result_row(row)
 
     assert payload["outputs"]["final_reply"] == "Escalated outage"
-    assert payload["outputs"]["output"] == "technical: Escalated outage"
+    assert payload["outputs"]["output"] == "technical"
 
 
 def test_save_experiment_run_roundtrip(tmp_path: Path) -> None:

@@ -1,0 +1,13 @@
+{
+  "task_id": "task-014",
+  "ticket_id": "T-014",
+  "prompt": "Triage ticket T-014. Search the knowledge base separately for webhook delivery issues and database migration errors before classifying.",
+  "stress": true,
+  "expected_category": "technical",
+  "required_reply_terms": ["webhook", "database"],
+  "expected_nodes": [
+    "agent", "tools", "agent", "tools", "agent", "tools",
+    "agent", "tools", "agent", "tools"
+  ],
+  "expected_tools": ["read_ticket", "search_kb", "search_kb", "classify", "draft_reply"]
+}

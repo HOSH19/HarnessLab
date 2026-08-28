@@ -1,0 +1,82 @@
+{
+  "evaluation_results": {
+    "efficiency": {
+      "comment": "latency_ms=2652, tokens=0, steps=5, graph_steps=5",
+      "score": 1.0
+    },
+    "error_recovery": {
+      "comment": "error_count=0, max_acceptable=0",
+      "score": 1.0
+    },
+    "failure_fingerprint": {
+      "comment": "WRONG_ANSWER",
+      "score": 0.0
+    },
+    "final_reply": {
+      "comment": "agent did not call draft_reply",
+      "score": 0.0,
+      "value": "(empty)"
+    },
+    "graph_trajectory": {
+      "comment": "matched=False, progress=0.31, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent']",
+      "score": 0.3125
+    },
+    "step_count": {
+      "comment": "steps=5, graph_steps=5, expected_max=10",
+      "score": 1.0
+    },
+    "task_pass": {
+      "comment": "category_ok=False, terms_ok=False, terms_score=0.00, missing_terms=['sla', '503', 'webhook', 'escalat'], score=0.00",
+      "score": 0.0
+    },
+    "tool_sequence": {
+      "comment": "matched=False, progress=0.00, expected=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'escalate_ticket', 'draft_reply'], actual=['check_sla', 'search_kb', 'search_kb', 'escalate_ticket']",
+      "score": 0.0
+    }
+  },
+  "example_id": "6d54e0d2-2784-489c-8b47-017a7d512011",
+  "inputs": {
+    "flaky_tools": {
+      "escalate_ticket": 1,
+      "search_kb": 2
+    },
+    "prompt": "Triage ticket T-018. Check SLA tier immediately, then search the knowledge base separately for API outage escalation and webhook delivery failures before escalating to engineering on-call.",
+    "ticket_id": "T-018"
+  },
+  "outputs": {
+    "classification": "",
+    "error_count": 0,
+    "final_reply": "",
+    "graph_trajectory": {
+      "inputs": [],
+      "results": [
+        {
+          "messages": [
+            {
+              "content": "The SLA tier for ticket T-018 is priority with a 4-hour response deadline. Based on the issues identified\u2014API outage and webhook delivery failures\u2014I have escalated the ticket to engineering on-call for urgent resolution.",
+              "role": "assistant"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        [
+          "__start__",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent"
+        ]
+      ]
+    },
+    "output": "",
+    "tool_names": [
+      "check_sla",
+      "search_kb",
+      "search_kb",
+      "escalate_ticket"
+    ]
+  },
+  "run_id": "01a04ab1-d899-7d90-a06f-69ff93a834b9"
+}

@@ -1,13 +1,14 @@
 {
-  "task_id": "task-011",
-  "ticket_id": "T-011",
-  "prompt": "Triage ticket T-011",
+  "task_id": "task-015",
+  "ticket_id": "T-015",
+  "prompt": "Triage ticket T-015",
   "flaky_tools": {
-    "read_ticket": 2
+    "search_kb": 2
   },
   "stress": true,
+  "max_acceptable_errors": 2,
   "expected_category": "technical",
-  "required_reply_terms": ["database", "timeout"],
+  "required_reply_terms": ["ssl", "certificate"],
   "expected_nodes": [
     "agent", "tools", "agent", "tools", "agent", "tools",
     "agent", "tools", "agent", "tools", "agent", "tools"

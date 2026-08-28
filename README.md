@@ -22,7 +22,7 @@ Harness YAML → compiled LangGraph agent → LangSmith `evaluate()` per task �
 
 **Harness variants:** `minimal` (no middleware), `retry` (tool retries), `trim` (message history cap).
 
-**Stress suite:** 2 tasks (T-018 tool-budget pressure, T-019 adversarial prompt).
+**Stress suite:** 9 tasks (T-011–T-019): flaky recovery, long context, SLA/escalation, adversarial prompts, tool budget.
 
 Agent policy lives in `examples/ticket_triage/rules.py` (read → KB search → classify → reply; optional `check_sla` / `escalate_ticket` for SLA/outage tickets).
 

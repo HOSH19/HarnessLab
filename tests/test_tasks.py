@@ -10,10 +10,11 @@ def test_load_tasks_returns_inputs_and_outputs() -> None:
     root = Path(__file__).resolve().parents[1]
     tasks_dir = root / "examples" / "ticket_triage" / "tasks"
     tasks = load_tasks(tasks_dir)
-    assert len(tasks) == 2
+    assert len(tasks) == 9
     assert "inputs" in tasks[0]
     assert "outputs" in tasks[0]
     assert "expected_category" in tasks[0]["outputs"]
+    assert tasks[0]["outputs"]["final_reply"].startswith("include:")
 
 
 def test_load_tasks_filters_by_ticket_id() -> None:

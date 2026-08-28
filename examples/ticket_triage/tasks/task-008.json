@@ -1,0 +1,28 @@
+{
+  "task_id": "task-018",
+  "ticket_id": "T-018",
+  "prompt": "Triage ticket T-018. Check SLA tier immediately, then search the knowledge base separately for API outage escalation and webhook delivery failures before escalating to engineering on-call.",
+  "flaky_tools": {
+    "search_kb": 2,
+    "escalate_ticket": 1
+  },
+  "stress": true,
+  "max_acceptable_errors": 0,
+  "expected_max_steps": 10,
+  "expected_category": "technical",
+  "required_reply_terms": ["sla", "503", "webhook", "escalat"],
+  "expected_nodes": [
+    "agent", "tools", "agent", "tools", "agent", "tools",
+    "agent", "tools", "agent", "tools", "agent", "tools",
+    "agent", "tools", "agent", "tools"
+  ],
+  "expected_tools": [
+    "read_ticket",
+    "check_sla",
+    "search_kb",
+    "search_kb",
+    "classify",
+    "escalate_ticket",
+    "draft_reply"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "arms": [
+    "minimal"
+  ],
+  "compare_by": "harness",
+  "dataset": "task_ablation",
+  "example": "/Users/hoshuhan/Documents/UCLA/spring/boredom/harnesslab/examples/ticket_triage",
+  "harness": "minimal",
+  "harnesses": [
+    "gpt-4.1-nano"
+  ],
+  "langsmith_mode": true,
+  "model": "gpt-4.1-nano",
+  "models": [
+    "gpt-4.1-nano"
+  ],
+  "task_count": 9,
+  "tasks_limit": 9,
+  "ticket_id": null,
+  "timestamp": "2026-08-28T23:26:35.986645+00:00"
+}

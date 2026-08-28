@@ -1,0 +1,80 @@
+{
+  "evaluation_results": {
+    "efficiency": {
+      "comment": "latency_ms=3185, tokens=0, steps=7, graph_steps=7",
+      "score": 1.0
+    },
+    "error_recovery": {
+      "comment": "error_count=0, max_acceptable=0",
+      "score": 1.0
+    },
+    "failure_fingerprint": {
+      "comment": "WRONG_ANSWER",
+      "score": 0.0
+    },
+    "final_reply": {
+      "comment": "agent did not call draft_reply",
+      "score": 0.0,
+      "value": "(empty)"
+    },
+    "graph_trajectory": {
+      "comment": "matched=False, progress=0.70, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
+      "score": 0.7
+    },
+    "step_count": {
+      "comment": "steps=7, graph_steps=7, expected_max=12",
+      "score": 1.0
+    },
+    "task_pass": {
+      "comment": "category_ok=True, terms_ok=False, terms_score=0.00, missing_terms=['webhook', 'database'], score=0.50",
+      "score": 0.5
+    },
+    "tool_sequence": {
+      "comment": "matched=False, progress=0.20, expected=['read_ticket', 'search_kb', 'search_kb', 'classify', 'draft_reply'], actual=['search_kb', 'search_kb', 'read_ticket', 'classify']",
+      "score": 0.2
+    }
+  },
+  "example_id": "01d036bd-f4fc-4a9b-b49f-3d05a1a66cbf",
+  "inputs": {
+    "prompt": "Triage ticket T-014. Search the knowledge base separately for webhook delivery issues and database migration errors before classifying.",
+    "ticket_id": "T-014"
+  },
+  "outputs": {
+    "classification": "technical",
+    "error_count": 0,
+    "final_reply": "",
+    "graph_trajectory": {
+      "inputs": [],
+      "results": [
+        {
+          "messages": [
+            {
+              "content": "The ticket has been classified as a technical issue. Would you like me to draft a response to the customer?",
+              "role": "assistant"
+            }
+          ]
+        }
+      ],
+      "steps": [
+        [
+          "__start__",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent",
+          "tools",
+          "agent"
+        ]
+      ]
+    },
+    "output": "technical",
+    "tool_names": [
+      "search_kb",
+      "search_kb",
+      "read_ticket",
+      "classify"
+    ]
+  },
+  "run_id": "01a04ab2-14eb-7390-b955-e2769fcb6f5f"
+}

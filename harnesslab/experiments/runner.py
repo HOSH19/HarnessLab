@@ -24,6 +24,7 @@ from harnesslab.config.models import HarnessConfig
 from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
 from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.error_recovery import error_recovery
+from harnesslab.eval.final_reply import final_reply
 from harnesslab.eval.fingerprint import failure_fingerprint
 from harnesslab.eval.outcome import task_pass
 from harnesslab.eval.step_count import step_count
@@ -34,8 +35,8 @@ from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.tasks import load_tasks
 from harnesslab.graph.extract import (
     extract_fields_from_messages,
+    extract_tool_names_from_messages,
     format_display_output,
-    serialize_messages,
 )
 
 CompareDimension = Literal["harness", "models"]
@@ -48,6 +49,7 @@ EVALUATORS = [
     step_count,
     efficiency,
     failure_fingerprint,
+    final_reply,
 ]
 
 
@@ -109,13 +111,14 @@ def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
     trajectory = extract_langgraph_trajectory_from_thread(graph, config)
     classification = parsed["classification"] or state.get("classification", "")
     final_reply = parsed["final_reply"] or state.get("final_reply", "")
+    tool_names = extract_tool_names_from_messages(messages)
 
     return {
         "output": format_display_output(classification, final_reply),
         "classification": classification,
         "final_reply": final_reply,
+        "tool_names": tool_names,
         "error_count": state.get("error_count", 0),
-        "messages": serialize_messages(messages),
         "graph_trajectory": trajectory["outputs"],
     }
 

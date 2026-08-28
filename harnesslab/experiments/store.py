@@ -73,10 +73,16 @@ def serialize_result_row(row: Any) -> dict[str, Any]:
         comment = getattr(result, "comment", None)
         if comment is None and isinstance(result, dict):
             comment = result.get("comment")
-        evaluations[str(result_key)] = {
+        value = getattr(result, "value", None)
+        if value is None and isinstance(result, dict):
+            value = result.get("value")
+        entry: dict[str, Any] = {
             "score": result_score,
             "comment": str(comment or ""),
         }
+        if value is not None:
+            entry["value"] = _to_json_serializable(value)
+        evaluations[str(result_key)] = entry
 
     return {
         "example_id": str(example_id) if example_id is not None else None,
