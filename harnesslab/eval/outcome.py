@@ -6,24 +6,18 @@ Does not call LLMs or access LangSmith directly.
 
 from langsmith.schemas import Example, Run
 
+from harnesslab.eval.outputs import run_output_field
+
 
 def task_pass(run: Run, example: Example) -> dict:
-    """Score whether the agent produced a correct triage result.
-
-    Args:
-        run: LangSmith run with agent outputs.
-        example: Dataset example with expected fields.
-
-    Returns:
-        Dict with score key (1.0 pass, 0.0 fail) and comment.
-    """
+    """Score whether the agent produced a correct triage result."""
     outputs = run.outputs or {}
     reference = example.outputs or example.inputs or {}
     expected_category = reference.get("expected_category", "")
     required_terms = reference.get("required_reply_terms", [])
 
-    classification = str(outputs.get("classification", "")).lower()
-    reply = str(outputs.get("final_reply", "")).lower()
+    classification = str(run_output_field(outputs, "classification", "")).lower()
+    reply = str(run_output_field(outputs, "final_reply", "")).lower()
 
     category_ok = expected_category.lower() in classification if expected_category else True
     if required_terms:
@@ -32,7 +26,6 @@ def task_pass(run: Run, example: Example) -> dict:
         terms_score = len(matched_terms) / len(required_terms)
         terms_ok = not missing_terms
     else:
-        matched_terms = []
         missing_terms = []
         terms_score = 1.0
         terms_ok = True

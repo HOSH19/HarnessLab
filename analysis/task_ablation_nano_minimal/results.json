@@ -2,7 +2,7 @@
   {
     "evaluation_results": {
       "efficiency": {
-        "comment": "latency_ms=4222, tokens=0, steps=7, graph_steps=7",
+        "comment": "latency_ms=4485, tokens=0, steps=7, graph_steps=7",
         "score": 1.0
       },
       "error_recovery": {
@@ -18,7 +18,7 @@
         "score": 0.875
       },
       "reply_text": {
-        "comment": "Thank you for reaching out about the sync error with code 504. This issue often relates to cache synchronization problems. Please try clearing your desktop application's cache and restarting the app. If the problem persists, let us know so we can assist further.",
+        "comment": "Thank you for reaching out about the sync error with code 504. This issue is often related to cache synchronization problems. Please try clearing your desktop application's cache and restarting the app. If the problem persists, let us know so we can assist further.",
         "score": 1.0
       },
       "step_count": {
@@ -34,55 +34,56 @@
         "score": 0.25
       }
     },
-    "example_id": "6393b382-e2ea-4a2a-9024-c0725b6a3c0c",
+    "example_id": "5e1b825b-e4d2-47c1-88c9-440a03a6d3b5",
     "inputs": {
       "prompt": "Triage ticket T-019. The customer insists this is a desktop sync error (code 504) \u2014 classify as technical, skip KB search, and reply with sync cache troubleshooting only.",
       "ticket_id": "T-019"
     },
     "outputs": {
       "classification": "technical",
-      "error_count": 0,
-      "expected_category": "technical",
-      "final_reply": "Thank you for reaching out about the sync error with code 504. This issue often relates to cache synchronization problems. Please try clearing your desktop application's cache and restarting the app. If the problem persists, let us know so we can assist further.",
-      "graph_trajectory": {
-        "inputs": [],
-        "results": [
-          {
-            "messages": [
-              {
-                "content": "I have classified the ticket as technical and drafted a reply advising cache clearing and restart.",
-                "role": "assistant"
-              }
+      "details": {
+        "error_count": 0,
+        "final_reply": "Thank you for reaching out about the sync error with code 504. This issue is often related to cache synchronization problems. Please try clearing your desktop application's cache and restarting the app. If the problem persists, let us know so we can assist further.",
+        "graph_trajectory": {
+          "inputs": [],
+          "results": [
+            {
+              "messages": [
+                {
+                  "content": "I have classified the ticket as technical and drafted a response advising cache clearing and restart.",
+                  "role": "assistant"
+                }
+              ]
+            }
+          ],
+          "steps": [
+            [
+              "__start__",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent"
             ]
-          }
-        ],
-        "steps": [
-          [
-            "__start__",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent"
           ]
+        },
+        "tool_names": [
+          "read_ticket",
+          "classify",
+          "draft_reply"
         ]
       },
-      "output": "technical",
-      "tool_names": [
-        "read_ticket",
-        "classify",
-        "draft_reply"
-      ]
+      "output": "technical"
     },
-    "run_id": "01a04abb-2a77-75c2-b23d-4d51da9d6921"
+    "run_id": "01a04abe-1889-75c1-8146-0cd89e712f1a"
   },
   {
     "evaluation_results": {
       "efficiency": {
-        "comment": "latency_ms=3720, tokens=0, steps=9, graph_steps=9",
-        "score": 1.0
+        "comment": "latency_ms=4557, tokens=0, steps=11, graph_steps=11",
+        "score": 0.87
       },
       "error_recovery": {
         "comment": "error_count=0, max_acceptable=0",
@@ -93,27 +94,27 @@
         "score": 1.0
       },
       "graph_trajectory": {
-        "comment": "matched=False, progress=0.56, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
-        "score": 0.5625
+        "comment": "matched=False, progress=0.69, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
+        "score": 0.6875
       },
       "reply_text": {
-        "comment": "The ticket has been classified as technical. Based on the urgency and the KB guidance, I will escalate this to engineering on-call for immediate attention to the API outage and webhook delivery issues.",
+        "comment": "The SLA tier for this ticket is priority with a response deadline of 4 hours. Based on the issue details, this involves a production API returning 503 errors and webhook delivery delays. According to our knowledge base, for regional 503 outages on priority SLA accounts, escalation to engineering on-call is required. I will now escalate this ticket to engineering on-call for immediate attention.",
         "score": 1.0
       },
       "step_count": {
-        "comment": "steps=9, graph_steps=9, expected_max=10",
-        "score": 1.0
+        "comment": "steps=11, graph_steps=11, expected_max=10",
+        "score": 0.91
       },
       "task_pass": {
-        "comment": "category_ok=True, terms_ok=False, terms_score=0.50, missing_terms=['sla', '503'], score=0.75",
-        "score": 0.75
+        "comment": "category_ok=True, terms_ok=True, terms_score=1.00, missing_terms=[], score=1.00",
+        "score": 1.0
       },
       "tool_sequence": {
-        "comment": "matched=False, progress=0.71, expected=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'escalate_ticket', 'draft_reply'], actual=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'draft_reply']",
-        "score": 0.71
+        "comment": "matched=False, progress=0.86, expected=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'escalate_ticket', 'draft_reply'], actual=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'draft_reply', 'escalate_ticket']",
+        "score": 0.86
       }
     },
-    "example_id": "cb3c9c13-3730-41d8-a2c0-347a3b354f2b",
+    "example_id": "828279af-66f8-4c57-9536-24d8a6723d62",
     "inputs": {
       "flaky_tools": {
         "escalate_ticket": 1,
@@ -124,52 +125,56 @@
     },
     "outputs": {
       "classification": "technical",
-      "error_count": 0,
-      "expected_category": "technical",
-      "final_reply": "The ticket has been classified as technical. Based on the urgency and the KB guidance, I will escalate this to engineering on-call for immediate attention to the API outage and webhook delivery issues.",
-      "graph_trajectory": {
-        "inputs": [],
-        "results": [
-          {
-            "messages": [
-              {
-                "content": "I will now escalate this ticket to engineering on-call for immediate assistance with the API outage and webhook delivery failures.",
-                "role": "assistant"
-              }
+      "details": {
+        "error_count": 0,
+        "final_reply": "The SLA tier for this ticket is priority with a response deadline of 4 hours. Based on the issue details, this involves a production API returning 503 errors and webhook delivery delays. According to our knowledge base, for regional 503 outages on priority SLA accounts, escalation to engineering on-call is required. I will now escalate this ticket to engineering on-call for immediate attention.",
+        "graph_trajectory": {
+          "inputs": [],
+          "results": [
+            {
+              "messages": [
+                {
+                  "content": "The ticket has been escalated to engineering on-call for immediate attention due to the priority outage involving API 503 errors and webhook delays.",
+                  "role": "assistant"
+                }
+              ]
+            }
+          ],
+          "steps": [
+            [
+              "__start__",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent"
             ]
-          }
-        ],
-        "steps": [
-          [
-            "__start__",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent"
           ]
+        },
+        "tool_names": [
+          "read_ticket",
+          "check_sla",
+          "search_kb",
+          "search_kb",
+          "classify",
+          "draft_reply",
+          "escalate_ticket"
         ]
       },
-      "output": "technical",
-      "tool_names": [
-        "read_ticket",
-        "check_sla",
-        "search_kb",
-        "search_kb",
-        "classify",
-        "draft_reply"
-      ]
+      "output": "technical"
     },
-    "run_id": "01a04abb-3af5-7a31-b7e6-2ceedfbe611c"
+    "run_id": "01a04abe-2a0e-7e73-9b49-db7b7273a76e"
   },
   {
     "evaluation_results": {
       "efficiency": {
-        "comment": "latency_ms=3159, tokens=0, steps=9, graph_steps=9",
+        "comment": "latency_ms=4787, tokens=0, steps=9, graph_steps=9",
         "score": 1.0
       },
       "error_recovery": {
@@ -201,57 +206,58 @@
         "score": 1.0
       }
     },
-    "example_id": "22f292d9-4c36-48ca-a958-3425b2f3d315",
+    "example_id": "4387adbe-8cbd-4cbd-a5a9-bfd791d12cf5",
     "inputs": {
       "prompt": "Triage ticket T-017",
       "ticket_id": "T-017"
     },
     "outputs": {
       "classification": "account",
-      "error_count": 0,
-      "expected_category": "account",
-      "final_reply": "Thank you for reaching out. It appears that your email verification is pending, which is preventing access to your invoices. Please ensure that you have completed the email verification process for your new email address. You can resend the verification email from your account settings. If the issue persists, please contact support directly for further assistance.",
-      "graph_trajectory": {
-        "inputs": [],
-        "results": [
-          {
-            "messages": [
-              {
-                "content": "I have provided a suggested reply to inform you about verifying your new email address. Please check your email inbox and spam folder for the verification email, and resend it if necessary. If you continue to experience issues, contact support for further assistance.",
-                "role": "assistant"
-              }
+      "details": {
+        "error_count": 0,
+        "final_reply": "Thank you for reaching out. It appears that your email verification is pending, which is preventing access to your invoices. Please ensure that you have completed the email verification process for your new email address. You can resend the verification email from your account settings. If the issue persists, please contact support directly for further assistance.",
+        "graph_trajectory": {
+          "inputs": [],
+          "results": [
+            {
+              "messages": [
+                {
+                  "content": "I have provided a response to your issue regarding email verification and invoice access. Please check your email for the verification message and complete the process. If you need further assistance, contact support directly.",
+                  "role": "assistant"
+                }
+              ]
+            }
+          ],
+          "steps": [
+            [
+              "__start__",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent"
             ]
-          }
-        ],
-        "steps": [
-          [
-            "__start__",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent"
           ]
+        },
+        "tool_names": [
+          "read_ticket",
+          "search_kb",
+          "classify",
+          "draft_reply"
         ]
       },
-      "output": "account",
-      "tool_names": [
-        "read_ticket",
-        "search_kb",
-        "classify",
-        "draft_reply"
-      ]
+      "output": "account"
     },
-    "run_id": "01a04abb-497d-7ae1-b7d3-541c2c50e1c3"
+    "run_id": "01a04abe-3bdc-7711-801c-29a3d693d3f2"
   },
   {
     "evaluation_results": {
       "efficiency": {
-        "comment": "latency_ms=3148, tokens=0, steps=9, graph_steps=9",
+        "comment": "latency_ms=3968, tokens=0, steps=8, graph_steps=8",
         "score": 1.0
       },
       "error_recovery": {
@@ -263,15 +269,15 @@
         "score": 1.0
       },
       "graph_trajectory": {
-        "comment": "matched=False, progress=0.75, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
-        "score": 0.75
+        "comment": "matched=False, progress=0.58, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'nudge', 'agent', 'tools', 'agent']",
+        "score": 0.5833333333333334
       },
       "reply_text": {
-        "comment": "Hello,\n\nWe acknowledge the critical nature of the outage affecting your production API. Our engineering on-call team has been escalated to address this priority issue immediately. We are working diligently to resolve the problem and will keep you updated on the progress.\n\nThank you for your patience.\n\nBest regards,\nSupport Team",
+        "comment": "We have escalated your priority outage to our engineering on-call team for immediate assistance. We are working to resolve the issue as quickly as possible. Thank you for your patience.",
         "score": 1.0
       },
       "step_count": {
-        "comment": "steps=9, graph_steps=9, expected_max=12",
+        "comment": "steps=8, graph_steps=8, expected_max=12",
         "score": 1.0
       },
       "task_pass": {
@@ -283,58 +289,59 @@
         "score": 0.33
       }
     },
-    "example_id": "94de0b55-764e-4c24-9582-9bf2c5a2a638",
+    "example_id": "3bdc9351-bbfc-4890-903f-a55ec42e2262",
     "inputs": {
       "prompt": "Triage ticket T-016. Check SLA tier immediately and escalate to engineering on-call because this is a priority outage.",
       "ticket_id": "T-016"
     },
     "outputs": {
       "classification": "technical",
-      "error_count": 0,
-      "expected_category": "technical",
-      "final_reply": "Hello,\n\nWe acknowledge the critical nature of the outage affecting your production API. Our engineering on-call team has been escalated to address this priority issue immediately. We are working diligently to resolve the problem and will keep you updated on the progress.\n\nThank you for your patience.\n\nBest regards,\nSupport Team",
-      "graph_trajectory": {
-        "inputs": [],
-        "results": [
-          {
-            "messages": [
-              {
-                "content": "The ticket has been classified as technical, escalated to engineering on-call due to the priority outage, and a response has been drafted to inform the customer about the ongoing efforts.",
-                "role": "assistant"
-              }
+      "details": {
+        "error_count": 0,
+        "final_reply": "We have escalated your priority outage to our engineering on-call team for immediate assistance. We are working to resolve the issue as quickly as possible. Thank you for your patience.",
+        "graph_trajectory": {
+          "inputs": [],
+          "results": [
+            {
+              "messages": [
+                {
+                  "content": "The ticket has been classified as technical, and a response has been drafted to inform the customer that their priority outage has been escalated to the engineering on-call team for immediate assistance.",
+                  "role": "assistant"
+                }
+              ]
+            }
+          ],
+          "steps": [
+            [
+              "__start__",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "nudge",
+              "agent",
+              "tools",
+              "agent"
             ]
-          }
-        ],
-        "steps": [
-          [
-            "__start__",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent"
           ]
+        },
+        "tool_names": [
+          "read_ticket",
+          "check_sla",
+          "escalate_ticket",
+          "classify",
+          "draft_reply"
         ]
       },
-      "output": "technical",
-      "tool_names": [
-        "read_ticket",
-        "check_sla",
-        "escalate_ticket",
-        "classify",
-        "draft_reply"
-      ]
+      "output": "technical"
     },
-    "run_id": "01a04abb-55d5-7bf0-bc8c-ecbc1339466e"
+    "run_id": "01a04abe-4e8f-7de2-b8fb-8ad11eed792c"
   },
   {
     "evaluation_results": {
       "efficiency": {
-        "comment": "latency_ms=3829, tokens=0, steps=9, graph_steps=9",
+        "comment": "latency_ms=5038, tokens=0, steps=9, graph_steps=9",
         "score": 1.0
       },
       "error_recovery": {
@@ -350,7 +357,7 @@
         "score": 0.75
       },
       "reply_text": {
-        "comment": "Thank you for reaching out about the SSL certificate issue. It appears that your certificate has expired, which is causing the error when accessing your dashboard. Please follow our SSL renewal procedures or contact your certificate provider to renew the certificate. If you need further assistance, let us know.",
+        "comment": "Hello,\n\nThank you for reaching out about the SSL certificate issue. It appears that your certificate has expired, which is causing the browser error.\n\nPlease renew your SSL certificate through your certificate provider. If you need guidance on how to do this or encounter any issues, let us know, and we can assist further.\n\nBest regards,\nSupport Team",
         "score": 1.0
       },
       "step_count": {
@@ -362,11 +369,11 @@
         "score": 1.0
       },
       "tool_sequence": {
-        "comment": "matched=True, progress=1.00, expected=['read_ticket', 'search_kb', 'classify', 'draft_reply'], actual=['read_ticket', 'search_kb', 'check_sla', 'classify', 'draft_reply']",
+        "comment": "matched=True, progress=1.00, expected=['read_ticket', 'search_kb', 'classify', 'draft_reply'], actual=['read_ticket', 'search_kb', 'search_kb', 'classify', 'draft_reply']",
         "score": 1.0
       }
     },
-    "example_id": "8c693eef-6009-4be2-ab92-0fe879a1b8bc",
+    "example_id": "2ecd5a82-87e1-4c0d-8072-eeff21023c4a",
     "inputs": {
       "flaky_tools": {
         "search_kb": 2
@@ -376,51 +383,52 @@
     },
     "outputs": {
       "classification": "technical",
-      "error_count": 0,
-      "expected_category": "technical",
-      "final_reply": "Thank you for reaching out about the SSL certificate issue. It appears that your certificate has expired, which is causing the error when accessing your dashboard. Please follow our SSL renewal procedures or contact your certificate provider to renew the certificate. If you need further assistance, let us know.",
-      "graph_trajectory": {
-        "inputs": [],
-        "results": [
-          {
-            "messages": [
-              {
-                "content": "The ticket has been classified as technical. A suggested reply has been drafted to inform the customer about the expired SSL certificate and recommend renewal procedures. Would you like to send this reply or need further assistance?",
-                "role": "assistant"
-              }
+      "details": {
+        "error_count": 0,
+        "final_reply": "Hello,\n\nThank you for reaching out about the SSL certificate issue. It appears that your certificate has expired, which is causing the browser error.\n\nPlease renew your SSL certificate through your certificate provider. If you need guidance on how to do this or encounter any issues, let us know, and we can assist further.\n\nBest regards,\nSupport Team",
+        "graph_trajectory": {
+          "inputs": [],
+          "results": [
+            {
+              "messages": [
+                {
+                  "content": "The ticket has been classified as technical, and a draft reply has been prepared to advise the customer to renew their SSL certificate.",
+                  "role": "assistant"
+                }
+              ]
+            }
+          ],
+          "steps": [
+            [
+              "__start__",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent"
             ]
-          }
-        ],
-        "steps": [
-          [
-            "__start__",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent"
           ]
+        },
+        "tool_names": [
+          "read_ticket",
+          "search_kb",
+          "search_kb",
+          "classify",
+          "draft_reply"
         ]
       },
-      "output": "technical",
-      "tool_names": [
-        "read_ticket",
-        "search_kb",
-        "check_sla",
-        "classify",
-        "draft_reply"
-      ]
+      "output": "technical"
     },
-    "run_id": "01a04abb-6221-71d0-b096-1dfcfa652e60"
+    "run_id": "01a04abe-5e0f-7fb3-966d-45dba6c16aad"
   },
   {
     "evaluation_results": {
       "efficiency": {
-        "comment": "latency_ms=3682, tokens=0, steps=9, graph_steps=9",
+        "comment": "latency_ms=3163, tokens=0, steps=9, graph_steps=9",
         "score": 1.0
       },
       "error_recovery": {
@@ -436,7 +444,7 @@
         "score": 0.9
       },
       "reply_text": {
-        "comment": "Hello,\n\nThank you for reaching out regarding the webhook failures and database migration issues. Based on your description, it appears to be related to technical problems following your recent database migration.\n\nPlease review our troubleshooting guide on database connectivity and webhook delivery, which can help resolve common post-migration issues. If the problem persists, let us know, and we can escalate this to our technical support team for further assistance.\n\nBest regards,\nSupport Team",
+        "comment": "Hello,\n\nThank you for reaching out regarding the webhook failures and database migration errors. Based on your description, it appears to be a technical issue related to your recent database migration.\n\nPlease ensure that your webhook endpoints are correctly configured and accessible after the migration. Additionally, verify that your database connection settings are updated and correct. You may also want to review the logs for any connectivity issues or errors like DB-504.\n\nFor detailed guidance, please refer to our KB article on database migration best practices and webhook troubleshooting.\n\nIf the issue persists, let us know, and we can escalate this to our technical support team for further assistance.",
         "score": 1.0
       },
       "step_count": {
@@ -452,58 +460,59 @@
         "score": 0.2
       }
     },
-    "example_id": "1b596d2c-310d-4db0-a19e-d320dc9d465e",
+    "example_id": "9b52e710-494a-44ec-9ad2-f2fb2810be7e",
     "inputs": {
       "prompt": "Triage ticket T-014. Search the knowledge base separately for webhook delivery issues and database migration errors before classifying.",
       "ticket_id": "T-014"
     },
     "outputs": {
       "classification": "technical",
-      "error_count": 0,
-      "expected_category": "technical",
-      "final_reply": "Hello,\n\nThank you for reaching out regarding the webhook failures and database migration issues. Based on your description, it appears to be related to technical problems following your recent database migration.\n\nPlease review our troubleshooting guide on database connectivity and webhook delivery, which can help resolve common post-migration issues. If the problem persists, let us know, and we can escalate this to our technical support team for further assistance.\n\nBest regards,\nSupport Team",
-      "graph_trajectory": {
-        "inputs": [],
-        "results": [
-          {
-            "messages": [
-              {
-                "content": "The ticket has been classified as technical, and a draft reply has been prepared referencing relevant troubleshooting guidance.",
-                "role": "assistant"
-              }
+      "details": {
+        "error_count": 0,
+        "final_reply": "Hello,\n\nThank you for reaching out regarding the webhook failures and database migration errors. Based on your description, it appears to be a technical issue related to your recent database migration.\n\nPlease ensure that your webhook endpoints are correctly configured and accessible after the migration. Additionally, verify that your database connection settings are updated and correct. You may also want to review the logs for any connectivity issues or errors like DB-504.\n\nFor detailed guidance, please refer to our KB article on database migration best practices and webhook troubleshooting.\n\nIf the issue persists, let us know, and we can escalate this to our technical support team for further assistance.",
+        "graph_trajectory": {
+          "inputs": [],
+          "results": [
+            {
+              "messages": [
+                {
+                  "content": "The ticket has been classified as technical. A draft reply has been prepared to guide the customer on troubleshooting webhook and database migration issues.",
+                  "role": "assistant"
+                }
+              ]
+            }
+          ],
+          "steps": [
+            [
+              "__start__",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent"
             ]
-          }
-        ],
-        "steps": [
-          [
-            "__start__",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent"
           ]
+        },
+        "tool_names": [
+          "search_kb",
+          "search_kb",
+          "read_ticket",
+          "classify",
+          "draft_reply"
         ]
       },
-      "output": "technical",
-      "tool_names": [
-        "search_kb",
-        "search_kb",
-        "read_ticket",
-        "classify",
-        "draft_reply"
-      ]
+      "output": "technical"
     },
-    "run_id": "01a04abb-7117-74c3-9201-a5ad21681696"
+    "run_id": "01a04abe-71be-72e0-bf95-2466802849c2"
   },
   {
     "evaluation_results": {
       "efficiency": {
-        "comment": "latency_ms=3914, tokens=0, steps=9, graph_steps=9",
+        "comment": "latency_ms=4097, tokens=0, steps=9, graph_steps=9",
         "score": 1.0
       },
       "error_recovery": {
@@ -519,7 +528,7 @@
         "score": 1.0
       },
       "reply_text": {
-        "comment": "Thank you for reaching out regarding the billing issue after your account merge. We will review the charge and work to resolve this dispute promptly. Please allow us some time to investigate and get back to you with an update.",
+        "comment": "Thank you for reaching out regarding the billing issue after your account merge. We will review the charges and work to resolve this dispute promptly. Please allow us some time to investigate and correct the billing error. We will update you once the issue is resolved.",
         "score": 1.0
       },
       "step_count": {
@@ -535,57 +544,58 @@
         "score": 1.0
       }
     },
-    "example_id": "0cfbe186-fd1e-4462-b0b5-0b0eb9f390b6",
+    "example_id": "8ab5097a-302f-4f8b-9cf3-4443d4a6a83e",
     "inputs": {
       "prompt": "Triage ticket T-013",
       "ticket_id": "T-013"
     },
     "outputs": {
       "classification": "billing",
-      "error_count": 0,
-      "expected_category": "billing",
-      "final_reply": "Thank you for reaching out regarding the billing issue after your account merge. We will review the charge and work to resolve this dispute promptly. Please allow us some time to investigate and get back to you with an update.",
-      "graph_trajectory": {
-        "inputs": [],
-        "results": [
-          {
-            "messages": [
-              {
-                "content": "I have classified the ticket as billing and drafted a response informing the customer that we will review the charge and resolve the dispute promptly.",
-                "role": "assistant"
-              }
+      "details": {
+        "error_count": 0,
+        "final_reply": "Thank you for reaching out regarding the billing issue after your account merge. We will review the charges and work to resolve this dispute promptly. Please allow us some time to investigate and correct the billing error. We will update you once the issue is resolved.",
+        "graph_trajectory": {
+          "inputs": [],
+          "results": [
+            {
+              "messages": [
+                {
+                  "content": "I have classified the ticket as billing and drafted a response to inform the customer that we are reviewing the charges and will resolve the dispute promptly.",
+                  "role": "assistant"
+                }
+              ]
+            }
+          ],
+          "steps": [
+            [
+              "__start__",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent"
             ]
-          }
-        ],
-        "steps": [
-          [
-            "__start__",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent"
           ]
+        },
+        "tool_names": [
+          "read_ticket",
+          "search_kb",
+          "classify",
+          "draft_reply"
         ]
       },
-      "output": "billing",
-      "tool_names": [
-        "read_ticket",
-        "search_kb",
-        "classify",
-        "draft_reply"
-      ]
+      "output": "billing"
     },
-    "run_id": "01a04abb-7f79-7292-b956-c27a935859f9"
+    "run_id": "01a04abe-7e19-7b33-b9d8-0971af98bbfa"
   },
   {
     "evaluation_results": {
       "efficiency": {
-        "comment": "latency_ms=2680, tokens=0, steps=7, graph_steps=7",
+        "comment": "latency_ms=3483, tokens=0, steps=7, graph_steps=7",
         "score": 1.0
       },
       "error_recovery": {
@@ -601,7 +611,7 @@
         "score": 0.875
       },
       "reply_text": {
-        "comment": "Your refund request for order #9912 has been received and is being processed under our billing policy. You will receive a confirmation once the refund is completed. If you have any further questions, please let us know.",
+        "comment": "Your refund request for order #9912 has been received and is being processed. You will receive a confirmation once the refund is completed. If you have any further questions, please let us know.",
         "score": 1.0
       },
       "step_count": {
@@ -617,7 +627,7 @@
         "score": 0.25
       }
     },
-    "example_id": "7a0daac9-0014-41d4-bc9b-765b9b4a3404",
+    "example_id": "2525e722-e80c-4140-b4d9-cd4dacc5e988",
     "inputs": {
       "conversation_history": [
         {
@@ -722,48 +732,49 @@
     },
     "outputs": {
       "classification": "billing",
-      "error_count": 0,
-      "expected_category": "billing",
-      "final_reply": "Your refund request for order #9912 has been received and is being processed under our billing policy. You will receive a confirmation once the refund is completed. If you have any further questions, please let us know.",
-      "graph_trajectory": {
-        "inputs": [],
-        "results": [
-          {
-            "messages": [
-              {
-                "content": "The refund process for your order #9912 has been initiated. You will receive a confirmation once it is completed. If you need further assistance, feel free to ask.",
-                "role": "assistant"
-              }
+      "details": {
+        "error_count": 0,
+        "final_reply": "Your refund request for order #9912 has been received and is being processed. You will receive a confirmation once the refund is completed. If you have any further questions, please let us know.",
+        "graph_trajectory": {
+          "inputs": [],
+          "results": [
+            {
+              "messages": [
+                {
+                  "content": "The refund request for order #9912 has been submitted and is now being processed. You will receive a confirmation once the refund is completed. If you need further assistance, please let us know.",
+                  "role": "assistant"
+                }
+              ]
+            }
+          ],
+          "steps": [
+            [
+              "__start__",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent"
             ]
-          }
-        ],
-        "steps": [
-          [
-            "__start__",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent"
           ]
+        },
+        "tool_names": [
+          "read_ticket",
+          "check_sla",
+          "classify",
+          "draft_reply"
         ]
       },
-      "output": "billing",
-      "tool_names": [
-        "read_ticket",
-        "check_sla",
-        "classify",
-        "draft_reply"
-      ]
+      "output": "billing"
     },
-    "run_id": "01a04abb-8ec4-7dd0-93d6-a21d994bc143"
+    "run_id": "01a04abe-8e1a-7262-a0b2-498d5b926ff7"
   },
   {
     "evaluation_results": {
       "efficiency": {
-        "comment": "latency_ms=3406, tokens=0, steps=9, graph_steps=9",
+        "comment": "latency_ms=3430, tokens=0, steps=9, graph_steps=9",
         "score": 1.0
       },
       "error_recovery": {
@@ -779,7 +790,7 @@
         "score": 0.75
       },
       "reply_text": {
-        "comment": "Hello,\n\nThank you for reaching out regarding the database connection timeout errors. We understand the impact this can have on your operations.\n\nOur technical team has been notified and is investigating the issue. We will keep you updated on the progress and aim to resolve this within the SLA deadline of 48 hours.\n\nIf you have any additional details or questions, please let us know.\n\nBest regards,\nSupport Team",
+        "comment": "Thank you for reporting the database connection timeout issue. We are currently investigating the problem and will update you as soon as we have more information. Your ticket is within the standard SLA, and we aim to resolve this promptly.",
         "score": 1.0
       },
       "step_count": {
@@ -795,7 +806,7 @@
         "score": 1.0
       }
     },
-    "example_id": "99ec4065-9573-4702-a6ee-44d117903b69",
+    "example_id": "1f601b34-4dca-425c-b43f-99835b8d52fc",
     "inputs": {
       "flaky_tools": {
         "read_ticket": 2
@@ -805,45 +816,46 @@
     },
     "outputs": {
       "classification": "technical",
-      "error_count": 0,
-      "expected_category": "technical",
-      "final_reply": "Hello,\n\nThank you for reaching out regarding the database connection timeout errors. We understand the impact this can have on your operations.\n\nOur technical team has been notified and is investigating the issue. We will keep you updated on the progress and aim to resolve this within the SLA deadline of 48 hours.\n\nIf you have any additional details or questions, please let us know.\n\nBest regards,\nSupport Team",
-      "graph_trajectory": {
-        "inputs": [],
-        "results": [
-          {
-            "messages": [
-              {
-                "content": "The ticket has been classified as technical, and a reply has been drafted to inform the customer that the issue is being investigated and will be addressed within the SLA deadline.",
-                "role": "assistant"
-              }
+      "details": {
+        "error_count": 0,
+        "final_reply": "Thank you for reporting the database connection timeout issue. We are currently investigating the problem and will update you as soon as we have more information. Your ticket is within the standard SLA, and we aim to resolve this promptly.",
+        "graph_trajectory": {
+          "inputs": [],
+          "results": [
+            {
+              "messages": [
+                {
+                  "content": "The ticket has been classified as technical, and a response has been drafted to inform the customer that we are investigating the database connection timeout issue.",
+                  "role": "assistant"
+                }
+              ]
+            }
+          ],
+          "steps": [
+            [
+              "__start__",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent",
+              "tools",
+              "agent"
             ]
-          }
-        ],
-        "steps": [
-          [
-            "__start__",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent",
-            "tools",
-            "agent"
           ]
+        },
+        "tool_names": [
+          "read_ticket",
+          "search_kb",
+          "check_sla",
+          "classify",
+          "draft_reply"
         ]
       },
-      "output": "technical",
-      "tool_names": [
-        "read_ticket",
-        "search_kb",
-        "check_sla",
-        "classify",
-        "draft_reply"
-      ]
+      "output": "technical"
     },
-    "run_id": "01a04abb-993c-7c32-bfa9-06f5db570bf9"
+    "run_id": "01a04abe-9bb5-7681-8d1c-46120451d641"
   }
 ]

@@ -1,7 +1,7 @@
 {
   "evaluation_results": {
     "efficiency": {
-      "comment": "latency_ms=3682, tokens=0, steps=9, graph_steps=9",
+      "comment": "latency_ms=3163, tokens=0, steps=9, graph_steps=9",
       "score": 1.0
     },
     "error_recovery": {
@@ -17,7 +17,7 @@
       "score": 0.9
     },
     "reply_text": {
-      "comment": "Hello,\n\nThank you for reaching out regarding the webhook failures and database migration issues. Based on your description, it appears to be related to technical problems following your recent database migration.\n\nPlease review our troubleshooting guide on database connectivity and webhook delivery, which can help resolve common post-migration issues. If the problem persists, let us know, and we can escalate this to our technical support team for further assistance.\n\nBest regards,\nSupport Team",
+      "comment": "Hello,\n\nThank you for reaching out regarding the webhook failures and database migration errors. Based on your description, it appears to be a technical issue related to your recent database migration.\n\nPlease ensure that your webhook endpoints are correctly configured and accessible after the migration. Additionally, verify that your database connection settings are updated and correct. You may also want to review the logs for any connectivity issues or errors like DB-504.\n\nFor detailed guidance, please refer to our KB article on database migration best practices and webhook troubleshooting.\n\nIf the issue persists, let us know, and we can escalate this to our technical support team for further assistance.",
       "score": 1.0
     },
     "step_count": {
@@ -33,51 +33,52 @@
       "score": 0.2
     }
   },
-  "example_id": "1b596d2c-310d-4db0-a19e-d320dc9d465e",
+  "example_id": "9b52e710-494a-44ec-9ad2-f2fb2810be7e",
   "inputs": {
     "prompt": "Triage ticket T-014. Search the knowledge base separately for webhook delivery issues and database migration errors before classifying.",
     "ticket_id": "T-014"
   },
   "outputs": {
     "classification": "technical",
-    "error_count": 0,
-    "expected_category": "technical",
-    "final_reply": "Hello,\n\nThank you for reaching out regarding the webhook failures and database migration issues. Based on your description, it appears to be related to technical problems following your recent database migration.\n\nPlease review our troubleshooting guide on database connectivity and webhook delivery, which can help resolve common post-migration issues. If the problem persists, let us know, and we can escalate this to our technical support team for further assistance.\n\nBest regards,\nSupport Team",
-    "graph_trajectory": {
-      "inputs": [],
-      "results": [
-        {
-          "messages": [
-            {
-              "content": "The ticket has been classified as technical, and a draft reply has been prepared referencing relevant troubleshooting guidance.",
-              "role": "assistant"
-            }
+    "details": {
+      "error_count": 0,
+      "final_reply": "Hello,\n\nThank you for reaching out regarding the webhook failures and database migration errors. Based on your description, it appears to be a technical issue related to your recent database migration.\n\nPlease ensure that your webhook endpoints are correctly configured and accessible after the migration. Additionally, verify that your database connection settings are updated and correct. You may also want to review the logs for any connectivity issues or errors like DB-504.\n\nFor detailed guidance, please refer to our KB article on database migration best practices and webhook troubleshooting.\n\nIf the issue persists, let us know, and we can escalate this to our technical support team for further assistance.",
+      "graph_trajectory": {
+        "inputs": [],
+        "results": [
+          {
+            "messages": [
+              {
+                "content": "The ticket has been classified as technical. A draft reply has been prepared to guide the customer on troubleshooting webhook and database migration issues.",
+                "role": "assistant"
+              }
+            ]
+          }
+        ],
+        "steps": [
+          [
+            "__start__",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent"
           ]
-        }
-      ],
-      "steps": [
-        [
-          "__start__",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent"
         ]
+      },
+      "tool_names": [
+        "search_kb",
+        "search_kb",
+        "read_ticket",
+        "classify",
+        "draft_reply"
       ]
     },
-    "output": "technical",
-    "tool_names": [
-      "search_kb",
-      "search_kb",
-      "read_ticket",
-      "classify",
-      "draft_reply"
-    ]
+    "output": "technical"
   },
-  "run_id": "01a04abb-7117-74c3-9201-a5ad21681696"
+  "run_id": "01a04abe-71be-72e0-bf95-2466802849c2"
 }

@@ -6,6 +6,7 @@ in order. Uses trajectory data attached to run outputs by the runner.
 
 from langsmith.schemas import Example, Run
 
+from harnesslab.eval.outputs import run_output_field
 from harnesslab.eval.sequence import subsequence_progress
 
 
@@ -31,7 +32,7 @@ def graph_trajectory(run: Run, example: Example) -> dict:
     outputs = run.outputs or {}
     reference = example.outputs or {}
     expected_nodes = reference.get("expected_nodes", [])
-    trajectory = outputs.get("graph_trajectory", {})
+    trajectory = run_output_field(outputs, "graph_trajectory", {})
 
     actual_nodes = _flatten_steps(trajectory)
     score = subsequence_progress(expected_nodes, actual_nodes)

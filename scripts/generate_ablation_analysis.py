@@ -43,15 +43,22 @@ def _task_row(record: dict) -> dict:
     tid = record["inputs"]["ticket_id"]
     ev = record["evaluation_results"]
     out = record["outputs"]
+    details = out.get("details") or {}
     reply_ev = ev.get("reply_text") or ev.get("final_reply") or {}
-    reply = reply_ev.get("comment") or reply_ev.get("value") or out.get("final_reply") or ""
+    reply = (
+        reply_ev.get("comment")
+        or reply_ev.get("value")
+        or details.get("final_reply")
+        or out.get("final_reply")
+        or ""
+    )
     return {
         "tid": tid,
         "task_pass": ev["task_pass"]["score"],
         "tool_seq": ev["tool_sequence"]["score"],
         "graph": ev["graph_trajectory"]["score"],
         "fp": ev["failure_fingerprint"]["comment"],
-        "output": out.get("output", ""),
+        "output": out.get("classification") or out.get("output", ""),
         "reply": reply,
         "task_comment": ev["task_pass"]["comment"],
         "tool_comment": ev["tool_sequence"]["comment"],

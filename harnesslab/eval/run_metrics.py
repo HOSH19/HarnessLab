@@ -8,6 +8,8 @@ accessing run attributes directly.
 from datetime import datetime
 from typing import Any
 
+from harnesslab.eval.outputs import run_output_field
+
 
 def run_latency_seconds(run: Any) -> float:
     """Return wall-clock duration for a run in seconds."""
@@ -45,5 +47,5 @@ def trajectory_agent_tool_steps(outputs: dict[str, Any]) -> int:
     """Count agent and tools nodes in a graph trajectory attached to run outputs."""
     from harnesslab.eval.trajectory import _flatten_steps
 
-    nodes = _flatten_steps(outputs.get("graph_trajectory", {}))
+    nodes = _flatten_steps(run_output_field(outputs, "graph_trajectory", {}))
     return len([node for node in nodes if node in {"agent", "tools"}])

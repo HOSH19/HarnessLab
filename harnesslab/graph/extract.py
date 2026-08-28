@@ -168,10 +168,18 @@ def extract_tool_names_from_outputs(outputs: dict) -> list[str]:
     Returns:
         Ordered list of tool names from the best available source.
     """
-    messages = outputs.get("messages")
-    if messages:
-        return extract_tool_names_from_messages(messages)
     tool_names = outputs.get("tool_names")
     if tool_names:
         return [str(name) for name in tool_names]
-    return extract_tool_names_from_trajectory(outputs.get("graph_trajectory", {}))
+    details = outputs.get("details")
+    if isinstance(details, dict):
+        nested_tools = details.get("tool_names")
+        if nested_tools:
+            return [str(name) for name in nested_tools]
+    messages = outputs.get("messages")
+    if messages:
+        return extract_tool_names_from_messages(messages)
+    trajectory = outputs.get("graph_trajectory")
+    if not trajectory and isinstance(details, dict):
+        trajectory = details.get("graph_trajectory", {})
+    return extract_tool_names_from_trajectory(trajectory or {})

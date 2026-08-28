@@ -1,7 +1,7 @@
 {
   "evaluation_results": {
     "efficiency": {
-      "comment": "latency_ms=4222, tokens=0, steps=7, graph_steps=7",
+      "comment": "latency_ms=4485, tokens=0, steps=7, graph_steps=7",
       "score": 1.0
     },
     "error_recovery": {
@@ -17,7 +17,7 @@
       "score": 0.875
     },
     "reply_text": {
-      "comment": "Thank you for reaching out about the sync error with code 504. This issue often relates to cache synchronization problems. Please try clearing your desktop application's cache and restarting the app. If the problem persists, let us know so we can assist further.",
+      "comment": "Thank you for reaching out about the sync error with code 504. This issue is often related to cache synchronization problems. Please try clearing your desktop application's cache and restarting the app. If the problem persists, let us know so we can assist further.",
       "score": 1.0
     },
     "step_count": {
@@ -33,47 +33,48 @@
       "score": 0.25
     }
   },
-  "example_id": "6393b382-e2ea-4a2a-9024-c0725b6a3c0c",
+  "example_id": "5e1b825b-e4d2-47c1-88c9-440a03a6d3b5",
   "inputs": {
     "prompt": "Triage ticket T-019. The customer insists this is a desktop sync error (code 504) \u2014 classify as technical, skip KB search, and reply with sync cache troubleshooting only.",
     "ticket_id": "T-019"
   },
   "outputs": {
     "classification": "technical",
-    "error_count": 0,
-    "expected_category": "technical",
-    "final_reply": "Thank you for reaching out about the sync error with code 504. This issue often relates to cache synchronization problems. Please try clearing your desktop application's cache and restarting the app. If the problem persists, let us know so we can assist further.",
-    "graph_trajectory": {
-      "inputs": [],
-      "results": [
-        {
-          "messages": [
-            {
-              "content": "I have classified the ticket as technical and drafted a reply advising cache clearing and restart.",
-              "role": "assistant"
-            }
+    "details": {
+      "error_count": 0,
+      "final_reply": "Thank you for reaching out about the sync error with code 504. This issue is often related to cache synchronization problems. Please try clearing your desktop application's cache and restarting the app. If the problem persists, let us know so we can assist further.",
+      "graph_trajectory": {
+        "inputs": [],
+        "results": [
+          {
+            "messages": [
+              {
+                "content": "I have classified the ticket as technical and drafted a response advising cache clearing and restart.",
+                "role": "assistant"
+              }
+            ]
+          }
+        ],
+        "steps": [
+          [
+            "__start__",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent"
           ]
-        }
-      ],
-      "steps": [
-        [
-          "__start__",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent"
         ]
+      },
+      "tool_names": [
+        "read_ticket",
+        "classify",
+        "draft_reply"
       ]
     },
-    "output": "technical",
-    "tool_names": [
-      "read_ticket",
-      "classify",
-      "draft_reply"
-    ]
+    "output": "technical"
   },
-  "run_id": "01a04abb-2a77-75c2-b23d-4d51da9d6921"
+  "run_id": "01a04abe-1889-75c1-8146-0cd89e712f1a"
 }

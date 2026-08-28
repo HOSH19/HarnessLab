@@ -1,7 +1,7 @@
 {
   "evaluation_results": {
     "efficiency": {
-      "comment": "latency_ms=3406, tokens=0, steps=9, graph_steps=9",
+      "comment": "latency_ms=3430, tokens=0, steps=9, graph_steps=9",
       "score": 1.0
     },
     "error_recovery": {
@@ -17,7 +17,7 @@
       "score": 0.75
     },
     "reply_text": {
-      "comment": "Hello,\n\nThank you for reaching out regarding the database connection timeout errors. We understand the impact this can have on your operations.\n\nOur technical team has been notified and is investigating the issue. We will keep you updated on the progress and aim to resolve this within the SLA deadline of 48 hours.\n\nIf you have any additional details or questions, please let us know.\n\nBest regards,\nSupport Team",
+      "comment": "Thank you for reporting the database connection timeout issue. We are currently investigating the problem and will update you as soon as we have more information. Your ticket is within the standard SLA, and we aim to resolve this promptly.",
       "score": 1.0
     },
     "step_count": {
@@ -33,7 +33,7 @@
       "score": 1.0
     }
   },
-  "example_id": "99ec4065-9573-4702-a6ee-44d117903b69",
+  "example_id": "1f601b34-4dca-425c-b43f-99835b8d52fc",
   "inputs": {
     "flaky_tools": {
       "read_ticket": 2
@@ -43,44 +43,45 @@
   },
   "outputs": {
     "classification": "technical",
-    "error_count": 0,
-    "expected_category": "technical",
-    "final_reply": "Hello,\n\nThank you for reaching out regarding the database connection timeout errors. We understand the impact this can have on your operations.\n\nOur technical team has been notified and is investigating the issue. We will keep you updated on the progress and aim to resolve this within the SLA deadline of 48 hours.\n\nIf you have any additional details or questions, please let us know.\n\nBest regards,\nSupport Team",
-    "graph_trajectory": {
-      "inputs": [],
-      "results": [
-        {
-          "messages": [
-            {
-              "content": "The ticket has been classified as technical, and a reply has been drafted to inform the customer that the issue is being investigated and will be addressed within the SLA deadline.",
-              "role": "assistant"
-            }
+    "details": {
+      "error_count": 0,
+      "final_reply": "Thank you for reporting the database connection timeout issue. We are currently investigating the problem and will update you as soon as we have more information. Your ticket is within the standard SLA, and we aim to resolve this promptly.",
+      "graph_trajectory": {
+        "inputs": [],
+        "results": [
+          {
+            "messages": [
+              {
+                "content": "The ticket has been classified as technical, and a response has been drafted to inform the customer that we are investigating the database connection timeout issue.",
+                "role": "assistant"
+              }
+            ]
+          }
+        ],
+        "steps": [
+          [
+            "__start__",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent"
           ]
-        }
-      ],
-      "steps": [
-        [
-          "__start__",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent"
         ]
+      },
+      "tool_names": [
+        "read_ticket",
+        "search_kb",
+        "check_sla",
+        "classify",
+        "draft_reply"
       ]
     },
-    "output": "technical",
-    "tool_names": [
-      "read_ticket",
-      "search_kb",
-      "check_sla",
-      "classify",
-      "draft_reply"
-    ]
+    "output": "technical"
   },
-  "run_id": "01a04abb-993c-7c32-bfa9-06f5db570bf9"
+  "run_id": "01a04abe-9bb5-7681-8d1c-46120451d641"
 }

@@ -1,8 +1,8 @@
 {
   "evaluation_results": {
     "efficiency": {
-      "comment": "latency_ms=3720, tokens=0, steps=9, graph_steps=9",
-      "score": 1.0
+      "comment": "latency_ms=4557, tokens=0, steps=11, graph_steps=11",
+      "score": 0.87
     },
     "error_recovery": {
       "comment": "error_count=0, max_acceptable=0",
@@ -13,27 +13,27 @@
       "score": 1.0
     },
     "graph_trajectory": {
-      "comment": "matched=False, progress=0.56, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
-      "score": 0.5625
+      "comment": "matched=False, progress=0.69, actual=['__start__', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent', 'tools', 'agent']",
+      "score": 0.6875
     },
     "reply_text": {
-      "comment": "The ticket has been classified as technical. Based on the urgency and the KB guidance, I will escalate this to engineering on-call for immediate attention to the API outage and webhook delivery issues.",
+      "comment": "The SLA tier for this ticket is priority with a response deadline of 4 hours. Based on the issue details, this involves a production API returning 503 errors and webhook delivery delays. According to our knowledge base, for regional 503 outages on priority SLA accounts, escalation to engineering on-call is required. I will now escalate this ticket to engineering on-call for immediate attention.",
       "score": 1.0
     },
     "step_count": {
-      "comment": "steps=9, graph_steps=9, expected_max=10",
-      "score": 1.0
+      "comment": "steps=11, graph_steps=11, expected_max=10",
+      "score": 0.91
     },
     "task_pass": {
-      "comment": "category_ok=True, terms_ok=False, terms_score=0.50, missing_terms=['sla', '503'], score=0.75",
-      "score": 0.75
+      "comment": "category_ok=True, terms_ok=True, terms_score=1.00, missing_terms=[], score=1.00",
+      "score": 1.0
     },
     "tool_sequence": {
-      "comment": "matched=False, progress=0.71, expected=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'escalate_ticket', 'draft_reply'], actual=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'draft_reply']",
-      "score": 0.71
+      "comment": "matched=False, progress=0.86, expected=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'escalate_ticket', 'draft_reply'], actual=['read_ticket', 'check_sla', 'search_kb', 'search_kb', 'classify', 'draft_reply', 'escalate_ticket']",
+      "score": 0.86
     }
   },
-  "example_id": "cb3c9c13-3730-41d8-a2c0-347a3b354f2b",
+  "example_id": "828279af-66f8-4c57-9536-24d8a6723d62",
   "inputs": {
     "flaky_tools": {
       "escalate_ticket": 1,
@@ -44,45 +44,49 @@
   },
   "outputs": {
     "classification": "technical",
-    "error_count": 0,
-    "expected_category": "technical",
-    "final_reply": "The ticket has been classified as technical. Based on the urgency and the KB guidance, I will escalate this to engineering on-call for immediate attention to the API outage and webhook delivery issues.",
-    "graph_trajectory": {
-      "inputs": [],
-      "results": [
-        {
-          "messages": [
-            {
-              "content": "I will now escalate this ticket to engineering on-call for immediate assistance with the API outage and webhook delivery failures.",
-              "role": "assistant"
-            }
+    "details": {
+      "error_count": 0,
+      "final_reply": "The SLA tier for this ticket is priority with a response deadline of 4 hours. Based on the issue details, this involves a production API returning 503 errors and webhook delivery delays. According to our knowledge base, for regional 503 outages on priority SLA accounts, escalation to engineering on-call is required. I will now escalate this ticket to engineering on-call for immediate attention.",
+      "graph_trajectory": {
+        "inputs": [],
+        "results": [
+          {
+            "messages": [
+              {
+                "content": "The ticket has been escalated to engineering on-call for immediate attention due to the priority outage involving API 503 errors and webhook delays.",
+                "role": "assistant"
+              }
+            ]
+          }
+        ],
+        "steps": [
+          [
+            "__start__",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent"
           ]
-        }
-      ],
-      "steps": [
-        [
-          "__start__",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent"
         ]
+      },
+      "tool_names": [
+        "read_ticket",
+        "check_sla",
+        "search_kb",
+        "search_kb",
+        "classify",
+        "draft_reply",
+        "escalate_ticket"
       ]
     },
-    "output": "technical",
-    "tool_names": [
-      "read_ticket",
-      "check_sla",
-      "search_kb",
-      "search_kb",
-      "classify",
-      "draft_reply"
-    ]
+    "output": "technical"
   },
-  "run_id": "01a04abb-3af5-7a31-b7e6-2ceedfbe611c"
+  "run_id": "01a04abe-2a0e-7e73-9b49-db7b7273a76e"
 }

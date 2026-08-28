@@ -6,6 +6,7 @@ Does not re-execute agents or modify traces.
 
 from langsmith.schemas import Example, Run
 
+from harnesslab.eval.outputs import run_output_field
 from harnesslab.eval.run_metrics import run_latency_seconds
 
 FAILURE_CATEGORIES = (
@@ -29,7 +30,7 @@ def _classify_failure(run: Run) -> str:
         return "PARSE_ERROR"
 
     outputs = run.outputs or {}
-    if outputs.get("classification") and outputs.get("final_reply"):
+    if run_output_field(outputs, "classification") and run_output_field(outputs, "final_reply"):
         return "SUCCESS"
 
     if (run_latency_seconds(run)) > 60:

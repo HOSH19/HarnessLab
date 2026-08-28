@@ -80,12 +80,13 @@ def test_serialize_result_row_reads_nested_run_outputs() -> None:
     row.run.outputs = {
         "output": "technical",
         "classification": "technical",
-        "final_reply": "Escalated outage",
+        "details": {"final_reply": "Escalated outage"},
     }
 
     payload = serialize_result_row(row)
 
-    assert payload["outputs"]["final_reply"] == "Escalated outage"
+    assert payload["outputs"]["classification"] == "technical"
+    assert payload["outputs"]["details"]["final_reply"] == "Escalated outage"
     assert payload["outputs"]["output"] == "technical"
 
 

@@ -35,11 +35,7 @@ from harnesslab.eval.trajectory import graph_trajectory
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.tasks import load_tasks
-from harnesslab.graph.extract import (
-    extract_fields_from_messages,
-    extract_tool_names_from_messages,
-    format_display_output,
-)
+from harnesslab.graph.extract import extract_fields_from_messages, extract_tool_names_from_messages
 
 CompareDimension = Literal["harness", "models"]
 
@@ -137,13 +133,14 @@ def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
     tool_names = extract_tool_names_from_messages(messages)
 
     return {
-        "output": format_display_output(classification, final_reply),
-        "expected_category": classification,
-        "classification": classification,
-        "final_reply": final_reply,
-        "tool_names": tool_names,
-        "error_count": state.get("error_count", 0),
-        "graph_trajectory": trajectory["outputs"],
+        "output": classification or "",
+        "classification": classification or "",
+        "details": {
+            "final_reply": final_reply,
+            "tool_names": tool_names,
+            "error_count": state.get("error_count", 0),
+            "graph_trajectory": trajectory["outputs"],
+        },
     }
 
 
@@ -151,12 +148,13 @@ def _empty_outputs(*, error: str | None = None) -> dict:
     """Return a minimal outputs dict when graph invocation fails."""
     payload = {
         "output": "",
-        "expected_category": "",
         "classification": "",
-        "final_reply": "",
-        "tool_names": [],
-        "error_count": 1 if error else 0,
-        "graph_trajectory": {"steps": [], "results": [], "inputs": []},
+        "details": {
+            "final_reply": "",
+            "tool_names": [],
+            "error_count": 1 if error else 0,
+            "graph_trajectory": {"steps": [], "results": [], "inputs": []},
+        },
     }
     if error:
         payload["error"] = error

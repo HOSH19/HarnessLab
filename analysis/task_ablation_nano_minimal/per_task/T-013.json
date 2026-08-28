@@ -1,7 +1,7 @@
 {
   "evaluation_results": {
     "efficiency": {
-      "comment": "latency_ms=3914, tokens=0, steps=9, graph_steps=9",
+      "comment": "latency_ms=4097, tokens=0, steps=9, graph_steps=9",
       "score": 1.0
     },
     "error_recovery": {
@@ -17,7 +17,7 @@
       "score": 1.0
     },
     "reply_text": {
-      "comment": "Thank you for reaching out regarding the billing issue after your account merge. We will review the charge and work to resolve this dispute promptly. Please allow us some time to investigate and get back to you with an update.",
+      "comment": "Thank you for reaching out regarding the billing issue after your account merge. We will review the charges and work to resolve this dispute promptly. Please allow us some time to investigate and correct the billing error. We will update you once the issue is resolved.",
       "score": 1.0
     },
     "step_count": {
@@ -33,50 +33,51 @@
       "score": 1.0
     }
   },
-  "example_id": "0cfbe186-fd1e-4462-b0b5-0b0eb9f390b6",
+  "example_id": "8ab5097a-302f-4f8b-9cf3-4443d4a6a83e",
   "inputs": {
     "prompt": "Triage ticket T-013",
     "ticket_id": "T-013"
   },
   "outputs": {
     "classification": "billing",
-    "error_count": 0,
-    "expected_category": "billing",
-    "final_reply": "Thank you for reaching out regarding the billing issue after your account merge. We will review the charge and work to resolve this dispute promptly. Please allow us some time to investigate and get back to you with an update.",
-    "graph_trajectory": {
-      "inputs": [],
-      "results": [
-        {
-          "messages": [
-            {
-              "content": "I have classified the ticket as billing and drafted a response informing the customer that we will review the charge and resolve the dispute promptly.",
-              "role": "assistant"
-            }
+    "details": {
+      "error_count": 0,
+      "final_reply": "Thank you for reaching out regarding the billing issue after your account merge. We will review the charges and work to resolve this dispute promptly. Please allow us some time to investigate and correct the billing error. We will update you once the issue is resolved.",
+      "graph_trajectory": {
+        "inputs": [],
+        "results": [
+          {
+            "messages": [
+              {
+                "content": "I have classified the ticket as billing and drafted a response to inform the customer that we are reviewing the charges and will resolve the dispute promptly.",
+                "role": "assistant"
+              }
+            ]
+          }
+        ],
+        "steps": [
+          [
+            "__start__",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent"
           ]
-        }
-      ],
-      "steps": [
-        [
-          "__start__",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent",
-          "tools",
-          "agent"
         ]
+      },
+      "tool_names": [
+        "read_ticket",
+        "search_kb",
+        "classify",
+        "draft_reply"
       ]
     },
-    "output": "billing",
-    "tool_names": [
-      "read_ticket",
-      "search_kb",
-      "classify",
-      "draft_reply"
-    ]
+    "output": "billing"
   },
-  "run_id": "01a04abb-7f79-7292-b956-c27a935859f9"
+  "run_id": "01a04abe-7e19-7b33-b9d8-0971af98bbfa"
 }
