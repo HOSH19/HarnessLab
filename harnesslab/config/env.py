@@ -13,15 +13,52 @@ class LangSmithConfigError(RuntimeError):
     """Raised when LangSmith credentials or endpoint are misconfigured."""
 
 
-def load_local_env() -> None:
-    """Load key/value pairs from .env when python-dotenv is installed."""
+def _env_search_roots(*extra: Path) -> list[Path]:
+    """Directories to walk upward when looking for a .env file."""
+    roots: list[Path] = [Path.cwd().resolve()]
+
+    # Editable installs: harnesslab/harnesslab/config/env.py -> project root
+    try:
+        roots.append(Path(__file__).resolve().parents[2])
+    except IndexError:
+        pass
+
+    for path in extra:
+        if path is not None:
+            roots.append(path.resolve())
+
+    return roots
+
+
+def _find_env_file(*search_roots: Path) -> Path | None:
+    """Return the first .env found by walking up from each search root."""
+    seen: set[Path] = set()
+    for root in search_roots:
+        for directory in [root, *root.parents]:
+            if directory in seen:
+                continue
+            seen.add(directory)
+            candidate = directory / ".env"
+            if candidate.is_file():
+                return candidate
+    return None
+
+
+def load_local_env(*, example: Path | None = None) -> None:
+    """Load key/value pairs from .env when python-dotenv is installed.
+
+    Searches the current working directory, the HarnessLab project root,
+    and (optionally) the example path and their ancestors. Does not
+    override variables already set in the shell environment.
+    """
     try:
         from dotenv import load_dotenv
     except ImportError:
         return
 
-    env_path = Path.cwd() / ".env"
-    if env_path.exists():
+    extra = (example,) if example is not None else ()
+    env_path = _find_env_file(*_env_search_roots(*extra))
+    if env_path is not None:
         load_dotenv(env_path, override=False)
 
 

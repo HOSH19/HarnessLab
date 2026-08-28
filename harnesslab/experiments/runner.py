@@ -16,11 +16,12 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langsmith import evaluate
 
 from harnesslab.config.env import disable_langsmith_tracing
-from harnesslab.config.model_catalog import DEFAULT_MODEL, model_slug
+from harnesslab.config.model_catalog import DEFAULT_MODEL, model_short_name
 
 from examples.ticket_triage.flaky import init_flaky_tools
 
 from harnesslab.config.models import HarnessConfig
+from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
 from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.error_recovery import error_recovery
 from harnesslab.eval.fingerprint import failure_fingerprint
@@ -80,7 +81,7 @@ def _build_initial_messages(prompt: str, conversation_history: list[dict] | None
 
 def _invoke_config(harness: HarnessConfig, *, model: str | None = None) -> dict:
     """Build LangGraph invoke config with recursion limit and metadata."""
-    project = harness.observability.langsmith_project or f"harnesslab-{harness.name}"
+    project = harness.observability.langsmith_project or "triage"
     os.environ["LANGSMITH_PROJECT"] = project
 
     configurable: dict[str, Any] = {
@@ -93,7 +94,7 @@ def _invoke_config(harness: HarnessConfig, *, model: str | None = None) -> dict:
 
     return {
         "configurable": configurable,
-        "recursion_limit": harness.execution.max_turns,
+        "recursion_limit": graph_recursion_limit(harness.execution),
     }
 
 
@@ -151,7 +152,7 @@ def _resolve_data(
 ) -> Any:
     """Build LangSmith evaluate data from local tasks or a remote dataset."""
     if upload_results:
-        resolved_dataset = dataset_name or f"harnesslab-{tasks_dir.parent.name.replace('_', '-')}-stress"
+        resolved_dataset = dataset_name or f"{tasks_dir.parent.name.replace('_', '-')}-stress"
         ensure_dataset(
             tasks_dir,
             resolved_dataset,
@@ -180,11 +181,10 @@ def run_experiment(
     experiment_prefix: str | None = None,
 ) -> Any:
     """Run a LangSmith evaluation experiment for one harness variant."""
-    prefix = experiment_prefix or f"harnesslab-{harness.name}"
+    prefix = experiment_prefix or harness.name
     metadata: dict[str, Any] = {"harness": harness.model_dump()}
     if model:
         metadata["model"] = model
-        prefix = f"{prefix}-{model_slug(model)}"
 
     with use_model(model):
         data = _resolve_data(
@@ -241,6 +241,7 @@ def run_comparison(
                 ticket_id=ticket_id,
                 dataset_name=dataset_name,
                 model=model,
+                experiment_prefix=model_short_name(model),
             )
             comparisons[model] = list(results)
         return comparisons
@@ -259,6 +260,7 @@ def run_comparison(
                 ticket_id=ticket_id,
                 dataset_name=dataset_name,
                 model=fixed_model,
+                experiment_prefix=name,
             )
         comparisons[name] = list(results)
     return comparisons

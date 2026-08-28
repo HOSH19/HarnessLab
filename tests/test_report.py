@@ -29,9 +29,9 @@ class _FakeRow:
 
 def test_render_comparison_html_includes_harness_names() -> None:
     """Report HTML contains harness rows."""
-    html = render_comparison_html({"minimal": [], "with_retry": []})
+    html = render_comparison_html({"minimal": [], "retry": []})
     assert "minimal" in html
-    assert "with_retry" in html
+    assert "retry" in html
     assert "task_pass" in html
     assert "tool_sequence" in html
     assert "Per-task breakdown" in html

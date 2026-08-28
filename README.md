@@ -4,7 +4,7 @@
 
 HarnessLab is a small framework for **A/B testing agent harnesses and models** — the infrastructure around an LLM agent (retries, context limits, turn caps) and the model itself. You declare harness variants as YAML, run the same LangGraph agent under each configuration, score outcomes with LangSmith evaluators, and compare results across **models** or **harnesses** on stress tasks.
 
-The demo is a support **ticket triage agent**: read a ticket, search the knowledge base, classify it, and draft a reply. Three harness configs (`minimal`, `with_retry`, `with_context_trim`) wrap the same graph with different middleware so you can see whether infrastructure choices actually matter.
+The demo is a support **ticket triage agent**: read a ticket, search the knowledge base, classify it, and draft a reply. Three harness configs (`minimal`, `retry`, `trim`) wrap the same graph with different middleware so you can see whether infrastructure choices actually matter.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for phased delivery notes and [docs/DEMO.md](docs/DEMO.md) for a local run walkthrough.
 
@@ -28,7 +28,7 @@ flowchart LR
 
 ## LangSmith dashboard
 
-When you run `compare` **without** `--local`, every run is stored in LangSmith — traces, evaluator scores, latency, and token usage. HarnessLab does not maintain a separate database; LangSmith is the system of record. A local `report.html` is also written, but the dataset and experiments persist in your LangSmith project (`harnesslab-ticket-triage`) until you delete them.
+When you run `compare` **without** `--local`, every run is stored in LangSmith — traces, evaluator scores, latency, and token usage. HarnessLab does not maintain a separate database; LangSmith is the system of record. A local `report.html` is also written, but the dataset and experiments persist in your LangSmith project (`triage`) until you delete them.
 
 The screenshot below shows three experiments (13 tasks each) — one per harness variant:
 
@@ -38,7 +38,7 @@ The screenshot below shows three experiments (13 tasks each) — one per harness
 |---|---|
 | **Experiments tab** | All runs for this dataset. Each row is one harness variant. Progress `13/13` means every task completed. |
 | **Feedback chart** | Average evaluator scores per experiment. Aggregate bars look similar because most tasks are easy — harness differences show up on stress tasks and in per-row drill-down. |
-| **Latency chart** | P50 and P99 response time per harness. Here `with_context_trim` (#6) has the lowest P50; `minimal` (#4) has the highest P99. |
+| **Latency chart** | P50 and P99 response time per harness. Here `trim` (#6) has the lowest P50; `minimal` (#4) has the highest P99. |
 | **Tokens chart** | Input/output token usage per experiment. |
 | **Experiment table** | Click a row to open per-task scores. Look at `task_pass` and `tool_sequence` averages — not just `efficiency` / `error_recovery`, which stay at 1.0 when runs finish cleanly. |
 
@@ -48,11 +48,11 @@ Click an experiment row to see **individual trial results**. This is where harne
 
 ![LangSmith per-task evaluator scores for one experiment](docs/images/langsmith-per-task.png)
 
-In this `with_context_trim` run, `task_pass` averages **0.69** and `tool_sequence` **0.77** — several tasks score 0.0 (red) even though experiment-level `error_recovery` and `efficiency` are 1.0. That pattern is expected:
+In this `trim` run, `task_pass` averages **0.69** and `tool_sequence` **0.77** — several tasks score 0.0 (red) even though experiment-level `error_recovery` and `efficiency` are 1.0. That pattern is expected:
 
 - **`error_recovery` / `efficiency` / `failure_fingerprint` at 1.0** — the agent finished without crashing; these measure completion and resource use, not answer correctness.
 - **`task_pass` / `tool_sequence` below 1.0** — the agent gave a wrong category, missed reply terms, or skipped a tool in the expected sequence.
-- **Harness comparison** — open the same per-task view for `minimal` vs `with_retry` vs `with_context_trim` and compare rows 11–13 (stress tasks) side by side.
+- **Harness comparison** — open the same per-task view for `minimal` vs `retry` vs `trim` and compare rows 11–13 (stress tasks) side by side.
 
 The local `report.html` mirrors this with a per-task breakdown table. **LangSmith is where traces live** — click any red row to open the full agent loop for that task.
 
@@ -115,7 +115,7 @@ sequenceDiagram
     participant Graph
     participant LangSmith
 
-    User->>CLI: compare --harness minimal,with_retry
+    User->>CLI: compare --harness minimal,retry
     loop each harness variant
         CLI->>Builder: load YAML config
         Builder->>Graph: compile with middleware
@@ -154,8 +154,8 @@ flowchart LR
 | Variant | `max_turns` | `retry_count` | `history_limit` |
 |---|---|---|---|
 | `minimal` | 10 | 0 | none |
-| `with_retry` | 15 | 2 | none |
-| `with_context_trim` | 15 | 0 | 8 |
+| `retry` | 15 | 2 | none |
+| `trim` | 15 | 0 | 8 |
 
 ## Evaluators
 
@@ -206,7 +206,7 @@ Use `--by` to choose the comparison dimension:
 
 | `--by` | Varies | Fixed |
 |---|---|---|
-| **`harness`** (default) | Harness configs (`minimal`, `with_retry`, `with_context_trim`) | Model (`HARNESSLAB_MODEL` in `.env`) + stress tasks |
+| **`harness`** (default) | `minimal`, `retry`, `trim` | Model (`HARNESSLAB_MODEL` in `.env`) + stress tasks |
 | **`models`** | Cheap models (`gpt-4.1-nano`, `gpt-4o-mini`, `gpt-3.5-turbo`) | Harness (`--harness minimal`) + stress tasks |
 
 Filter to one ticket with `--task T-011`. Results are always saved locally under `.harnesslab/runs/` and optionally uploaded to LangSmith.
@@ -240,7 +240,7 @@ pytest -q
 
 ```bash
 harnesslab compare examples/ticket_triage
-harnesslab compare examples/ticket_triage --by harness --harness minimal,with_retry
+harnesslab compare examples/ticket_triage --by harness --harness minimal,retry
 harnesslab compare examples/ticket_triage --by models --harness minimal
 harnesslab compare examples/ticket_triage --task T-011
 harnesslab compare examples/ticket_triage --by models --models gpt-4.1-nano,gpt-3.5-turbo

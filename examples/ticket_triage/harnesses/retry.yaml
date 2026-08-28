@@ -1,14 +1,14 @@
-name: with_context_trim
+name: retry
 execution:
   max_turns: 15
   stop_on_tool_error: false
 tooling:
-  retry_count: 0
+  retry_count: 2
   tool_timeout_s: 30
-  error_format: minimal
+  error_format: verbose
 context:
-  history_limit: 8
+  history_limit: null
 observability:
-  langsmith_project: harnesslab-with_context_trim
+  langsmith_project: triage
   trace_metadata:
     harness_version: "1.0"

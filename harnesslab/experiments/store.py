@@ -129,7 +129,8 @@ def save_compare_run(
     metadata: dict[str, Any] | None = None,
 ) -> Path:
     """Write a multi-harness comparison bundle to disk."""
-    run_dir = out_dir / f"{_timestamp_slug()}_compare"
+    suffix = (metadata or {}).get("compare_by", "compare")
+    run_dir = out_dir / f"{_timestamp_slug()}_{suffix}"
     run_dir.mkdir(parents=True, exist_ok=True)
 
     arms = list(comparisons.keys())

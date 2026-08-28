@@ -99,25 +99,25 @@ def test_save_compare_run_roundtrip(tmp_path: Path) -> None:
     """Compare runs write one JSON file per harness plus summary."""
     comparisons = {
         "minimal": [_FakeRow("T-001", {"task_pass": 1.0})],
-        "with_retry": [_FakeRow("T-001", {"task_pass": 0.5})],
+        "retry": [_FakeRow("T-001", {"task_pass": 0.5})],
     }
 
     run_dir = save_compare_run(
         comparisons,
         out_dir=tmp_path,
-        metadata={"langsmith_mode": True, "harnesses": ["minimal", "with_retry"]},
+        metadata={"langsmith_mode": True, "compare_by": "harness", "harnesses": ["minimal", "retry"]},
     )
 
-    assert run_dir.name.endswith("_compare")
+    assert run_dir.name.endswith("_harness")
     manifest = json.loads((run_dir / "manifest.json").read_text())
     minimal = json.loads((run_dir / "minimal.json").read_text())
-    with_retry = json.loads((run_dir / "with_retry.json").read_text())
+    retry = json.loads((run_dir / "retry.json").read_text())
     summary = json.loads((run_dir / "summary.json").read_text())
 
-    assert manifest["arms"] == ["minimal", "with_retry"]
+    assert manifest["arms"] == ["minimal", "retry"]
     assert manifest["task_count"] == 1
     assert manifest["langsmith_mode"] is True
     assert len(minimal) == 1
-    assert len(with_retry) == 1
+    assert len(retry) == 1
     assert summary["minimal"]["task_pass"] == 1.0
-    assert summary["with_retry"]["task_pass"] == 0.5
+    assert summary["retry"]["task_pass"] == 0.5

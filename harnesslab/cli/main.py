@@ -36,18 +36,18 @@ app = typer.Typer(
 CompareBy = Literal["harness", "models"]
 
 
-def _bootstrap_env(*, local: bool) -> None:
+def _bootstrap_env(*, local: bool, example: Path | None = None) -> None:
     """Load .env and disable LangSmith uploads for local-only commands."""
     if local:
         disable_langsmith_tracing()
-    load_local_env()
+    load_local_env(example=example)
     if local:
         disable_langsmith_tracing()
 
 
 def _default_dataset_name(example: Path) -> str:
     """Derive a stable LangSmith dataset name from an example directory."""
-    return f"harnesslab-{example.name.replace('_', '-')}-stress"
+    return f"{example.name.replace('_', '-')}-stress"
 
 
 def _example_paths(example: Path) -> tuple[Path, Path]:
@@ -70,6 +70,7 @@ def _compare_metadata(
     task_count: int,
     tasks: int | None,
     ticket_id: str | None,
+    model: str | None = None,
 ) -> dict:
     """Build metadata persisted alongside local experiment results."""
     return {
@@ -82,7 +83,7 @@ def _compare_metadata(
         "task_count": task_count,
         "tasks_limit": tasks,
         "ticket_id": ticket_id,
-        "model": os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL),
+        "model": model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL),
     }
 
 
@@ -97,7 +98,7 @@ def run_command(
     runs_dir: Path = typer.Option(Path(".harnesslab/runs"), "--runs-dir", help="Local results directory"),
 ) -> None:
     """Run one harness variant against stress tasks."""
-    _bootstrap_env(local=local)
+    _bootstrap_env(local=local, example=example)
     if not local:
         try:
             validate_langsmith_upload_config()
@@ -149,7 +150,7 @@ def compare_command(
         help="Compare across harnesses (same model) or models (same harness)",
     ),
     harness: str = typer.Option(
-        "minimal,with_retry,with_context_trim",
+        "minimal,retry,trim",
         "--harness",
         help="Harness name(s); comma-separated when --by harness, single value when --by models",
     ),
@@ -162,10 +163,15 @@ def compare_command(
     local: bool = typer.Option(False, "--local", help="Skip LangSmith upload"),
     tasks: int | None = typer.Option(None, "--tasks", help="Limit number of stress tasks"),
     task: str | None = typer.Option(None, "--task", help="Single ticket id (e.g. T-011)"),
+    model: str | None = typer.Option(
+        None,
+        "--model",
+        help="Model override (default: HARNESSLAB_MODEL from .env)",
+    ),
     runs_dir: Path = typer.Option(Path(".harnesslab/runs"), "--runs-dir", help="Local results directory"),
 ) -> None:
     """Compare models or harness variants on stress tasks and write a report."""
-    _bootstrap_env(local=local)
+    _bootstrap_env(local=local, example=example)
     if not local:
         try:
             validate_langsmith_upload_config()
@@ -186,7 +192,7 @@ def compare_command(
         )
     else:
         harness_names = [name.strip() for name in harness.split(",") if name.strip()]
-        model_names = [os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)]
+        model_names = [model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)]
         for name in harness_names:
             if name not in all_configs:
                 raise typer.BadParameter(f"Unknown harness: {name}")
@@ -225,6 +231,7 @@ def compare_command(
             task_count=len(next(iter(comparisons.values()))) if comparisons else 0,
             tasks=tasks,
             ticket_id=task,
+            model=model_names[0] if compare_by == "harness" else None,
         ),
     )
     console.print(f"[green]Report written to {report_path}[/green]")
@@ -234,7 +241,7 @@ def compare_command(
 @app.command("dataset")
 def dataset_command(
     example: Path = typer.Argument(..., help="Path to example project"),
-    name: str = typer.Option("harnesslab-ticket-triage-stress", "--name", help="Dataset name"),
+    name: str = typer.Option("triage-stress", "--name", help="Dataset name"),
 ) -> None:
     """Upload stress task fixtures to a LangSmith dataset."""
     load_local_env()
