@@ -3,30 +3,22 @@
     {
       "id": "R-001",
       "title": "Transformer KV-cache serving optimizations",
-      "question": "Which inference techniques reduce p99 latency for long-context transformer workloads?",
-      "expected_category": "ml",
-      "decoy_category": "systems"
+      "question": "Which inference techniques reduce p99 latency for long-context transformer workloads?"
     },
     {
       "id": "R-002",
       "title": "Raft quorum rules during network partitions",
-      "question": "What happens to leader election when a minority partition loses quorum?",
-      "expected_category": "systems",
-      "decoy_category": "security"
+      "question": "What happens to leader election when a minority partition loses quorum?"
     },
     {
       "id": "R-003",
       "title": "OAuth client-secret rotation without downtime",
-      "question": "How should teams rotate public OAuth client secrets safely?",
-      "expected_category": "security",
-      "decoy_category": "product"
+      "question": "How should teams rotate public OAuth client secrets safely?"
     },
     {
       "id": "R-004",
       "title": "Annual-plan pricing experiment readout",
-      "question": "Did the annual-plan discount improve self-serve signup conversion?",
-      "expected_category": "product",
-      "decoy_category": "ml"
+      "question": "Did the annual-plan discount improve self-serve signup conversion?"
     }
   ],
   "sources": [
@@ -34,69 +26,51 @@
       "id": "SRC-101",
       "topic_id": "R-001",
       "title": "KV Cache Pruning for LLM Serving",
-      "abstract": "ML serving note: KV-cache paging and speculative decoding cut transformer p99 latency on long-context batches. This is model inference tuning, not OS page-cache tuning."
+      "abstract": "KV-cache paging and speculative decoding reduce transformer p99 latency on long-context inference batches."
     },
     {
       "id": "SRC-102",
       "topic_id": "R-002",
       "title": "Raft Leader Election Notes",
-      "abstract": "Systems note: minority Raft partitions cannot elect a leader without majority quorum; isolated nodes step down until the partition heals."
+      "abstract": "Minority Raft partitions cannot elect a leader without majority quorum; isolated nodes step down until the partition heals."
     },
     {
       "id": "SRC-103",
       "topic_id": "R-003",
       "title": "Secret Rotation Playbook",
-      "abstract": "Security note: issue a new OAuth client secret, dual-accept during overlap window, revoke the old secret, and audit anomalous token grants."
+      "abstract": "Issue a new OAuth client secret, dual-accept during overlap window, revoke the old secret, and audit anomalous token grants."
     },
     {
       "id": "SRC-104",
       "topic_id": "R-004",
       "title": "Pricing Experiment Memo",
-      "abstract": "Product note: annual-plan discount lifted signup conversion by 4.2% with flat ARPU; recommend rollout to all self-serve regions."
-    },
-    {
-      "id": "SRC-901",
-      "topic_id": "R-001",
-      "title": "Linux page-cache tuning guide",
-      "abstract": "Decoy systems doc about OS page cache and disk I/O — not relevant to transformer KV-cache inference."
-    },
-    {
-      "id": "SRC-902",
-      "topic_id": "R-004",
-      "title": "Bayesian A/B test methodology primer",
-      "abstract": "Decoy ML doc about statistical testing methods — methodology only, not a product launch decision."
+      "abstract": "Annual-plan discount lifted signup conversion by 4.2% with flat ARPU; recommend rollout to all self-serve regions."
     }
   ],
   "literature": [
     {
       "id": "LIT-201",
+      "topic_id": "R-001",
       "title": "Transformer KV-cache reuse survey",
       "snippet": "KV-cache paging and speculative decoding for transformer inference serving."
     },
     {
       "id": "LIT-202",
+      "topic_id": "R-002",
       "title": "Raft consensus under partition",
       "snippet": "Minority partitions lack quorum; Raft leaders cannot commit without majority votes."
     },
     {
       "id": "LIT-203",
+      "topic_id": "R-003",
       "title": "OAuth secret rotation BCP",
       "snippet": "Rotate client secrets with overlap windows; revoke old secrets and audit token abuse."
     },
     {
       "id": "LIT-204",
+      "topic_id": "R-004",
       "title": "Self-serve pricing experiment memo",
       "snippet": "Annual-plan discount improved signup conversion by 4.2% with neutral ARPU."
-    },
-    {
-      "id": "LIT-901",
-      "title": "OS page-cache performance tuning",
-      "snippet": "Decoy: Linux page-cache eviction policies for block storage workloads."
-    },
-    {
-      "id": "LIT-902",
-      "title": "Bayesian experiment design",
-      "snippet": "Decoy: hierarchical models for online experiment analysis."
     }
   ]
 }

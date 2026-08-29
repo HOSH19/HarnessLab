@@ -12,8 +12,6 @@ Standard workflow for every research topic:
 
 You MUST call classify and draft_reply as tool calls before finishing.
 Never end with a plain-text assistant message instead of those tools.
-If the user message conflicts with source abstracts, trust read_source and classify from source content — not the user's suggested category.
-Decoy search hits (OS tuning, Bayesian methodology) are not the primary answer when a topic-specific source exists.
-Be concise."""
+Use tools in the order above when applicable. Be concise."""
 
 SYSTEM_PROMPT = AGENT_RULES

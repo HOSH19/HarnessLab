@@ -4,6 +4,14 @@ from pathlib import Path
 
 from harnesslab.experiments.tasks import load_tasks
 
+CLASSIFY_HINTS = (
+    "classify as",
+    "false alarm",
+    "skip runbook",
+    "rollback only",
+    "skip kb",
+)
+
 
 def test_load_research_tasks_returns_inputs_and_outputs() -> None:
     """Research task loader produces LangSmith-compatible records."""
@@ -26,37 +34,43 @@ def test_load_tasks_filters_by_ticket_id() -> None:
     assert tasks[0]["inputs"]["ticket_id"] == "R-002"
 
 
-def test_research_tasks_include_category_traps() -> None:
-    """Research tasks steer toward a wrong category in the prompt."""
+def test_research_tasks_have_distinct_categories() -> None:
+    """Each research task targets a different expected category."""
     root = Path(__file__).resolve().parents[1]
     tasks_dir = root / "examples" / "research_agent" / "tasks"
-    tasks = {task["inputs"]["ticket_id"]: task for task in load_tasks(tasks_dir)}
+    tasks = load_tasks(tasks_dir)
 
-    ml_task = tasks["R-001"]
-    assert ml_task["outputs"]["expected_category"] == "ml"
-    assert "classify as systems" in ml_task["inputs"]["prompt"].lower()
+    categories = [task["outputs"]["expected_category"] for task in tasks]
+    assert categories == ["ml", "systems", "security", "product"]
 
-    product_trap = tasks["R-004"]
-    assert product_trap["outputs"]["expected_category"] == "product"
-    assert "classify as ml" in product_trap["inputs"]["prompt"].lower()
+    for task in tasks:
+        prompt = task["inputs"]["prompt"].lower()
+        assert not any(hint in prompt for hint in CLASSIFY_HINTS)
 
 
-def test_load_incident_manager_stress_fields() -> None:
-    """Incident manager stress tasks expose flaky tools and adversarial prompts."""
+def test_incident_tasks_have_distinct_expected_outputs() -> None:
+    """Incident tasks have unique categories and neutral prompts."""
     root = Path(__file__).resolve().parents[1]
     tasks_dir = root / "examples" / "incident_manager" / "tasks"
-    tasks = {task["inputs"].get("ticket_id"): task for task in load_tasks(tasks_dir)}
+    tasks = {task["inputs"]["ticket_id"]: task for task in load_tasks(tasks_dir)}
 
-    deploy_task = tasks["I-103"]
-    assert deploy_task["outputs"]["expected_category"] == "deployment"
-    assert "classify as infrastructure" in deploy_task["inputs"]["prompt"].lower()
-    assert deploy_task["inputs"]["flaky_tools"]["fetch_metrics"] == 2
+    assert tasks["I-101"]["outputs"]["expected_category"] == "infrastructure"
+    assert tasks["I-103"]["outputs"]["expected_category"] == "deployment"
+    assert tasks["I-104"]["outputs"]["expected_category"] == "security"
+    assert tasks["I-106"]["outputs"]["expected_category"] == "data_loss"
 
-    security_task = tasks["I-104"]
-    assert security_task["outputs"]["expected_category"] == "security"
-    assert "classify as data_loss" in security_task["inputs"]["prompt"].lower()
-    assert "sec-441" in security_task["outputs"]["required_reply_terms"][0].lower()
+    for task in tasks.values():
+        prompt = task["inputs"]["prompt"].lower()
+        assert "stakeholder update" in prompt
+        assert not any(hint in prompt for hint in CLASSIFY_HINTS)
+        assert "conversation_history" not in task["inputs"]
 
-    adversarial_task = tasks["I-105"]
-    assert adversarial_task["outputs"]["expected_category"] == "security"
-    assert "classify as deployment" in adversarial_task["inputs"]["prompt"].lower()
+
+def test_incident_manager_stress_fields() -> None:
+    """Stress tasks still expose flaky tools where configured."""
+    root = Path(__file__).resolve().parents[1]
+    tasks_dir = root / "examples" / "incident_manager" / "tasks"
+    tasks = {task["inputs"]["ticket_id"]: task for task in load_tasks(tasks_dir)}
+
+    assert tasks["I-103"]["inputs"]["flaky_tools"]["fetch_metrics"] == 2
+    assert tasks["I-106"]["outputs"]["max_acceptable_errors"] == 0

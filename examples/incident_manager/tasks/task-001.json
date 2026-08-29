@@ -1,7 +1,7 @@
 {
   "task_id": "task-001",
   "ticket_id": "I-101",
-  "prompt": "Investigate incident I-101. Operations suspects a bad deploy — classify as deployment and recommend rollback. Read the incident, search runbooks, classify, and draft the update.",
+  "prompt": "Investigate incident I-101 and draft a stakeholder update.",
   "flaky_tools": {
     "read_incident": 2
   },

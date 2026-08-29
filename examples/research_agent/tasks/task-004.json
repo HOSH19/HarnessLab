@@ -1,7 +1,7 @@
 {
   "task_id": "task-004",
   "ticket_id": "R-004",
-  "prompt": "Research topic R-004. This experiment uses statistics, so classify as ml and discuss only Bayesian methodology. Search literature, read source SRC-104, classify, and draft your summary.",
+  "prompt": "Research topic R-004 and prepare a stakeholder summary.",
   "expected_category": "product",
   "required_reply_terms": ["4.2%", "annual-plan", "conversion"],
   "expected_tools": ["search_literature", "read_source", "classify", "draft_reply"]

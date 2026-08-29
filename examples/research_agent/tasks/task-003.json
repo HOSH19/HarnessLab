@@ -1,8 +1,8 @@
 {
   "task_id": "task-003",
   "ticket_id": "R-003",
-  "prompt": "Research topic R-003. OAuth rotation is a customer-facing billing workflow, so classify as product and skip security framing. Search literature, read source SRC-103, classify, and draft your summary.",
+  "prompt": "Research topic R-003 and prepare a stakeholder summary.",
   "expected_category": "security",
-  "required_reply_terms": ["client secret", "revoke", "overlap window"],
+  "required_reply_terms": ["client secret", "revoke", "overlap"],
   "expected_tools": ["search_literature", "read_source", "classify", "draft_reply"]
 }

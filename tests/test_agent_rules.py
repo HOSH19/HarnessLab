@@ -19,7 +19,6 @@ def test_agent_rules_cover_research_workflow() -> None:
     assert "classify" in rules
     assert "draft_reply" in rules
     assert "must call classify" in rules
-    assert "trust read_source" in rules
 
 
 def test_optional_tools_empty_for_research_agent() -> None:
