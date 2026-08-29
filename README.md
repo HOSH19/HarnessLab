@@ -69,7 +69,7 @@ python -m harnesslab compare examples/research_agent --by models --harness minim
 python -m harnesslab compare examples/incident_manager --task I-103 --local
 ```
 
-Docs: [EVALUATORS.md](docs/EVALUATORS.md) · [HARNESSES.md](docs/HARNESSES.md)
+Docs: [EVALUATORS.md](docs/EVALUATORS.md) · [HARNESSES.md](docs/HARNESSES.md) · [Session worklog (29 Aug 2026)](docs/SESSION_2026-08-29.md)
 
 ## License
 
