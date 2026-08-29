@@ -24,6 +24,39 @@ flowchart LR
     Eval --> Report[HTML report]
 ```
 
+## LangSmith dashboard
+
+Without `--local`, traces and scores live in LangSmith (project `triage`, dataset `ticket-triage-stress`). A local `report.html` is also written.
+
+Three harness experiments on 9 stress tasks:
+
+![LangSmith experiment comparison across three harness variants](docs/images/langsmith-dashboard.png)
+
+| Area | What you see |
+|---|---|
+| **Experiments** | One row per harness (`minimal`, `retry`, `trim`), 6/6 completed |
+| **Feedback** | `efficiency` and `error_recovery` at 1.0 for all three; `failure_fingerprint` ~0.67 |
+| **Latency** | `minimal` slowest (P50 ~9s); `retry` and `trim` faster (~4–5s P50) |
+| **Tokens** | `minimal` uses far more input tokens than `retry` / `trim` |
+
+Aggregate charts look even — drill into per-task rows for real differences.
+
+### Per-task scores
+
+![LangSmith per-task evaluator scores for one experiment](docs/images/langsmith-per-task.png)
+
+In this `trim` run, `task_pass` averages **0.50** and `tool_sequence` **0.00** while `efficiency` / `error_recovery` stay at 1.0:
+
+- **1.0 on efficiency / error_recovery** — run finished without crashing, not "got the right answer"
+- **Below 1.0 on task_pass / tool_sequence** — wrong category, missing reply terms, or skipped tools
+- Compare the same view across `minimal`, `retry`, and `trim` to see harness impact
+
+### Agent loop trace
+
+![LangSmith trace view showing the agent loop for a single task run](docs/images/langsmith-trace.png)
+
+Trace for ticket **T-015** under the `trim` harness: `trim_context` → `agent` → `tools` (`read_ticket`, `search_kb`, `classify`, `draft_reply`) with flaky `search_kb` retries. The right panel shows evaluator scores and structured output (`classification`, `final_reply`, `graph_trajectory`).
+
 ## Quick start
 
 ```bash
@@ -31,7 +64,7 @@ git clone https://github.com/HOSH19/HarnessLab.git && cd HarnessLab
 
 # Install (conda or pip)
 conda env create -f environment.yml && conda activate harnesslab
-# or: pip install -e ".[dev]"
+# or: ./scripts/install.sh
 
 cp .env.example .env
 # Set OPENAI_API_KEY and, for upload mode, LANGSMITH_API_KEY
@@ -49,7 +82,7 @@ Upload traces and scores to LangSmith:
 python -m harnesslab compare examples/ticket_triage -o report.html
 ```
 
-> **CLI tip:** If `harnesslab` is not found after `pip install`, use `python -m harnesslab` or add user scripts to PATH: `export PATH="$HOME/.local/bin:$PATH"`.
+> **CLI tip:** After `pip install`, run `./scripts/install.sh` once so `harnesslab` is on your PATH. You can also use `python -m harnesslab` or `./bin/harnesslab`.
 
 ## Commands
 

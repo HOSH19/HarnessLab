@@ -1,0 +1,3 @@
+{
+  "install": "python3 -m pip install -e '.[dev]' && (grep -q '.local/bin' \"$HOME/.bashrc\" 2>/dev/null || echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> \"$HOME/.bashrc\")"
+}
