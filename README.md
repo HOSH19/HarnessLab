@@ -18,12 +18,12 @@ flowchart LR
     Eval --> Report[HTML report]
 ```
 
-Harness variants: `minimal` (baseline), `retry` (tool retries), `trim` (history cap).
+Harness variants: `minimal` (baseline), `retry` (tool retries), `trim` (history cap). Same three presets work for every example — only the `langsmith_project` name changes per agent.
 
-| Example | Path | Stress tasks |
-|---|---|---|
-| Ticket triage | `examples/ticket_triage/` | `T-011`–`T-019` (9 tasks) |
-| Incident analyst | `examples/incident_analyst/` | `I-101`–`I-106` (6 tasks) |
+| Example | Path | Tasks | Difficulty |
+|---|---|---|---|
+| Research agent | `examples/research_agent/` | `R-001`–`R-004` (4 tasks) | Easier — linear search → read → classify → reply |
+| Incident manager | `examples/incident_manager/` | `I-101`–`I-106` (6 tasks) | Harder — contradictory metrics, adversarial prompts, timeline correlation |
 
 ## Quick start
 
@@ -36,13 +36,13 @@ cp .env.example .env   # OPENAI_API_KEY; LANGSMITH_API_KEY for upload mode
 Local (no LangSmith credentials):
 
 ```bash
-python -m harnesslab compare examples/ticket_triage --local -o report.html
+python -m harnesslab compare examples/research_agent --local -o report.html
 ```
 
 LangSmith upload:
 
 ```bash
-python -m harnesslab run examples/ticket_triage --harness minimal --tasks 2 --dataset task_ablation
+python -m harnesslab run examples/research_agent --harness minimal --tasks 2 --dataset research-ablation
 ```
 
 Use `--local` while iterating; drop it when you want traces and experiment history in LangSmith.
@@ -56,17 +56,17 @@ Use `--local` while iterating; drop it when you want traces and experiment histo
 | `dataset upload` | Sync tasks to a LangSmith dataset |
 
 ```bash
-# Harness compare (default: minimal + retry × 2 tasks)
-python -m harnesslab compare examples/ticket_triage --local -o report.html
+# Easier example — research agent (default: minimal + retry × 2 tasks)
+python -m harnesslab compare examples/research_agent --local -o report.html
+
+# Harder example — incident manager
+python -m harnesslab compare examples/incident_manager --local -o incident-report.html
 
 # Model compare on one harness
-python -m harnesslab compare examples/ticket_triage --by models --harness minimal --local
+python -m harnesslab compare examples/research_agent --by models --harness minimal --local
 
-# Single ticket
-python -m harnesslab compare examples/ticket_triage --task T-018 --local
-
-# Second example — trickier incident analysis (contradictory metrics, adversarial prompts)
-python -m harnesslab compare examples/incident_analyst --local -o incident-report.html
+# Single task
+python -m harnesslab compare examples/incident_manager --task I-103 --local
 ```
 
 Docs: [EVALUATORS.md](docs/EVALUATORS.md) · [HARNESSES.md](docs/HARNESSES.md)

@@ -1,8 +1,4 @@
-"""Graph node functions for the ticket triage example agent.
-
-Defines call_model and call_tools nodes. Prompt and model selection
-live here; harness middleware is applied by graph.builder.
-"""
+"""Graph node functions for the incident manager example agent."""
 
 import os
 
@@ -11,8 +7,8 @@ from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
 
-from examples.ticket_triage.rules import SYSTEM_PROMPT
-from examples.ticket_triage.tools import TOOLS
+from examples.incident_manager.rules import SYSTEM_PROMPT
+from examples.incident_manager.tools import TOOLS
 from harnesslab.config.model_catalog import DEFAULT_MODEL
 from harnesslab.graph.state import AgentState
 
@@ -24,14 +20,7 @@ def _model() -> ChatOpenAI:
 
 
 def call_model(state: AgentState) -> dict:
-    """Invoke the LLM with tool binding on current messages.
-
-    Args:
-        state: Current graph state including message history.
-
-    Returns:
-        State update with a new assistant message.
-    """
+    """Invoke the LLM with tool binding on current messages."""
     llm = _model().bind_tools(TOOLS)
     messages = [SystemMessage(content=SYSTEM_PROMPT), *state["messages"]]
     response = llm.invoke(messages)
@@ -42,13 +31,5 @@ _tool_node = ToolNode(TOOLS)
 
 
 def call_tools(state: AgentState, config: RunnableConfig | None = None) -> dict:
-    """Execute tool calls from the latest assistant message.
-
-    Args:
-        state: Current graph state with pending tool calls.
-        config: LangGraph runnable config (passed through to ToolNode).
-
-    Returns:
-        State update with tool result messages.
-    """
+    """Execute tool calls from the latest assistant message."""
     return _tool_node.invoke(state, config)

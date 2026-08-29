@@ -44,8 +44,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LANGSMITH_TRACING: "false"
         run: |
-          harnesslab compare examples/ticket_triage \
-            --task T-018 \
+          harnesslab compare examples/research_agent \
+            --task R-001 \
             --local \
             --output report.html
 

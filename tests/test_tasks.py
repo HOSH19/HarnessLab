@@ -5,12 +5,12 @@ from pathlib import Path
 from harnesslab.experiments.tasks import load_tasks
 
 
-def test_load_tasks_returns_inputs_and_outputs() -> None:
-    """Task loader produces LangSmith-compatible records."""
+def test_load_research_tasks_returns_inputs_and_outputs() -> None:
+    """Research task loader produces LangSmith-compatible records."""
     root = Path(__file__).resolve().parents[1]
-    tasks_dir = root / "examples" / "ticket_triage" / "tasks"
+    tasks_dir = root / "examples" / "research_agent" / "tasks"
     tasks = load_tasks(tasks_dir)
-    assert len(tasks) == 9
+    assert len(tasks) == 4
     assert "inputs" in tasks[0]
     assert "outputs" in tasks[0]
     assert "expected_category" in tasks[0]["outputs"]
@@ -18,32 +18,24 @@ def test_load_tasks_returns_inputs_and_outputs() -> None:
 
 
 def test_load_tasks_filters_by_ticket_id() -> None:
-    """Ticket filter returns a single stress task."""
+    """Ticket filter returns a single task."""
     root = Path(__file__).resolve().parents[1]
-    tasks_dir = root / "examples" / "ticket_triage" / "tasks"
-    tasks = load_tasks(tasks_dir, ticket_id="T-018")
+    tasks_dir = root / "examples" / "research_agent" / "tasks"
+    tasks = load_tasks(tasks_dir, ticket_id="R-002")
     assert len(tasks) == 1
-    assert tasks[0]["inputs"]["ticket_id"] == "T-018"
+    assert tasks[0]["inputs"]["ticket_id"] == "R-002"
 
 
-def test_load_tasks_includes_stress_fields() -> None:
-    """Stress tasks expose flaky tools, budgets, and adversarial prompts."""
+def test_load_incident_manager_stress_fields() -> None:
+    """Incident manager stress tasks expose flaky tools and adversarial prompts."""
     root = Path(__file__).resolve().parents[1]
-    tasks_dir = root / "examples" / "ticket_triage" / "tasks"
+    tasks_dir = root / "examples" / "incident_manager" / "tasks"
     tasks = {task["inputs"].get("ticket_id"): task for task in load_tasks(tasks_dir)}
 
-    tool_budget_task = tasks["T-018"]
-    assert tool_budget_task["outputs"]["expected_tools"].count("search_kb") == 2
-    assert "check_sla" in tool_budget_task["outputs"]["expected_tools"]
-    assert "escalate_ticket" in tool_budget_task["outputs"]["expected_tools"]
-    assert tool_budget_task["outputs"]["max_acceptable_errors"] == 0
-    assert tool_budget_task["outputs"]["expected_max_steps"] == 10
-    assert tool_budget_task["inputs"]["flaky_tools"] == {
-        "search_kb": 2,
-        "escalate_ticket": 1,
-    }
+    deploy_task = tasks["I-103"]
+    assert "correlate_timeline" in deploy_task["outputs"]["expected_tools"]
+    assert deploy_task["inputs"]["flaky_tools"]["fetch_metrics"] == 2
 
-    adversarial_task = tasks["T-019"]
-    assert adversarial_task["outputs"]["expected_category"] == "billing"
-    assert "skip KB" in adversarial_task["inputs"]["prompt"]
-    assert len(adversarial_task["outputs"]["required_reply_terms"]) >= 4
+    adversarial_task = tasks["I-105"]
+    assert adversarial_task["outputs"]["expected_category"] == "security"
+    assert "skip runbook" in adversarial_task["inputs"]["prompt"].lower()

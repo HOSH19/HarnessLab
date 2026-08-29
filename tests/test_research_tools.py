@@ -1,0 +1,36 @@
+"""Research agent tool tests."""
+
+import json
+
+import pytest
+
+from examples.research_agent.flaky import init_flaky_tools
+from examples.research_agent.tools import classify, read_source, search_literature
+
+
+def test_read_source_returns_fixture() -> None:
+    """read_source loads SRC-101 from fixtures."""
+    init_flaky_tools(None)
+    payload = json.loads(read_source.invoke({"source_id": "SRC-101"}))
+    assert payload["topic_id"] == "R-001"
+    assert "KV" in payload["title"] or "cache" in payload["title"].lower()
+
+
+def test_classify_validates_categories() -> None:
+    """classify rejects unknown categories."""
+    init_flaky_tools(None)
+    bad = classify.invoke({"category": "finance", "topic_id": "R-001"})
+    assert "error" in bad.lower()
+    good = classify.invoke({"category": "ml", "topic_id": "R-001"})
+    assert "ml" in good
+
+
+def test_search_literature_flaky_integration() -> None:
+    """search_literature raises once then succeeds when flaky_tools requests one failure."""
+    init_flaky_tools({"search_literature": 1})
+
+    with pytest.raises(RuntimeError, match="search_literature"):
+        search_literature.invoke({"query": "transformer"})
+
+    result = json.loads(search_literature.invoke({"query": "transformer"}))
+    assert result

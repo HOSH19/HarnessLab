@@ -2,6 +2,8 @@
 
 A **harness** is a YAML configuration that wraps the same LangGraph agent with different execution policies — retries, context trimming, turn limits. HarnessLab A/B tests harness variants on identical tasks to answer: *did harness X beat harness Y, and why?*
 
+**You do not need new harness types per agent.** The same three presets (`minimal`, `retry`, `trim`) apply to every example. Each agent only needs its own `harnesses/` folder — mainly to set a distinct `langsmith_project` and optionally tune `max_turns` for simpler workflows.
+
 ---
 
 ## YAML schema
@@ -18,7 +20,7 @@ tooling:
 context:
   history_limit: null
 observability:
-  langsmith_project: triage
+  langsmith_project: research-agent
 ```
 
 | Section | Controls |
@@ -32,17 +34,19 @@ Harness files live in `examples/<agent>/harnesses/`.
 
 ---
 
-## Shipped variants (ticket triage)
+## Shipped variants (all examples)
 
 | Harness | Middleware | Best for |
 |---|---|---|
 | `minimal` | none | Baseline — no retries, no trimming |
-| `retry` | tool retries (×2) | Flaky tool recovery (`T-011`, `T-015`) |
-| `trim` | `history_limit: 8` | Long-context tasks (`T-012`) |
+| `retry` | tool retries (×2) | Flaky tool recovery (`R-001`, `I-101`) |
+| `trim` | `history_limit` | Long-context / multi-turn tasks (`I-104`) |
+
+Research agent uses `max_turns: 8`; incident manager uses `max_turns: 12` — tuned per workflow complexity, not a new harness type.
 
 ```bash
-python -m harnesslab compare examples/ticket_triage --local -o report.html
-python -m harnesslab compare examples/ticket_triage --harness minimal,retry,trim --dataset task_ablation
+python -m harnesslab compare examples/research_agent --local -o report.html
+python -m harnesslab compare examples/incident_manager --harness minimal,retry,trim --local
 ```
 
 ---
@@ -93,13 +97,13 @@ These only need a new file under `examples/<agent>/harnesses/`:
 
 | Harness idea | Mechanism | Use case |
 |---|---|---|
-| **timeout** | Per-tool deadline enforcement | Slow external APIs (`fetch_metrics`) |
-| **cache** | Memoize idempotent tool calls | Repeated runbook lookups |
+| **timeout** | Per-tool deadline enforcement | Slow external APIs |
+| **cache** | Memoize idempotent tool calls | Repeated literature/runbook lookups |
 | **fallback_model** | Downgrade model after N failures | Cost vs reliability on flaky arms |
 | **checkpoint** | Persist/resume mid-task | Long incident investigations |
-| **parallel_tools** | Fan-out independent tool calls | Multi-source correlation (`fetch_metrics` + `correlate_timeline`) |
+| **parallel_tools** | Fan-out independent tool calls | Multi-source correlation |
 | **circuit_breaker** | Stop calling a tool after N consecutive failures | Cascading outage scenarios |
-| **rate_limit** | Cap tool calls per turn | Agents that over-search runbooks |
+| **rate_limit** | Cap tool calls per turn | Agents that over-search |
 
 ---
 
@@ -107,16 +111,16 @@ These only need a new file under `examples/<agent>/harnesses/`:
 
 | Agent | Path | Tasks | What makes it hard |
 |---|---|---|---|
-| Ticket triage | `examples/ticket_triage/` | `T-011`–`T-019` (9 stress tasks) | Flaky tools, SLA escalation, adversarial prompts |
-| Incident analyst | `examples/incident_analyst/` | `I-101`–`I-106` (6 stress tasks) | Contradictory metrics, deploy correlation, security misdirection, long context |
+| Research agent | `examples/research_agent/` | `R-001`–`R-004` (4 tasks) | Straightforward workflow; one flaky search task |
+| Incident manager | `examples/incident_manager/` | `I-101`–`I-106` (6 tasks) | Contradictory metrics, deploy correlation, security misdirection, long context |
 
 ```bash
-# Ticket triage (support workflow)
-python -m harnesslab compare examples/ticket_triage --local -o report.html
+# Easier — research workflow
+python -m harnesslab compare examples/research_agent --local -o report.html
 
-# Incident analyst (on-call workflow — more tools, trickier reasoning)
-python -m harnesslab compare examples/incident_analyst --harness minimal,retry --local -o incident-report.html
-python -m harnesslab compare examples/incident_analyst --task I-103 --local
+# Harder — on-call incident workflow
+python -m harnesslab compare examples/incident_manager --harness minimal,retry --local -o incident-report.html
+python -m harnesslab compare examples/incident_manager --task I-103 --local
 ```
 
 The CLI loads `build_graph` from `examples/<agent>/graph.py` automatically — no code changes needed to add a third example.

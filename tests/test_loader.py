@@ -7,18 +7,18 @@ import pytest
 from harnesslab.examples.loader import load_graph_factory
 
 
-def test_load_ticket_triage_graph_factory() -> None:
-    """Ticket triage exposes a build_graph factory."""
+def test_load_research_agent_graph_factory() -> None:
+    """Research agent exposes a build_graph factory."""
     root = Path(__file__).resolve().parents[1]
-    factory = load_graph_factory(root / "examples" / "ticket_triage")
+    factory = load_graph_factory(root / "examples" / "research_agent")
     assert callable(factory)
-    assert factory.__name__ in {"build_graph", "build_ticket_triage_graph"}
+    assert factory.__name__ == "build_graph"
 
 
-def test_load_incident_analyst_graph_factory() -> None:
-    """Incident analyst exposes a build_graph factory."""
+def test_load_incident_manager_graph_factory() -> None:
+    """Incident manager exposes a build_graph factory."""
     root = Path(__file__).resolve().parents[1]
-    factory = load_graph_factory(root / "examples" / "incident_analyst")
+    factory = load_graph_factory(root / "examples" / "incident_manager")
     assert callable(factory)
     assert factory.__name__ == "build_graph"
 

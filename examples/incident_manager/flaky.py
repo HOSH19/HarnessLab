@@ -1,4 +1,4 @@
-"""Simulated flaky tool failures for the incident analyst example."""
+"""Simulated flaky tool failures for the incident manager example."""
 
 from harnesslab.flaky import attempt_count, init_flaky_tools, maybe_fail
 

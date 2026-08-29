@@ -1,12 +1,12 @@
-name: retry
+name: minimal
 execution:
-  max_turns: 15
+  max_turns: 12
   stop_on_tool_error: false
 tooling:
-  retry_count: 2
+  retry_count: 0
   tool_timeout_s: 30
-  error_format: verbose
+  error_format: minimal
 context:
   history_limit: null
 observability:
-  langsmith_project: triage
+  langsmith_project: incident-manager

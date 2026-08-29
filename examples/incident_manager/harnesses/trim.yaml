@@ -1,6 +1,6 @@
 name: trim
 execution:
-  max_turns: 15
+  max_turns: 12
   stop_on_tool_error: false
 tooling:
   retry_count: 0
@@ -9,4 +9,4 @@ tooling:
 context:
   history_limit: 8
 observability:
-  langsmith_project: triage
+  langsmith_project: incident-manager

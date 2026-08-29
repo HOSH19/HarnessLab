@@ -1,4 +1,4 @@
-"""Task pass/fail evaluator for ticket triage outputs.
+"""Task pass/fail evaluator for agent run outputs.
 
 Checks classification and reply content against task fixtures.
 Does not call LLMs or access LangSmith directly.
@@ -10,7 +10,7 @@ from harnesslab.eval.outputs import run_output_field
 
 
 def task_pass(run: Run, example: Example) -> dict:
-    """Score whether the agent produced a correct triage result."""
+    """Score whether the agent produced a correct task result."""
     outputs = run.outputs or {}
     reference = example.outputs or example.inputs or {}
     expected_category = reference.get("expected_category", "")

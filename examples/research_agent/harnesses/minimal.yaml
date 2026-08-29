@@ -1,6 +1,6 @@
 name: minimal
 execution:
-  max_turns: 10
+  max_turns: 8
   stop_on_tool_error: false
 tooling:
   retry_count: 0
@@ -9,4 +9,4 @@ tooling:
 context:
   history_limit: null
 observability:
-  langsmith_project: triage
+  langsmith_project: research-agent

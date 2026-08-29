@@ -106,7 +106,7 @@ def _invoke_config(harness: HarnessConfig, *, model: str | None = None) -> dict:
     Model and flaky_tools live on experiment metadata / dataset inputs instead.
     """
     del model
-    project = harness.observability.langsmith_project or "triage"
+    project = harness.observability.langsmith_project or "harnesslab"
     os.environ["LANGSMITH_PROJECT"] = project
 
     configurable: dict[str, Any] = {

@@ -1,4 +1,4 @@
-"""Tool definitions for the incident analyst example agent.
+"""Tool definitions for the incident manager example agent.
 
 Reads from local JSON fixtures only. Does not call external APIs.
 """
@@ -8,7 +8,7 @@ from pathlib import Path
 
 from langchain_core.tools import tool
 
-from examples.incident_analyst.flaky import maybe_fail
+from examples.incident_manager.flaky import maybe_fail
 
 FIXTURES_PATH = Path(__file__).parent / "fixtures" / "data.json"
 

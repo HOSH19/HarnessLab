@@ -116,7 +116,7 @@ def run_command(
         "--tasks",
         help=f"Limit number of tasks (default: {DEFAULT_TASK_LIMIT}; ignored when --task is set)",
     ),
-    task: str | None = typer.Option(None, "--task", help="Single ticket id (e.g. T-011)"),
+    task: str | None = typer.Option(None, "--task", help="Single task id (e.g. R-001, I-103)"),
     dataset: str | None = typer.Option(
         None,
         "--dataset",
@@ -202,7 +202,7 @@ def compare_command(
         "--tasks",
         help=f"Limit number of stress tasks (default: {DEFAULT_TASK_LIMIT}; ignored when --task is set)",
     ),
-    task: str | None = typer.Option(None, "--task", help="Single ticket id (e.g. T-011)"),
+    task: str | None = typer.Option(None, "--task", help="Single task id (e.g. R-001, I-103)"),
     model: str | None = typer.Option(
         None,
         "--model",
@@ -305,7 +305,7 @@ def _upload_dataset(example: Path, name: str) -> None:
 @dataset_app.command("upload")
 def dataset_upload_command(
     example: Path = typer.Argument(..., help="Path to example project"),
-    name: str = typer.Option("triage-stress", "--name", help="Dataset name"),
+    name: str = typer.Option("research-stress", "--name", help="Dataset name"),
 ) -> None:
     """Upload stress task fixtures to a LangSmith dataset."""
     _upload_dataset(example, name)

@@ -1,8 +1,8 @@
-"""Incident analyst agent policy shared by the graph and documentation."""
+"""Incident manager agent policy shared by the graph and documentation."""
 
 OPTIONAL_TOOLS = frozenset({"fetch_metrics", "correlate_timeline"})
 
-AGENT_RULES = """You are an on-call incident analyst agent.
+AGENT_RULES = """You are an on-call incident manager agent.
 
 Standard workflow for every incident:
 1. read_incident — fetch incident title, summary, and affected service

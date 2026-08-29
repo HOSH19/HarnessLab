@@ -1,4 +1,4 @@
-"""Graph node functions for the incident analyst example agent."""
+"""Graph node functions for the research agent example."""
 
 import os
 
@@ -7,8 +7,8 @@ from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
 
-from examples.incident_analyst.rules import SYSTEM_PROMPT
-from examples.incident_analyst.tools import TOOLS
+from examples.research_agent.rules import SYSTEM_PROMPT
+from examples.research_agent.tools import TOOLS
 from harnesslab.config.model_catalog import DEFAULT_MODEL
 from harnesslab.graph.state import AgentState
 

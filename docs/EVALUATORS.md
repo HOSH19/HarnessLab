@@ -10,7 +10,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 | # | Evaluator | Score range | What it measures |
 |---|-----------|-------------|------------------|
-| 1 | **`task_pass`** | 0.0–1.0 | Did the agent produce the **correct triage outcome**? |
+| 1 | **`task_pass`** | 0.0–1.0 | Did the agent produce the **correct task outcome**? |
 | 2 | **`graph_trajectory`** | 0.0–1.0 | Did the agent follow the **expected graph path**? |
 | 3 | **`error_recovery`** | 0.0–1.0 | Did the agent stay within the **acceptable tool-error budget**? |
 | 4 | **`efficiency`** | 0.0–1.0 | Was the run **fast and lean** enough? |
@@ -20,7 +20,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 ## 1. `task_pass` — outcome correctness
 
-**Question:** Did the agent classify the ticket correctly and draft a reply that includes required terms?
+**Question:** Did the agent classify correctly and draft a reply that includes required terms?
 
 **Reads from run:** `classification`, `final_reply`
 
@@ -69,7 +69,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 - 0.0 when errors exceed the budget
 - Defaults to zero tolerance when `max_acceptable_errors` is omitted
 
-**Why keep it:** Stress tasks (`T-011`, `T-015`) inject flaky tools. This is where the **retry** harness should outperform **minimal**.
+**Why keep it:** Stress tasks (`R-001`, `I-101`) inject flaky tools. This is where the **retry** harness should outperform **minimal**.
 
 **Example comment:** `error_count=1, max_acceptable=2`
 

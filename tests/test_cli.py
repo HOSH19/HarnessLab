@@ -11,8 +11,8 @@ def test_default_task_limit_is_two() -> None:
 
 def test_single_task_filter_ignores_default_limit() -> None:
     """A --task filter runs one ticket without applying the task cap."""
-    assert _resolve_task_limit(None, "T-011") is None
-    assert _resolve_task_limit(6, "T-011") == 6
+    assert _resolve_task_limit(None, "R-001") is None
+    assert _resolve_task_limit(6, "R-001") == 6
 
 
 def test_explicit_tasks_override_default() -> None:
@@ -31,8 +31,8 @@ def test_resolve_dataset_name_uses_explicit_value() -> None:
 
     from harnesslab.cli.main import _default_dataset_name, _resolve_dataset_name
 
-    example = Path("examples/ticket_triage")
-    assert _resolve_dataset_name(example, "triage-v2") == "triage-v2"
+    example = Path("examples/research_agent")
+    assert _resolve_dataset_name(example, "research-v2") == "research-v2"
     assert _resolve_dataset_name(example, None) == _default_dataset_name(example)
 
 

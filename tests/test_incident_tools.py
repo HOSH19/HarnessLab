@@ -1,7 +1,7 @@
-"""Incident analyst tool tests."""
+"""Incident manager tool tests."""
 
-from examples.incident_analyst.flaky import init_flaky_tools
-from examples.incident_analyst.tools import classify, correlate_timeline, read_incident, search_runbooks
+from examples.incident_manager.flaky import init_flaky_tools
+from examples.incident_manager.tools import classify, correlate_timeline, read_incident, search_runbooks
 
 
 def test_read_incident_returns_fixture() -> None:
