@@ -28,7 +28,7 @@ Report written to /path/to/report.html
 
 ## Report preview
 
-| Harness | task_pass | graph_trajectory | efficiency | failure_fingerprint |
+| Harness | task_pass | graph_trajectory | error_recovery | efficiency | failure_fingerprint |
 |---|---|---|---|---|
 | minimal | 0.50 | 1.00 | 0.85 | 0.50 |
 | retry | 0.50 | 1.00 | 0.80 | 0.50 |

@@ -5,19 +5,17 @@ from typing import Any
 SUMMARY_KEYS = [
     "task_pass",
     "graph_trajectory",
-    "tool_sequence",
     "error_recovery",
-    "step_count",
     "efficiency",
     "failure_fingerprint",
 ]
 
 DETAIL_KEYS = [
     "task_pass",
-    "tool_sequence",
+    "graph_trajectory",
     "error_recovery",
-    "step_count",
     "efficiency",
+    "failure_fingerprint",
 ]
 
 

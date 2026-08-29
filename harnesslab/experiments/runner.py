@@ -26,11 +26,8 @@ from harnesslab.config.models import HarnessConfig
 from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
 from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.error_recovery import error_recovery
-from harnesslab.eval.final_reply import reply_text
 from harnesslab.eval.fingerprint import failure_fingerprint
 from harnesslab.eval.outcome import task_pass
-from harnesslab.eval.step_count import step_count
-from harnesslab.eval.tool_sequence import tool_sequence
 from harnesslab.eval.trajectory import graph_trajectory
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
@@ -42,12 +39,9 @@ CompareDimension = Literal["harness", "models"]
 _BASE_EVALUATORS = [
     task_pass,
     graph_trajectory,
-    tool_sequence,
     error_recovery,
-    step_count,
     efficiency,
     failure_fingerprint,
-    reply_text,
 ]
 
 

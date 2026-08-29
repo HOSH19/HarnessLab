@@ -33,7 +33,8 @@ def test_render_comparison_html_includes_harness_names() -> None:
     assert "minimal" in html
     assert "retry" in html
     assert "task_pass" in html
-    assert "tool_sequence" in html
+    assert "graph_trajectory" in html
+    assert "failure_fingerprint" in html
     assert "Per-task breakdown" in html
 
 
@@ -50,10 +51,10 @@ def test_render_comparison_html_includes_per_task_rows() -> None:
         "T-011",
         {
             "task_pass": 1.0,
-            "tool_sequence": 1.0,
+            "graph_trajectory": 1.0,
             "error_recovery": 1.0,
-            "step_count": 0.8,
             "efficiency": 0.9,
+            "failure_fingerprint": 1.0,
         },
         {"efficiency": "latency_ms=1200, tokens=500, steps=6"},
     )
@@ -61,4 +62,4 @@ def test_render_comparison_html_includes_per_task_rows() -> None:
     assert "T-011" in html
     assert "1200" in html
     assert "500" in html
-    assert "0.80" in html
+    assert "1.00" in html
