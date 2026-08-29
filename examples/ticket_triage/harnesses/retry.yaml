@@ -10,5 +10,3 @@ context:
   history_limit: null
 observability:
   langsmith_project: triage
-  trace_metadata:
-    harness_version: "1.0"

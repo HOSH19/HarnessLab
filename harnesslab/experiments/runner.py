@@ -35,7 +35,7 @@ from harnesslab.eval.trajectory import graph_trajectory
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.tasks import load_tasks
-from harnesslab.graph.extract import extract_fields_from_messages, extract_tool_names_from_messages
+from harnesslab.graph.extract import extract_fields_from_messages
 
 CompareDimension = Literal["harness", "models"]
 
@@ -105,7 +105,13 @@ def _build_initial_messages(prompt: str, conversation_history: list[dict] | None
 
 
 def _invoke_config(harness: HarnessConfig, *, model: str | None = None) -> dict:
-    """Build LangGraph invoke config with recursion limit and metadata."""
+    """Build LangGraph invoke config with recursion limit and trace tags.
+
+    Trace tags are minimized to harness_name (+ optional user trace_metadata).
+    thread_id is required for trajectory extraction but is not a filter tag.
+    Model and flaky_tools live on experiment metadata / dataset inputs instead.
+    """
+    del model
     project = harness.observability.langsmith_project or "triage"
     os.environ["LANGSMITH_PROJECT"] = project
 
@@ -114,8 +120,6 @@ def _invoke_config(harness: HarnessConfig, *, model: str | None = None) -> dict:
         "harness_name": harness.name,
         **harness.observability.trace_metadata,
     }
-    if model:
-        configurable["model"] = model
 
     return {
         "configurable": configurable,
@@ -124,37 +128,28 @@ def _invoke_config(harness: HarnessConfig, *, model: str | None = None) -> dict:
 
 
 def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
-    """Pull evaluation fields from graph state and trajectory history."""
+    """Pull the minimal evaluation fields from graph state and trajectory."""
     messages = state.get("messages", [])
     parsed = extract_fields_from_messages(messages)
     trajectory = extract_langgraph_trajectory_from_thread(graph, config)
     classification = parsed["classification"] or state.get("classification", "")
     final_reply = parsed["final_reply"] or state.get("final_reply", "")
-    tool_names = extract_tool_names_from_messages(messages)
 
     return {
-        "output": classification or "",
         "classification": classification or "",
-        "details": {
-            "final_reply": final_reply,
-            "tool_names": tool_names,
-            "error_count": state.get("error_count", 0),
-            "graph_trajectory": trajectory["outputs"],
-        },
+        "final_reply": final_reply,
+        "graph_trajectory": trajectory["outputs"],
+        "error_count": state.get("error_count", 0),
     }
 
 
 def _empty_outputs(*, error: str | None = None) -> dict:
     """Return a minimal outputs dict when graph invocation fails."""
     payload = {
-        "output": "",
         "classification": "",
-        "details": {
-            "final_reply": "",
-            "tool_names": [],
-            "error_count": 1 if error else 0,
-            "graph_trajectory": {"steps": [], "results": [], "inputs": []},
-        },
+        "final_reply": "",
+        "error_count": 1 if error else 0,
+        "graph_trajectory": {"steps": [], "results": [], "inputs": []},
     }
     if error:
         payload["error"] = error
@@ -173,8 +168,6 @@ def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessC
         conversation_history = inputs.get("conversation_history")
         model = os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
         config = _invoke_config(harness, model=model)
-        if flaky_tools:
-            config["configurable"]["flaky_tools"] = flaky_tools
         init_flaky_tools(flaky_tools)
         try:
             state = graph.invoke(

@@ -31,10 +31,18 @@ class ContextConfig(BaseModel):
 
 
 class ObservabilityConfig(BaseModel):
-    """Controls LangSmith tracing metadata for a harness variant."""
+    """Controls LangSmith/Langfuse tracing metadata for a harness variant.
+
+    The runner always injects ``harness_name`` per run. Keep ``trace_metadata``
+    empty unless you need rare experiment-specific tags; do not duplicate
+    dataset fields (``ticket_id``, ``flaky_tools``) or static version strings.
+    """
 
     langsmith_project: str | None = None
-    trace_metadata: dict[str, Any] = Field(default_factory=dict)
+    trace_metadata: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Optional extra trace tags. Prefer empty; harness_name is injected by the runner.",
+    )
 
 
 class HarnessConfig(BaseModel):
