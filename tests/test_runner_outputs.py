@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from harnesslab.eval.outputs import run_output_field
 from harnesslab.experiments.tasks import load_tasks
 
 
@@ -13,3 +14,19 @@ def test_dataset_outputs_include_output_for_langsmith_preview() -> None:
     outputs = tasks[0]["outputs"]
     assert outputs["classification"] == "infrastructure"
     assert outputs["output"] == "infrastructure"
+
+
+def test_run_output_field_reads_nested_reply_and_trajectory() -> None:
+    """Evaluators read final_reply and graph_trajectory from details."""
+    outputs = {
+        "output": "infrastructure",
+        "classification": "infrastructure",
+        "error_count": 0,
+        "details": {
+            "final_reply": "Pool exhaustion on payments-api.",
+            "graph_trajectory": {"steps": [["agent"], ["tools"]], "results": [], "inputs": []},
+        },
+    }
+    assert run_output_field(outputs, "final_reply") == "Pool exhaustion on payments-api."
+    assert run_output_field(outputs, "graph_trajectory")["steps"] == [["agent"], ["tools"]]
+    assert "final_reply" not in outputs

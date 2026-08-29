@@ -22,13 +22,13 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 **Question:** Did the agent classify correctly and draft a reply that includes required terms?
 
-**Reads from run:** `classification`, `final_reply`
+**Reads from run:** `classification`, `details.final_reply` (via `run_output_field`)
 
 **Compares to dataset:** `classification`, `required_reply_terms`
 
 **Scoring:**
 - 50% weight on category match (reference `classification` substring in run `classification`)
-- 50% weight on required reply terms (`required_reply_terms` found in `final_reply`)
+- 50% weight on required reply terms (`required_reply_terms` found in reply text)
 - Partial credit when only some terms match
 
 **Why keep it:** This is the primary win/loss signal. A harness that finishes quickly but picks the wrong category should lose here.
@@ -41,7 +41,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 **Question:** Did the agent traverse the expected LangGraph node sequence (e.g. `agent` → `tools` → `agent`)?
 
-**Reads from run:** `graph_trajectory`
+**Reads from run:** `details.graph_trajectory` (via `run_output_field`)
 
 **Compares to dataset:** `expected_nodes`
 
@@ -98,7 +98,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 **Question:** When something goes wrong, *what kind* of failure is it?
 
-**Reads from run:** `classification`, `final_reply`, `run.error`, latency
+**Reads from run:** `classification`, `details.final_reply`, `run.error`, latency
 
 **Compares to dataset:** (none — rule-based classification)
 

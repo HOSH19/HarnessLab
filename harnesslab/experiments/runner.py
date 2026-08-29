@@ -122,7 +122,11 @@ def _invoke_config(harness: HarnessConfig, *, model: str | None = None) -> dict:
 
 
 def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
-    """Pull the minimal evaluation fields from graph state and trajectory."""
+    """Pull the minimal evaluation fields from graph state and trajectory.
+
+  Top-level outputs stay scalar so LangSmith's experiment table preview picks
+  ``output``/``classification`` instead of the longer ``final_reply`` text.
+  """
     messages = state.get("messages", [])
     parsed = extract_fields_from_messages(messages)
     trajectory = extract_langgraph_trajectory_from_thread(graph, config)
@@ -132,9 +136,11 @@ def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
     return {
         "output": classification or "",
         "classification": classification or "",
-        "final_reply": final_reply,
-        "graph_trajectory": trajectory["outputs"],
         "error_count": state.get("error_count", 0),
+        "details": {
+            "final_reply": final_reply,
+            "graph_trajectory": trajectory["outputs"],
+        },
     }
 
 
@@ -143,9 +149,11 @@ def _empty_outputs(*, error: str | None = None) -> dict:
     payload = {
         "output": "",
         "classification": "",
-        "final_reply": "",
-        "graph_trajectory": {"steps": [], "results": [], "inputs": []},
         "error_count": 1 if error else 0,
+        "details": {
+            "final_reply": "",
+            "graph_trajectory": {"steps": [], "results": [], "inputs": []},
+        },
     }
     if error:
         payload["error"] = error
