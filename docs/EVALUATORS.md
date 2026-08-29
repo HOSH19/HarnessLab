@@ -2,7 +2,7 @@
 
 HarnessLab scores every agent run on **five evaluators**. Together they answer: *did harness X beat harness Y on task Z, and why?*
 
-These are **feedback scores** uploaded to LangSmith (or stored in local JSON). They are separate from the [five logged output fields](LOGGING_FIELDS.md) (`classification`, `final_reply`, `graph_trajectory`, `error_count`, `harness_name`).
+These are **feedback scores** uploaded to LangSmith (or stored in local JSON). They are separate from the [five logged output fields](HARNESSES.md#logged-fields-per-run) on each run.
 
 ---
 

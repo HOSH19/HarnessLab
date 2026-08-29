@@ -61,7 +61,7 @@ python -m harnesslab compare examples/ticket_triage --by models --harness minima
 python -m harnesslab compare examples/ticket_triage --task T-018 --local
 ```
 
-Evaluators and logged fields: [docs/EVALUATORS.md](docs/EVALUATORS.md) · [docs/LOGGING_FIELDS.md](docs/LOGGING_FIELDS.md) · [docs/NEXT_STEPS.md](docs/NEXT_STEPS.md)
+Docs: [EVALUATORS.md](docs/EVALUATORS.md) · [HARNESSES.md](docs/HARNESSES.md)
 
 ## License
 
