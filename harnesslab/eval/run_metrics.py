@@ -1,6 +1,6 @@
-"""Helpers for reading timing and token fields from experiment runs.
+"""Helpers for reading timing and token fields from LangSmith runs.
 
-Supports both persisted run schemas and in-memory run objects returned
+Supports both persisted Run schemas and in-memory RunTree objects returned
 during local evaluation. Scorer modules should use these helpers instead of
 accessing run attributes directly.
 """

@@ -1,18 +1,20 @@
-"""Tool call sequence evaluator for Langfuse experiments.
+"""Tool call sequence evaluator for LangSmith experiments.
 
 Scores whether observed tool invocations contain expected tools
 in order. Uses message and trajectory data attached to run outputs.
 """
 
+from langsmith.schemas import Example, Run
+
 from harnesslab.eval.sequence import subsequence_progress
 from harnesslab.graph.extract import extract_tool_names_from_outputs
 
 
-def tool_sequence(run, example) -> dict:
+def tool_sequence(run: Run, example: Example) -> dict:
     """Score tool invocation order against expected tool subsequence.
 
     Args:
-        run: Run-like object containing messages or graph_trajectory outputs.
+        run: LangSmith run containing messages or graph_trajectory outputs.
         example: Dataset example with optional expected_tools reference.
 
     Returns:

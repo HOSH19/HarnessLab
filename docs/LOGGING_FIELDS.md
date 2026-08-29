@@ -1,6 +1,6 @@
 # HarnessLab Observability Field Inventory & Reduction
 
-This document inventories every field logged or traced across the HarnessLab observability stack, recommends a **top-5 minimal set** for A/B harness experiments (LangSmith today, Langfuse migration), and records what was removed on branch `cursor/langfuse-migration-80ee`.
+This document inventories every field logged or traced across the HarnessLab observability stack, recommends a **top-5 minimal set** for A/B harness experiments, and records what was removed.
 
 **Guiding question:** *Did harness X beat harness Y on task Z, and why?*
 
@@ -121,7 +121,7 @@ These five fields are the minimum needed to answer win/loss and root-cause quest
 
 ## Implementation status
 
-**Branch:** `cursor/langfuse-migration-80ee` — **implemented**.
+**Status:** implemented on `main`.
 
 ### Code changes
 

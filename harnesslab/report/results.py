@@ -1,4 +1,4 @@
-"""Shared helpers for parsing Langfuse experiment result rows."""
+"""Shared helpers for parsing LangSmith experiment result rows."""
 
 from typing import Any
 
