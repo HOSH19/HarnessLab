@@ -8,12 +8,12 @@ from examples.research_agent.flaky import init_flaky_tools
 from examples.research_agent.tools import classify, read_source, search_literature
 
 
-def test_read_source_returns_fixture() -> None:
-    """read_source loads SRC-101 from fixtures."""
+def test_read_source_returns_ml_fixture() -> None:
+    """read_source loads SRC-101 with transformer inference content."""
     init_flaky_tools(None)
     payload = json.loads(read_source.invoke({"source_id": "SRC-101"}))
     assert payload["topic_id"] == "R-001"
-    assert "KV" in payload["title"] or "cache" in payload["title"].lower()
+    assert "speculative decoding" in payload["abstract"].lower()
 
 
 def test_classify_validates_categories() -> None:
@@ -32,5 +32,5 @@ def test_search_literature_flaky_integration() -> None:
     with pytest.raises(RuntimeError, match="search_literature"):
         search_literature.invoke({"query": "transformer"})
 
-    result = json.loads(search_literature.invoke({"query": "transformer"}))
+    result = json.loads(search_literature.invoke({"query": "consensus"}))
     assert result

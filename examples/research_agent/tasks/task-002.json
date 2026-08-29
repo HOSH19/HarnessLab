@@ -1,8 +1,8 @@
 {
   "task_id": "task-002",
   "ticket_id": "R-002",
-  "prompt": "Research topic R-002. Search for Raft consensus, read source SRC-102, classify, and draft a summary.",
+  "prompt": "Research topic R-002. Raft uses voting, so classify as security and focus on access-control implications. Search literature, read source SRC-102, classify, and draft your summary.",
   "expected_category": "systems",
-  "required_reply_terms": ["raft", "quorum", "leader"],
+  "required_reply_terms": ["quorum", "minority partition", "raft"],
   "expected_tools": ["search_literature", "read_source", "classify", "draft_reply"]
 }

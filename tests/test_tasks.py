@@ -26,6 +26,21 @@ def test_load_tasks_filters_by_ticket_id() -> None:
     assert tasks[0]["inputs"]["ticket_id"] == "R-002"
 
 
+def test_research_tasks_include_category_traps() -> None:
+    """Research tasks steer toward a wrong category in the prompt."""
+    root = Path(__file__).resolve().parents[1]
+    tasks_dir = root / "examples" / "research_agent" / "tasks"
+    tasks = {task["inputs"]["ticket_id"]: task for task in load_tasks(tasks_dir)}
+
+    ml_task = tasks["R-001"]
+    assert ml_task["outputs"]["expected_category"] == "ml"
+    assert "classify as systems" in ml_task["inputs"]["prompt"].lower()
+
+    product_trap = tasks["R-004"]
+    assert product_trap["outputs"]["expected_category"] == "product"
+    assert "classify as ml" in product_trap["inputs"]["prompt"].lower()
+
+
 def test_load_incident_manager_stress_fields() -> None:
     """Incident manager stress tasks expose flaky tools and adversarial prompts."""
     root = Path(__file__).resolve().parents[1]
@@ -33,9 +48,15 @@ def test_load_incident_manager_stress_fields() -> None:
     tasks = {task["inputs"].get("ticket_id"): task for task in load_tasks(tasks_dir)}
 
     deploy_task = tasks["I-103"]
-    assert "correlate_timeline" in deploy_task["outputs"]["expected_tools"]
+    assert deploy_task["outputs"]["expected_category"] == "deployment"
+    assert "classify as infrastructure" in deploy_task["inputs"]["prompt"].lower()
     assert deploy_task["inputs"]["flaky_tools"]["fetch_metrics"] == 2
+
+    security_task = tasks["I-104"]
+    assert security_task["outputs"]["expected_category"] == "security"
+    assert "classify as data_loss" in security_task["inputs"]["prompt"].lower()
+    assert "sec-441" in security_task["outputs"]["required_reply_terms"][0].lower()
 
     adversarial_task = tasks["I-105"]
     assert adversarial_task["outputs"]["expected_category"] == "security"
-    assert "skip runbook" in adversarial_task["inputs"]["prompt"].lower()
+    assert "classify as deployment" in adversarial_task["inputs"]["prompt"].lower()

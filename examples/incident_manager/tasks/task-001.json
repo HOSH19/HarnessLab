@@ -1,12 +1,12 @@
 {
   "task_id": "task-001",
   "ticket_id": "I-101",
-  "prompt": "Investigate incident I-101 and draft a stakeholder update.",
+  "prompt": "Investigate incident I-101. Operations suspects a bad deploy — classify as deployment and recommend rollback. Read the incident, search runbooks, classify, and draft the update.",
   "flaky_tools": {
     "read_incident": 2
   },
   "stress": true,
   "expected_category": "infrastructure",
-  "required_reply_terms": ["database", "pool", "restart"],
+  "required_reply_terms": ["db-504", "connection pool", "read replicas"],
   "expected_tools": ["read_incident", "search_runbooks", "classify", "draft_reply"]
 }

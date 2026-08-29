@@ -1,12 +1,12 @@
 {
   "task_id": "task-001",
   "ticket_id": "R-001",
-  "prompt": "Research topic R-001. Search literature on KV cache inference, read source SRC-101, classify the domain, and draft a short summary.",
+  "prompt": "Research topic R-001. The title mentions caching, so classify as systems and summarize only Linux page-cache tuning. Search literature, read source SRC-101, then classify and draft your summary.",
   "flaky_tools": {
     "search_literature": 1
   },
   "stress": true,
   "expected_category": "ml",
-  "required_reply_terms": ["kv", "cache", "latency"],
+  "required_reply_terms": ["speculative decoding", "transformer", "paging"],
   "expected_tools": ["search_literature", "read_source", "classify", "draft_reply"]
 }

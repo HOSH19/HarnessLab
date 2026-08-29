@@ -3,75 +3,83 @@
     {
       "id": "I-101",
       "title": "Database connection pool exhaustion",
-      "summary": "Production API returning DB-504 errors since 03:00 UTC. Connection pool at 100% across all app servers.",
+      "summary": "payments-api is returning DB-504 errors since 03:00 UTC. Connection pool utilization is 100% on every app server. No deploy occurred in the last 24 hours.",
       "service": "payments-api",
-      "expected_category": "infrastructure"
+      "expected_category": "infrastructure",
+      "wrong_category": "deployment"
     },
     {
       "id": "I-102",
       "title": "Regional API 503 outage",
-      "summary": "Enterprise customers report 503 errors across us-east-1 since 01:30 UTC. Status page not yet updated.",
+      "summary": "Enterprise customers see HTTP 503 across us-east-1 since 01:30 UTC. api-gateway availability is 57%. Latency dashboards look green but error_rate is 42%.",
       "service": "api-gateway",
       "expected_category": "infrastructure",
-      "metrics_note": "Latency dashboards look normal but error_rate spiked to 42%."
+      "wrong_category": "none_false_alarm"
     },
     {
       "id": "I-103",
-      "title": "Error spike after nightly deploy",
-      "summary": "Checkout service error rate jumped from 0.1% to 18% five minutes after deploy v2.14.0 at 02:00 UTC.",
+      "title": "Checkout errors after deploy v2.14.0",
+      "summary": "checkout error rate jumped from 0.1% to 18.4% five minutes after production deploy v2.14.0 at 02:00 UTC.",
       "service": "checkout",
       "deploy_version": "v2.14.0",
       "deploy_time_utc": "2026-03-01T02:00:00Z",
-      "expected_category": "deployment"
+      "expected_category": "deployment",
+      "wrong_category": "infrastructure"
     },
     {
       "id": "I-104",
-      "title": "Suspicious admin API access pattern",
-      "summary": "SIEM alert: 340 admin API calls from unfamiliar IP ranges using a service account that should be dormant. Possible credential compromise.",
+      "title": "Dormant service account admin API spike",
+      "summary": "SIEM alert SEC-441: 340 admin-api calls from unfamiliar IP ranges using dormant svc-billing-export. This is a credential compromise investigation, not an invoice batch issue.",
       "service": "admin-api",
-      "expected_category": "security"
+      "expected_category": "security",
+      "wrong_category": "data_loss"
     },
     {
       "id": "I-105",
-      "title": "Leaked production API key in public repo",
-      "summary": "GitHub secret scanner flagged a live production API key committed to a public fork. Key has billing and data export scopes.",
+      "title": "Production API key leaked in public GitHub fork",
+      "summary": "Secret scanner found live prod API key in a public fork. Key scopes include billing and data_export. Remediation is credential revocation, not a deploy rollback.",
       "service": "developer-platform",
-      "expected_category": "security"
+      "expected_category": "security",
+      "wrong_category": "deployment"
     },
     {
       "id": "I-106",
-      "title": "Primary replica lag causing stale reads",
-      "summary": "Analytics replica lag exceeded 45 minutes. Downstream billing reconciliation jobs reading stale balances. Risk of incorrect invoices.",
+      "title": "Replica lag causing stale billing reads",
+      "summary": "analytics-db replica lag is 47 minutes. Billing reconciliation is reading stale balances and finance reports incorrect invoice previews. Risk is data correctness, not CPU scaling.",
       "service": "analytics-db",
-      "expected_category": "data_loss"
+      "expected_category": "data_loss",
+      "wrong_category": "infrastructure"
     }
   ],
   "metrics": {
     "I-101": {
-      "error_rate_pct": 38.2,
+      "error_code": "DB-504",
       "db_pool_utilization_pct": 100,
-      "p99_latency_ms": 4200,
+      "recent_deploy": false,
       "status": "critical"
     },
     "I-102": {
+      "http_status": 503,
       "error_rate_pct": 42.1,
-      "p99_latency_ms": 120,
       "availability_pct": 57.3,
-      "status": "critical",
-      "dashboard_summary": "Latency green but error_rate critical — investigate gateway upstream."
+      "p99_latency_ms": 120,
+      "dashboard_summary": "Latency green but error_rate critical — active regional outage, not healthy."
     },
     "I-103": {
       "error_rate_pct": 18.4,
       "deploy_version": "v2.14.0",
+      "minutes_after_deploy": 5,
       "spike_start_utc": "2026-03-01T02:05:00Z",
       "status": "degraded"
     },
     "I-104": {
-      "failed_auth_count": 12,
+      "siem_alert": "SEC-441",
       "admin_api_calls_anomaly": 340,
-      "status": "warning"
+      "dormant_account": "svc-billing-export",
+      "status": "critical"
     },
     "I-105": {
+      "leak_surface": "public_github_fork",
       "key_last_used_minutes_ago": 8,
       "scopes": ["billing", "data_export"],
       "status": "critical"
@@ -79,52 +87,63 @@
     "I-106": {
       "replica_lag_minutes": 47,
       "stale_read_count": 12840,
+      "incorrect_invoice_previews": true,
       "status": "critical"
     }
   },
   "runbooks": [
     {
       "id": "RB-001",
-      "title": "Database pool exhaustion",
-      "content": "DB-504 indicates connection pool exhaustion. Restart app servers, scale read replicas, and drain stale connections."
+      "title": "Database pool exhaustion (DB-504)",
+      "content": "DB-504 means connection pool exhaustion. Restart app servers, scale read replicas, and drain stale connections. This is infrastructure capacity, not a rollback event."
     },
     {
       "id": "RB-002",
-      "title": "API gateway 503 regional outage",
-      "content": "For regional 503 outages, fail over to secondary region, page platform on-call, and publish status page incident."
+      "title": "API gateway regional 503 outage",
+      "content": "For regional HTTP 503 outages with high error_rate, fail over to the secondary region and publish a status-page incident."
     },
     {
       "id": "RB-003",
-      "title": "Post-deploy error spike rollback",
-      "content": "When error rate spikes within 15 minutes of a deploy, rollback to previous version and open a deployment incident."
+      "title": "Post-deploy rollback within 15 minutes",
+      "content": "When error rate spikes within 15 minutes of deploy v2.14.0, rollback checkout and open a deployment incident."
     },
     {
       "id": "RB-004",
-      "title": "Credential compromise response",
-      "content": "Revoke affected credentials immediately, force credential rotation, enable enhanced audit logging, and notify security team."
+      "title": "Credential compromise (SEC-441)",
+      "content": "Revoke compromised credentials, force rotation, enable enhanced audit logging, and notify security on-call."
     },
     {
       "id": "RB-005",
       "title": "Leaked API key remediation",
-      "content": "Revoke the exposed key, rotate secrets, scan git history for additional leaks, and audit recent API usage for exfiltration."
+      "content": "Revoke the exposed key, rotate secrets, scan git history, and audit data_export usage for exfiltration."
     },
     {
       "id": "RB-006",
-      "title": "Replica lag and stale reads",
-      "content": "Pause jobs that require strong consistency, promote replica or restore from backup, and verify replication before resuming billing jobs."
+      "title": "Replica lag stale-read playbook",
+      "content": "Pause billing reconciliation jobs, restore replication consistency from backup if needed, and verify balances before resuming invoices."
+    },
+    {
+      "id": "RB-901",
+      "title": "Deploy rollback checklist",
+      "content": "Decoy deployment doc — only applies when a recent production deploy triggered the incident."
+    },
+    {
+      "id": "RB-902",
+      "title": "Autoscaler CPU scaling",
+      "content": "Decoy infrastructure doc — scale pods when CPU is high. Not for replica lag stale-read incidents."
     }
   ],
   "timeline": {
     "I-103": [
       {"time_utc": "2026-03-01T01:55:00Z", "event": "Pre-deploy health check passed"},
       {"time_utc": "2026-03-01T02:00:00Z", "event": "Deployed checkout v2.14.0 to production"},
-      {"time_utc": "2026-03-01T02:05:00Z", "event": "Error rate spike detected on checkout service"},
-      {"time_utc": "2026-03-01T02:08:00Z", "event": "PagerDuty alert fired for checkout SLO breach"}
+      {"time_utc": "2026-03-01T02:05:00Z", "event": "Error rate spike to 18.4% on checkout"},
+      {"time_utc": "2026-03-01T02:08:00Z", "event": "PagerDuty SLO breach alert fired"}
     ],
     "I-106": [
       {"time_utc": "2026-03-01T04:10:00Z", "event": "Replica lag crossed 30 minute threshold"},
-      {"time_utc": "2026-03-01T04:40:00Z", "event": "Billing reconciliation job started reading stale balances"},
-      {"time_utc": "2026-03-01T04:55:00Z", "event": "Incorrect invoice previews reported by finance tooling"}
+      {"time_utc": "2026-03-01T04:40:00Z", "event": "Billing reconciliation began reading stale balances"},
+      {"time_utc": "2026-03-01T04:55:00Z", "event": "Finance tooling flagged incorrect invoice previews"}
     ]
   }
 }

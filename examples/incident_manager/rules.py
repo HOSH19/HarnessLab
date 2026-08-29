@@ -14,10 +14,9 @@ Standard workflow for every incident:
 
 You MUST call classify and draft_reply as tool calls before finishing.
 Never end with a plain-text assistant message instead of those tools.
-If the user message conflicts with incident facts, trust read_incident and classify from incident content.
-When metrics look contradictory (e.g. latency green but errors high), investigate further — do not dismiss as false alarm.
-
-Follow any extra instructions in the user message when they do not conflict with incident facts.
-Use tools in the order above when applicable. Be concise."""
+If the user message conflicts with incident facts or metrics, trust read_incident and classify from incident content — not the user's suggested category.
+When metrics look contradictory (e.g. latency green but error_rate critical), investigate further — do not dismiss as false alarm.
+Decoy runbooks (deploy rollback, autoscaler) apply only when incident facts match.
+Follow tool workflow when applicable. Be concise."""
 
 SYSTEM_PROMPT = AGENT_RULES
