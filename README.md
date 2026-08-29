@@ -49,7 +49,7 @@ Upload traces and scores to LangSmith:
 python -m harnesslab compare examples/ticket_triage -o report.html
 ```
 
-> **CLI tip:** If `harnesslab` is not found after `pip install`, use `python -m harnesslab` or add user scripts to PATH: `export PATH="$HOME/.local/bin:$PATH"`.
+> **CLI tip:** After `pip install`, run `./scripts/install.sh` once so `harnesslab` is on your PATH. You can also use `python -m harnesslab` or `./bin/harnesslab`.
 
 ## Commands
 
