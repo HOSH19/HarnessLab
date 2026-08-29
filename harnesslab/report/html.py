@@ -1,6 +1,6 @@
 """Generate HTML comparison reports from experiment results.
 
-Formats harness A/B outcomes as tables. Does not fetch from Langfuse
+Formats harness A/B outcomes as tables. Does not fetch from LangSmith
 API in v1; accepts in-memory experiment result lists.
 """
 

@@ -9,8 +9,8 @@ import os
 from pathlib import Path
 
 
-class LangfuseConfigError(RuntimeError):
-    """Raised when Langfuse credentials or endpoint are misconfigured."""
+class LangSmithConfigError(RuntimeError):
+    """Raised when LangSmith credentials or endpoint are misconfigured."""
 
 
 def _env_search_roots(*extra: Path) -> list[Path]:
@@ -62,41 +62,45 @@ def load_local_env(*, example: Path | None = None) -> None:
         load_dotenv(env_path, override=False)
 
 
-def disable_langfuse_tracing() -> None:
-    """Turn off Langfuse tracing and uploads for local-only runs."""
-    os.environ["LANGFUSE_TRACING_ENABLED"] = "false"
-    logging.getLogger("langfuse").setLevel(logging.CRITICAL)
+def disable_langsmith_tracing() -> None:
+    """Turn off LangSmith tracing and uploads for local-only runs."""
+    os.environ["LANGSMITH_TRACING"] = "false"
+    os.environ["LANGCHAIN_TRACING_V2"] = "false"
 
-
-def validate_langfuse_upload_config() -> None:
-    """Fail fast when Langfuse credentials cannot upload experiments."""
-    public_key = os.getenv("LANGFUSE_PUBLIC_KEY")
-    secret_key = os.getenv("LANGFUSE_SECRET_KEY")
-    if not public_key or not secret_key:
-        raise LangfuseConfigError(
-            "LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY are required without --local. "
-            "Add them to .env or export them in your shell."
-        )
-
-    from langfuse import get_client
+    logging.getLogger("langsmith").setLevel(logging.CRITICAL)
 
     try:
-        if not get_client().auth_check():
-            raise LangfuseConfigError(
-                "Langfuse auth check failed. Verify LANGFUSE_PUBLIC_KEY, "
-                "LANGFUSE_SECRET_KEY, and LANGFUSE_HOST (if self-hosted)."
-            )
-    except LangfuseConfigError:
-        raise
+        import langsmith as ls
+
+        ls.configure(enabled=False)
+    except Exception:
+        pass
+
+
+def validate_langsmith_upload_config() -> None:
+    """Fail fast when LangSmith credentials cannot upload experiments."""
+    api_key = os.getenv("LANGSMITH_API_KEY")
+    if not api_key:
+        raise LangSmithConfigError(
+            "LANGSMITH_API_KEY is required without --local. "
+            "Add it to .env or export it in your shell."
+        )
+
+    from langsmith import Client
+
+    try:
+        list(Client().list_datasets(limit=1))
     except Exception as exc:
         message = str(exc)
-        if "403" in message or "401" in message:
-            raise LangfuseConfigError(
-                "Langfuse returned an authentication error. Common causes:\n"
-                "  • Invalid or expired API keys — regenerate them in Langfuse\n"
-                "  • Wrong LANGFUSE_HOST for self-hosted deployments\n"
+        if "403" in message:
+            raise LangSmithConfigError(
+                "LangSmith returned 403 Forbidden. Common causes:\n"
+                "  • Your account is in a non-US region — set LANGSMITH_ENDPOINT in .env\n"
+                "    APAC: https://apac.api.smith.langchain.com\n"
+                "    EU:   https://eu.api.smith.langchain.com\n"
+                "  • Your API key lacks workspace permissions — regenerate it in LangSmith\n"
                 f"Original error: {exc}"
             ) from exc
-        raise LangfuseConfigError(
-            f"Langfuse is not reachable with the current credentials: {exc}"
+        raise LangSmithConfigError(
+            f"LangSmith is not reachable with the current credentials: {exc}"
         ) from exc

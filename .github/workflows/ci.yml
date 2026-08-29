@@ -42,7 +42,7 @@ jobs:
       - name: Run harness compare
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LANGFUSE_TRACING_ENABLED: "false"
+          LANGSMITH_TRACING: "false"
         run: |
           harnesslab compare examples/ticket_triage \
             --task T-018 \

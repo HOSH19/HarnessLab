@@ -1,9 +1,11 @@
 """Error recovery evaluator for agent runs."""
 
+from langsmith.schemas import Example, Run
+
 from harnesslab.eval.outputs import run_output_field
 
 
-def error_recovery(run, example) -> dict:
+def error_recovery(run: Run, example: Example) -> dict:
     """Score whether the agent stayed within acceptable error limits."""
     outputs = run.outputs or {}
     reference = example.outputs or {}

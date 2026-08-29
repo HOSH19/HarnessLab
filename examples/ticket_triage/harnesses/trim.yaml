@@ -9,4 +9,4 @@ tooling:
 context:
   history_limit: 8
 observability:
-  langfuse_project: triage
+  langsmith_project: triage

@@ -1,39 +1,75 @@
-"""Langfuse experiment orchestration for harness A/B runs.
+"""LangSmith experiment orchestration for harness A/B runs.
 
 Runs compiled graphs against task datasets and registers evaluators.
 Does not implement scorer logic; delegates to eval package.
 """
 
-from __future__ import annotations
-
-import json
 import os
-import time
 import uuid
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Any, Literal
+
+from langsmith.schemas import Example, Run
 
 from agentevals.graph_trajectory.utils import extract_langgraph_trajectory_from_thread
 from langchain_core.messages import AIMessage, HumanMessage
-from langfuse import get_client
+from langsmith import evaluate
 
-from harnesslab.config.env import disable_langfuse_tracing
+from harnesslab.config.env import disable_langsmith_tracing
 from harnesslab.config.model_catalog import DEFAULT_MODEL, model_short_name
+
+from examples.ticket_triage.flaky import init_flaky_tools
+
 from harnesslab.config.models import HarnessConfig
-from harnesslab.eval.adapter import LANGFUSE_EVALUATORS, _item_input
-from harnesslab.eval.run_metrics import trajectory_agent_tool_steps
+from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
+from harnesslab.eval.efficiency import efficiency
+from harnesslab.eval.error_recovery import error_recovery
+from harnesslab.eval.final_reply import reply_text
+from harnesslab.eval.fingerprint import failure_fingerprint
+from harnesslab.eval.outcome import task_pass
+from harnesslab.eval.step_count import step_count
+from harnesslab.eval.tool_sequence import tool_sequence
+from harnesslab.eval.trajectory import graph_trajectory
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.tasks import load_tasks
 from harnesslab.graph.extract import extract_fields_from_messages
-from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
-
-from examples.ticket_triage.flaky import init_flaky_tools
 
 CompareDimension = Literal["harness", "models"]
+
+_BASE_EVALUATORS = [
+    task_pass,
+    graph_trajectory,
+    tool_sequence,
+    error_recovery,
+    step_count,
+    efficiency,
+    failure_fingerprint,
+    reply_text,
+]
+
+
+def _safe_evaluator(evaluator: Callable) -> Callable:
+    """Wrap an evaluator so failures still produce feedback in LangSmith."""
+
+    def wrapped(run: Run, example: Example) -> dict:
+        try:
+            return evaluator(run, example)
+        except Exception as exc:  # noqa: BLE001 — evaluators must never abort a row
+            key = getattr(evaluator, "__name__", "evaluator")
+            return {
+                "key": key,
+                "score": 0.0,
+                "comment": f"evaluator_error: {exc}",
+            }
+
+    wrapped.__name__ = getattr(evaluator, "__name__", "wrapped_evaluator")
+    return wrapped
+
+
+EVALUATORS = [_safe_evaluator(fn) for fn in _BASE_EVALUATORS]
 
 
 @contextmanager
@@ -68,12 +104,7 @@ def _build_initial_messages(prompt: str, conversation_history: list[dict] | None
     return messages
 
 
-def _invoke_config(
-    harness: HarnessConfig,
-    *,
-    model: str | None = None,
-    trace_enabled: bool,
-) -> dict:
+def _invoke_config(harness: HarnessConfig, *, model: str | None = None) -> dict:
     """Build LangGraph invoke config with recursion limit and trace tags.
 
     Trace tags are minimized to harness_name (+ optional user trace_metadata).
@@ -81,29 +112,19 @@ def _invoke_config(
     Model and flaky_tools live on experiment metadata / dataset inputs instead.
     """
     del model
-    project = harness.observability.langfuse_project or "triage"
+    project = harness.observability.langsmith_project or "triage"
+    os.environ["LANGSMITH_PROJECT"] = project
+
     configurable: dict[str, Any] = {
         "thread_id": str(uuid.uuid4()),
         "harness_name": harness.name,
         **harness.observability.trace_metadata,
     }
 
-    config: dict[str, Any] = {
+    return {
         "configurable": configurable,
         "recursion_limit": graph_recursion_limit(harness.execution),
     }
-
-    if trace_enabled:
-        from langfuse.langchain import CallbackHandler
-
-        tags = [project, harness.name]
-        config["callbacks"] = [CallbackHandler()]
-        config["metadata"] = {
-            **harness.observability.trace_metadata,
-            "langfuse_tags": tags,
-        }
-
-    return config
 
 
 def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
@@ -135,40 +156,21 @@ def _empty_outputs(*, error: str | None = None) -> dict:
     return payload
 
 
-def _attach_run_metrics(outputs: dict, *, elapsed_seconds: float) -> dict:
-    """Attach timing and step metadata for efficiency evaluators."""
-    graph_steps = trajectory_agent_tool_steps(outputs)
-    outputs["_run_metrics"] = {
-        "latency_seconds": elapsed_seconds,
-        "total_tokens": 0,
-        "child_count": graph_steps,
-    }
-    return outputs
-
-
-def make_target(
-    graph_factory: Callable[[HarnessConfig], Any],
-    harness: HarnessConfig,
-    *,
-    trace_enabled: bool,
-):
-    """Create a Langfuse-compatible task function for a harness variant."""
+def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessConfig):
+    """Create a LangSmith-compatible target function for a harness variant."""
     graph = graph_factory(harness)
 
-    def target(*, item, **kwargs) -> dict:
+    def target(inputs: dict) -> dict:
         """Run the agent on a single task input."""
-        del kwargs
-        inputs = _item_input(item)
         prompt = inputs.get("prompt", "")
         ticket_id = inputs.get("ticket_id", "")
         flaky_tools = inputs.get("flaky_tools")
         conversation_history = inputs.get("conversation_history")
         model = os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
-        config = _invoke_config(harness, model=model, trace_enabled=trace_enabled)
+        config = _invoke_config(harness, model=model)
         if flaky_tools:
             config["configurable"]["flaky_tools"] = flaky_tools
         init_flaky_tools(flaky_tools)
-        started = time.perf_counter()
         try:
             state = graph.invoke(
                 {
@@ -180,10 +182,9 @@ def make_target(
                 },
                 config=config,
             )
-            outputs = _extract_outputs(state, graph, config)
+            return _extract_outputs(state, graph, config)
         except Exception as exc:  # noqa: BLE001 — always return outputs for evaluators
-            outputs = _empty_outputs(error=str(exc))
-        return _attach_run_metrics(outputs, elapsed_seconds=time.perf_counter() - started)
+            return _empty_outputs(error=str(exc))
 
     return target
 
@@ -196,7 +197,7 @@ def _resolve_data(
     task_limit: int | None,
     ticket_id: str | None,
 ) -> Any:
-    """Build Langfuse experiment data from local tasks or a remote dataset."""
+    """Build LangSmith evaluate data from local tasks or a remote dataset."""
     if upload_results:
         resolved_dataset = dataset_name or f"{tasks_dir.parent.name.replace('_', '-')}-stress"
         ensure_dataset(
@@ -213,63 +214,6 @@ def _resolve_data(
     return data
 
 
-def _experiment_metadata(harness: HarnessConfig, model: str | None) -> dict[str, str]:
-    payload: dict[str, Any] = {"harness": harness.model_dump()}
-    if model:
-        payload["model"] = model
-    return {"harnesslab": json.dumps(payload, sort_keys=True)}
-
-
-def _item_id(item: Any) -> str | None:
-    if hasattr(item, "id"):
-        return str(item.id)
-    if isinstance(item, dict):
-        metadata = item.get("metadata") or {}
-        if isinstance(metadata, dict) and metadata.get("id"):
-            return str(metadata["id"])
-    return None
-
-
-def _result_rows(experiment_result: Any) -> list[Any]:
-    """Convert Langfuse ExperimentResult rows into store-compatible objects."""
-    rows: list[Any] = []
-    for item_result in experiment_result.item_results:
-        item = item_result.item
-        inputs = _item_input(item)
-        expected = getattr(item, "expected_output", None)
-        if expected is None and isinstance(item, dict):
-            expected = item.get("expected_output")
-
-        evaluation_results = {
-            "results": [
-                {
-                    "key": evaluation.name,
-                    "score": evaluation.value,
-                    "comment": evaluation.comment or "",
-                }
-                for evaluation in item_result.evaluations
-            ]
-        }
-
-        rows.append(
-            SimpleNamespace(
-                example=SimpleNamespace(
-                    inputs=inputs,
-                    outputs=expected or {},
-                    id=_item_id(item),
-                ),
-                run=SimpleNamespace(
-                    id=item_result.trace_id,
-                    outputs=item_result.output,
-                ),
-                outputs=item_result.output,
-                run_id=item_result.trace_id,
-                evaluation_results=evaluation_results,
-            )
-        )
-    return rows
-
-
 def run_experiment(
     graph_factory: Callable[[HarnessConfig], Any],
     harness: HarnessConfig,
@@ -282,15 +226,12 @@ def run_experiment(
     dataset_name: str | None = None,
     model: str | None = None,
     experiment_prefix: str | None = None,
-) -> list[Any]:
-    """Run a Langfuse evaluation experiment for one harness variant."""
+) -> Any:
+    """Run a LangSmith evaluation experiment for one harness variant."""
     prefix = experiment_prefix or harness.name
-    trace_enabled = upload_results
-    if not upload_results:
-        disable_langfuse_tracing()
-
-    langfuse = get_client()
-    metadata = _experiment_metadata(harness, model)
+    metadata: dict[str, Any] = {"harness": harness.model_dump()}
+    if model:
+        metadata["model"] = model
 
     with use_model(model):
         data = _resolve_data(
@@ -300,28 +241,20 @@ def run_experiment(
             task_limit=task_limit,
             ticket_id=ticket_id,
         )
-        task = make_target(graph_factory, harness, trace_enabled=trace_enabled)
+        target = make_target(graph_factory, harness)
 
-        if upload_results and isinstance(data, str):
-            dataset = langfuse.get_dataset(data)
-            experiment_result = dataset.run_experiment(
-                name=prefix,
-                task=task,
-                evaluators=LANGFUSE_EVALUATORS,
-                metadata=metadata,
-                max_concurrency=max_concurrency,
-            )
-        else:
-            experiment_result = langfuse.run_experiment(
-                name=prefix,
-                data=data,
-                task=task,
-                evaluators=LANGFUSE_EVALUATORS,
-                metadata=metadata,
-                max_concurrency=max_concurrency,
-            )
+        if not upload_results:
+            disable_langsmith_tracing()
 
-        return _result_rows(experiment_result)
+        return evaluate(
+            target,
+            data=data,
+            evaluators=EVALUATORS,
+            experiment_prefix=prefix,
+            metadata=metadata,
+            upload_results=upload_results,
+            max_concurrency=max_concurrency,
+        )
 
 
 def run_comparison(
@@ -357,7 +290,7 @@ def run_comparison(
                 model=model,
                 experiment_prefix=model_short_name(model),
             )
-            comparisons[model] = results
+            comparisons[model] = list(results)
         return comparisons
 
     fixed_model = os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
@@ -376,5 +309,5 @@ def run_comparison(
                 model=fixed_model,
                 experiment_prefix=name,
             )
-        comparisons[name] = results
+        comparisons[name] = list(results)
     return comparisons

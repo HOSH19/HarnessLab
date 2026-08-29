@@ -1,17 +1,19 @@
-"""Step-count efficiency evaluator for Langfuse experiments.
+"""Step-count efficiency evaluator for LangSmith experiments.
 
 Normalizes child run count against per-task expected_max_steps.
 Tighter than the generic efficiency scorer thresholds.
 """
 
+from langsmith.schemas import Example, Run
+
 from harnesslab.eval.run_metrics import run_child_count, trajectory_agent_tool_steps
 
 
-def step_count(run, example) -> dict:
+def step_count(run: Run, example: Example) -> dict:
     """Score run step count against a per-task maximum.
 
     Args:
-        run: Run-like object with child run metadata.
+        run: LangSmith run with child run metadata.
         example: Dataset example with optional expected_max_steps.
 
     Returns:

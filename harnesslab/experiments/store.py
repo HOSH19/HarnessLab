@@ -51,7 +51,7 @@ def _run_outputs(row: Any) -> dict[str, Any]:
 
 
 def serialize_result_row(row: Any) -> dict[str, Any]:
-    """Convert a Langfuse experiment result row to a JSON-serializable dict."""
+    """Convert a LangSmith experiment result row to a JSON-serializable dict."""
     example = row_value(row, "example", {}) or {}
     if isinstance(example, dict):
         example_inputs = example.get("inputs", {}) or {}

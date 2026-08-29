@@ -1,25 +1,35 @@
-"""Convert task fixtures into Langfuse local experiment items.
+"""Convert task fixtures into LangSmith Example objects.
 
-Langfuse run_experiment accepts LocalExperimentItem dicts when not using
-hosted datasets. Task JSON loading is owned by experiments.tasks.
+LangSmith evaluate requires Example schemas even when upload_results is
+false. Task JSON loading is owned by experiments.tasks.
 """
 
-from typing import Any
+from datetime import datetime, timezone
+from uuid import uuid4
+
+from langsmith.schemas import Example
 
 
-def tasks_to_examples(tasks: list[dict]) -> list[dict[str, Any]]:
-    """Build Langfuse local experiment items from harness task dictionaries.
+def tasks_to_examples(tasks: list[dict]) -> list[Example]:
+    """Build LangSmith Example objects from harness task dictionaries.
 
     Args:
         tasks: Task dicts with inputs and outputs keys.
 
     Returns:
-        List of dicts suitable for langfuse.run_experiment data.
+        List of Example objects suitable for langsmith.evaluate data.
     """
+    dataset_id = uuid4()
+    timestamp = datetime.now(timezone.utc)
+
     return [
-        {
-            "input": task["inputs"],
-            "expected_output": task["outputs"],
-        }
+        Example(
+            id=uuid4(),
+            dataset_id=dataset_id,
+            created_at=timestamp,
+            modified_at=timestamp,
+            inputs=task["inputs"],
+            outputs=task["outputs"],
+        )
         for task in tasks
     ]
