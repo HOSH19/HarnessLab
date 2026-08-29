@@ -1,8 +1,8 @@
 {
   "task_id": "task-004",
   "ticket_id": "R-004",
-  "prompt": "Research topic R-004. Search the pricing experiment readout, read source SRC-104, classify, and draft a summary.",
-  "expected_category": "product",
-  "required_reply_terms": ["conversion", "annual", "discount"],
-  "expected_tools": ["search_literature", "read_source", "classify", "draft_reply"]
+  "prompt": "Research topic R-004 and prepare a stakeholder summary.",
+  "classification": "product",
+  "required_reply_terms": ["4.2%", "annual-plan", "conversion"],
+  "expected_tools": ["read_topic", "search_literature", "read_source", "classify", "draft_reply"]
 }

@@ -24,10 +24,10 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 **Reads from run:** `classification`, `final_reply`
 
-**Compares to dataset:** `expected_category`, `required_reply_terms`
+**Compares to dataset:** `classification`, `required_reply_terms`
 
 **Scoring:**
-- 50% weight on category match (`expected_category` substring in `classification`)
+- 50% weight on category match (reference `classification` substring in run `classification`)
 - 50% weight on required reply terms (`required_reply_terms` found in `final_reply`)
 - Partial credit when only some terms match
 

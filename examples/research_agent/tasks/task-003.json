@@ -1,8 +1,8 @@
 {
   "task_id": "task-003",
   "ticket_id": "R-003",
-  "prompt": "Research topic R-003. Search OAuth secret rotation guidance, read source SRC-103, classify, and draft a summary.",
-  "expected_category": "security",
-  "required_reply_terms": ["rotate", "secret", "token"],
-  "expected_tools": ["search_literature", "read_source", "classify", "draft_reply"]
+  "prompt": "Research topic R-003 and prepare a stakeholder summary.",
+  "classification": "security",
+  "required_reply_terms": ["client secret", "revoke", "overlap"],
+  "expected_tools": ["read_topic", "search_literature", "read_source", "classify", "draft_reply"]
 }

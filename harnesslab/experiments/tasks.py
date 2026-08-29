@@ -28,6 +28,8 @@ def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
         if required_terms:
             reply_hint = "include: " + ", ".join(required_terms)
 
+        classification = raw.get("classification") or raw.get("expected_category", "")
+
         tasks.append(
             {
                 "inputs": {
@@ -41,7 +43,8 @@ def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
                     ),
                 },
                 "outputs": {
-                    "expected_category": raw["expected_category"],
+                    "output": classification,
+                    "classification": classification,
                     "reply_hint": reply_hint,
                     "required_reply_terms": required_terms,
                     "expected_nodes": raw.get("expected_nodes", []),

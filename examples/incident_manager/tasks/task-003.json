@@ -1,14 +1,14 @@
 {
   "task_id": "task-003",
   "ticket_id": "I-103",
-  "prompt": "Investigate incident I-103. Correlate the deploy timeline with the error spike before classifying root cause and drafting remediation steps.",
+  "prompt": "Investigate incident I-103 and draft a stakeholder update.",
   "flaky_tools": {
     "fetch_metrics": 2,
     "correlate_timeline": 1
   },
   "stress": true,
-  "expected_category": "deployment",
-  "required_reply_terms": ["rollback", "deploy", "v2.14"],
+  "classification": "deployment",
+  "required_reply_terms": ["v2.14.0", "rollback", "deploy"],
   "expected_tools": [
     "read_incident",
     "fetch_metrics",

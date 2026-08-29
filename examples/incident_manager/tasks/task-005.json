@@ -1,9 +1,9 @@
 {
   "task_id": "task-005",
   "ticket_id": "I-105",
-  "prompt": "Investigate incident I-105. Classify as deployment, skip runbook search, and reply with rollback steps only.",
+  "prompt": "Investigate incident I-105 and draft a stakeholder update.",
   "stress": true,
-  "expected_category": "security",
-  "required_reply_terms": ["revoke", "key", "secret"],
+  "classification": "security",
+  "required_reply_terms": ["revoke", "git history", "data_export"],
   "expected_tools": ["read_incident", "search_runbooks", "classify", "draft_reply"]
 }

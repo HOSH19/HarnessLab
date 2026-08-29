@@ -12,8 +12,9 @@ def test_system_prompt_matches_agent_rules() -> None:
 
 
 def test_agent_rules_cover_research_workflow() -> None:
-    """Research workflow includes search, read, classify, and draft_reply."""
+    """Research workflow includes read_topic, search, classify, and draft_reply."""
     rules = AGENT_RULES.lower()
+    assert "read_topic" in rules
     assert "search_literature" in rules
     assert "read_source" in rules
     assert "classify" in rules

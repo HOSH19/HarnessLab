@@ -2,27 +2,23 @@
   "topics": [
     {
       "id": "R-001",
-      "title": "Efficient transformer inference with KV caching",
-      "question": "What are the main techniques for reducing latency in transformer inference using KV cache reuse?",
-      "expected_category": "ml"
+      "title": "Transformer KV-cache serving optimizations",
+      "question": "Which inference techniques reduce p99 latency for long-context transformer workloads?"
     },
     {
       "id": "R-002",
-      "title": "Raft consensus under partial network partitions",
-      "question": "How does Raft handle leader election when a minority partition is isolated?",
-      "expected_category": "systems"
+      "title": "Raft quorum rules during network partitions",
+      "question": "What happens to leader election when a minority partition loses quorum?"
     },
     {
       "id": "R-003",
-      "title": "OAuth token rotation for public API clients",
-      "question": "What are best practices for rotating OAuth client secrets without downtime?",
-      "expected_category": "security"
+      "title": "OAuth client-secret rotation without downtime",
+      "question": "How should teams rotate public OAuth client secrets safely?"
     },
     {
       "id": "R-004",
-      "title": "Pricing page A/B test readout",
-      "question": "Summarize whether the annual-plan discount test improved conversion for self-serve signups.",
-      "expected_category": "product"
+      "title": "Annual-plan pricing experiment readout",
+      "question": "Did the annual-plan discount improve self-serve signup conversion?"
     }
   ],
   "sources": [
@@ -30,47 +26,51 @@
       "id": "SRC-101",
       "topic_id": "R-001",
       "title": "KV Cache Pruning for LLM Serving",
-      "abstract": "Survey of KV cache eviction, paging, and batching strategies that cut p99 latency on long-context workloads."
+      "abstract": "KV-cache paging and speculative decoding reduce transformer p99 latency on long-context inference batches."
     },
     {
       "id": "SRC-102",
       "topic_id": "R-002",
       "title": "Raft Leader Election Notes",
-      "abstract": "Minority partitions cannot elect a leader without a quorum; isolated nodes step down and wait for rejoin."
+      "abstract": "Minority Raft partitions cannot elect a leader without majority quorum; isolated nodes step down until the partition heals."
     },
     {
       "id": "SRC-103",
       "topic_id": "R-003",
       "title": "Secret Rotation Playbook",
-      "abstract": "Issue a new client secret, dual-accept during overlap, revoke the old secret, and audit recent token grants."
+      "abstract": "Issue a new OAuth client secret, dual-accept during overlap window, revoke the old secret, and audit anomalous token grants."
     },
     {
       "id": "SRC-104",
       "topic_id": "R-004",
       "title": "Pricing Experiment Memo",
-      "abstract": "Annual-plan discount lifted conversion 4.2% with neutral ARPU; recommend rolling out to all regions."
+      "abstract": "Annual-plan discount lifted signup conversion by 4.2% with flat ARPU; recommend rollout to all self-serve regions."
     }
   ],
   "literature": [
     {
       "id": "LIT-201",
-      "title": "Attention Is All You Need — inference follow-ups",
-      "snippet": "Follow-on work on KV cache reuse and speculative decoding for transformer serving."
+      "topic_id": "R-001",
+      "title": "Transformer KV-cache reuse survey",
+      "snippet": "KV-cache paging and speculative decoding for transformer inference serving."
     },
     {
       "id": "LIT-202",
-      "title": "In Search of an Understandable Consensus Algorithm",
-      "snippet": "Raft leader election requires majority quorum; minority partitions cannot commit entries."
+      "topic_id": "R-002",
+      "title": "Raft consensus under partition",
+      "snippet": "Minority partitions lack quorum; Raft leaders cannot commit without majority votes."
     },
     {
       "id": "LIT-203",
-      "title": "OAuth 2.0 Security Best Current Practice",
-      "snippet": "Rotate client secrets with overlap windows and monitor anomalous token usage after revocation."
+      "topic_id": "R-003",
+      "title": "OAuth secret rotation BCP",
+      "snippet": "Rotate client secrets with overlap windows; revoke old secrets and audit token abuse."
     },
     {
       "id": "LIT-204",
-      "title": "Experimentation Platform Quarterly Readout",
-      "snippet": "Self-serve annual discount test improved signup conversion with flat average revenue per user."
+      "topic_id": "R-004",
+      "title": "Self-serve pricing experiment memo",
+      "snippet": "Annual-plan discount improved signup conversion by 4.2% with neutral ARPU."
     }
   ]
 }

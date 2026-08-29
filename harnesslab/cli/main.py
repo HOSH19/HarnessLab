@@ -36,7 +36,7 @@ app = typer.Typer(
 CompareBy = Literal["harness", "models"]
 
 DEFAULT_COMPARE_HARNESSES = "minimal,retry"
-DEFAULT_TASK_LIMIT = 2
+DEFAULT_TASK_LIMIT = 1
 
 
 def _bootstrap_env(*, local: bool, example: Path | None = None) -> None:

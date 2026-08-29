@@ -12,6 +12,13 @@ fi
 
 export PATH="$HOME/.local/bin:$PATH"
 
+# Many docs use `python`; Ubuntu images often ship only `python3`.
+LOCAL_BIN="$HOME/.local/bin"
+mkdir -p "$LOCAL_BIN"
+if ! command -v python >/dev/null 2>&1; then
+  ln -sf "$(command -v python3)" "$LOCAL_BIN/python"
+fi
+
 echo "Installed harnesslab."
 echo "Run: harnesslab --help"
-echo "Or:  python3 -m harnesslab --help"
+echo "Or:  python -m harnesslab --help"
