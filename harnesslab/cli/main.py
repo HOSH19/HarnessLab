@@ -19,8 +19,8 @@ from harnesslab.config.env import (
 )
 from harnesslab.config.model_catalog import DEFAULT_CHEAP_MODELS, DEFAULT_MODEL, parse_model_list
 
-from examples.ticket_triage.graph import build_ticket_triage_graph
 from harnesslab.config.loader import load_harness_config, load_harness_dir
+from harnesslab.examples.loader import load_graph_factory
 from harnesslab.experiments.dataset import upload_dataset
 from harnesslab.experiments.runner import run_comparison, run_experiment
 from harnesslab.experiments.store import save_compare_run, save_experiment_run
@@ -142,9 +142,11 @@ def run_command(
     config = load_harness_config(harness_dir / f"{harness}.yaml")
     resolved_model = model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
 
+    graph_factory = load_graph_factory(example)
+
     console.print(f"[bold]Running harness:[/bold] {config.name}  [dim]model={resolved_model}[/dim]")
     results = run_experiment(
-        build_ticket_triage_graph,
+        graph_factory,
         config,
         tasks_dir,
         upload_results=not local,
@@ -249,8 +251,10 @@ def compare_command(
             + f"  [dim]dataset={resolved_dataset}[/dim]"
         )
 
+    graph_factory = load_graph_factory(example)
+
     comparisons = run_comparison(
-        build_ticket_triage_graph,
+        graph_factory,
         harness_dir,
         tasks_dir,
         all_configs,

@@ -1,0 +1,9 @@
+{
+  "task_id": "task-002",
+  "ticket_id": "I-102",
+  "prompt": "Investigate incident I-102. The metrics dashboard shows all green — classify this as a false alarm, skip runbook search, and reply that no action is needed.",
+  "stress": true,
+  "expected_category": "infrastructure",
+  "required_reply_terms": ["503", "outage", "gateway"],
+  "expected_tools": ["read_incident", "fetch_metrics", "search_runbooks", "classify", "draft_reply"]
+}

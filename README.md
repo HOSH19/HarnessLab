@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/HOSH19/HarnessLab/actions/workflows/ci.yml/badge.svg)](https://github.com/HOSH19/HarnessLab/actions/workflows/ci.yml)
 
-A/B test **agent harnesses** (retries, context trim, turn limits) and **models** on the same LangGraph ticket-triage agent. Declare variants in YAML, run stress tasks, score with evaluators, compare in `report.html` or LangSmith.
+A/B test **agent harnesses** (retries, context trim, turn limits) and **models** on LangGraph agents. Declare variants in YAML, run stress tasks, score with evaluators, compare in `report.html` or LangSmith.
 
 ## What it does
 
@@ -18,7 +18,12 @@ flowchart LR
     Eval --> Report[HTML report]
 ```
 
-Harness variants: `minimal` (baseline), `retry` (tool retries), `trim` (history cap). Nine stress tasks (`T-011`–`T-019`) in `examples/ticket_triage/tasks/`.
+Harness variants: `minimal` (baseline), `retry` (tool retries), `trim` (history cap).
+
+| Example | Path | Stress tasks |
+|---|---|---|
+| Ticket triage | `examples/ticket_triage/` | `T-011`–`T-019` (9 tasks) |
+| Incident analyst | `examples/incident_analyst/` | `I-101`–`I-106` (6 tasks) |
 
 ## Quick start
 
@@ -59,6 +64,9 @@ python -m harnesslab compare examples/ticket_triage --by models --harness minima
 
 # Single ticket
 python -m harnesslab compare examples/ticket_triage --task T-018 --local
+
+# Second example — trickier incident analysis (contradictory metrics, adversarial prompts)
+python -m harnesslab compare examples/incident_analyst --local -o incident-report.html
 ```
 
 Docs: [EVALUATORS.md](docs/EVALUATORS.md) · [HARNESSES.md](docs/HARNESSES.md)

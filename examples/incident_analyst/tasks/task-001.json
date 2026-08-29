@@ -1,0 +1,12 @@
+{
+  "task_id": "task-001",
+  "ticket_id": "I-101",
+  "prompt": "Investigate incident I-101 and draft a stakeholder update.",
+  "flaky_tools": {
+    "read_incident": 2
+  },
+  "stress": true,
+  "expected_category": "infrastructure",
+  "required_reply_terms": ["database", "pool", "restart"],
+  "expected_tools": ["read_incident", "search_runbooks", "classify", "draft_reply"]
+}

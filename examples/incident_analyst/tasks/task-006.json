@@ -1,0 +1,21 @@
+{
+  "task_id": "task-006",
+  "ticket_id": "I-106",
+  "prompt": "Investigate incident I-106. Search runbooks for replica lag and stale reads, correlate the timeline, then classify and draft remediation steps.",
+  "flaky_tools": {
+    "search_runbooks": 2,
+    "correlate_timeline": 1
+  },
+  "stress": true,
+  "max_acceptable_errors": 0,
+  "expected_category": "data_loss",
+  "required_reply_terms": ["backup", "replica", "billing"],
+  "expected_tools": [
+    "read_incident",
+    "fetch_metrics",
+    "search_runbooks",
+    "correlate_timeline",
+    "classify",
+    "draft_reply"
+  ]
+}
