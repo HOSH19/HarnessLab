@@ -37,20 +37,19 @@ This document inventories every field logged or traced across the HarnessLab obs
 | `harness` | Full `HarnessConfig` Pydantic dump (execution, tooling, context, observability) |
 | `model` | Model name when running a model-comparison arm |
 
-### Evaluator feedback keys (8)
+### Evaluator feedback keys (5)
+
+HarnessLab registers five evaluators per run. See [EVALUATORS.md](EVALUATORS.md) for definitions.
 
 | Key | Reads from run | Compares to dataset |
 |---|---|---|
 | `task_pass` | `classification`, `final_reply` | `expected_category`, `required_reply_terms` |
 | `graph_trajectory` | `graph_trajectory` | `expected_nodes` |
-| `tool_sequence` | `tool_names` or `graph_trajectory` | `expected_tools` |
 | `error_recovery` | `error_count` | `max_acceptable_errors` |
-| `step_count` | child runs + `graph_trajectory` | `expected_max_steps` |
 | `efficiency` | run latency/tokens + `graph_trajectory` | `expected_max_steps` |
 | `failure_fingerprint` | `classification`, `final_reply`, `run.error`, latency | — |
-| `reply_text` | `final_reply` | — (human-readable column) |
 
-Evaluators are **not** trace payload fields; they are derived scores stored as experiment feedback. No change recommended.
+Removed evaluators (`tool_sequence`, `step_count`, `reply_text`) are documented in [EVALUATORS.md](EVALUATORS.md).
 
 ### Task dataset fields (LangSmith Examples)
 
@@ -82,7 +81,7 @@ These five fields are the minimum needed to answer win/loss and root-cause quest
 |---|---|---|---|
 | 1 | **`harness_name`** | Trace tag | Groups traces and scores by variant (`minimal` vs `retry` vs `trim`). Without it you cannot attribute a run to an experiment arm. |
 | 2 | **`classification`** | Run output | Primary correctness signal — did the agent pick the right triage category? Drives `task_pass` and the LangSmith Outputs column vs `expected_category`. |
-| 3 | **`graph_trajectory`** | Run output | Explains *why* one harness won: different node paths (trim middleware), extra agent↔tools loops (retries), skipped steps. Powers `graph_trajectory`, `tool_sequence`, `step_count`, and `efficiency` evaluators. |
+| 3 | **`graph_trajectory`** | Run output | Explains *why* one harness won: different node paths (trim middleware), extra agent↔tools loops (retries), skipped steps. Powers `graph_trajectory` and `efficiency` evaluators. |
 | 4 | **`final_reply`** | Run output | Second correctness axis — required reply terms (`database`, `timeout`, etc.). Separates “right category, bad reply” partial failures that category alone would miss. |
 | 5 | **`error_count`** | Run output | Stress-task differentiator — flaky-tool scenarios (`T-011`, `T-015`) are where retry harnesses should win. Directly feeds `error_recovery` and explains recovery vs give-up behavior. |
 

@@ -92,7 +92,7 @@ def test_serialize_result_row_reads_nested_run_outputs() -> None:
 
 def test_save_experiment_run_roundtrip(tmp_path: Path) -> None:
     """Single-harness runs write manifest, results, and summary JSON."""
-    row = _FakeRow("T-001", {"task_pass": 1.0, "tool_sequence": 0.5})
+    row = _FakeRow("T-001", {"task_pass": 1.0, "graph_trajectory": 0.5})
     metadata = {"langsmith_mode": False, "model": "gpt-4o-mini"}
 
     run_dir = save_experiment_run("minimal", [row], out_dir=tmp_path, metadata=metadata)
@@ -109,7 +109,7 @@ def test_save_experiment_run_roundtrip(tmp_path: Path) -> None:
     assert len(results) == 1
     assert results[0]["inputs"]["ticket_id"] == "T-001"
     assert summary["minimal"]["task_pass"] == 1.0
-    assert summary["minimal"]["tool_sequence"] == 0.5
+    assert summary["minimal"]["graph_trajectory"] == 0.5
 
 
 def test_save_compare_run_roundtrip(tmp_path: Path) -> None:

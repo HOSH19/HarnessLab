@@ -11,7 +11,7 @@ HarnessLab answers: *did harness X beat harness Y on task Z, and why?*
 1. Load harness config from YAML (`minimal`, `retry`, `trim`, …)
 2. Compile a LangGraph agent with harness middleware applied
 3. Run each stress task and trace execution in LangSmith
-4. Score runs with eight evaluators (correctness, trajectory, efficiency, …)
+4. Score runs with five evaluators (correctness, trajectory, recovery, efficiency, failure type)
 5. Write `report.html` and persist JSON under `.harnesslab/runs/`
 
 ```mermaid
@@ -20,7 +20,7 @@ flowchart LR
     Graph[LangGraph agent] --> Builder
     Builder --> Run[invoke per task]
     Run --> LS[LangSmith traces]
-    LS --> Eval[8 evaluators]
+    LS --> Eval[5 evaluators]
     Eval --> Report[HTML report]
 ```
 
@@ -138,18 +138,15 @@ Filter with `--task T-018` or cap with `--tasks N` (default: 2).
 
 ## Evaluators
 
-Each run is scored on eight dimensions:
+Each run is scored on five dimensions. See [docs/EVALUATORS.md](docs/EVALUATORS.md) for full definitions.
 
 | Evaluator | What it measures |
 |---|---|
 | `task_pass` | Correct category + required reply terms |
 | `graph_trajectory` | Expected node subsequence |
-| `tool_sequence` | Tool call order |
 | `error_recovery` | Tool errors vs acceptable limit |
-| `step_count` | Agent/tool steps vs budget |
 | `efficiency` | Latency, tokens, and step penalty |
 | `failure_fingerprint` | Failure category (timeout, tool error, wrong answer, …) |
-| `reply_text` | Draft reply for human review |
 
 ## Compare modes
 
@@ -211,6 +208,7 @@ pytest -q
 ## Further reading
 
 - [docs/DEMO.md](docs/DEMO.md) — example compare output
+- [docs/EVALUATORS.md](docs/EVALUATORS.md) — the five evaluator scores explained
 - [docs/LOGGING_FIELDS.md](docs/LOGGING_FIELDS.md) — observability field inventory
 - [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) — architecture and scope
 
