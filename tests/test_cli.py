@@ -3,10 +3,10 @@
 from harnesslab.cli.main import DEFAULT_COMPARE_HARNESSES, DEFAULT_TASK_LIMIT, _resolve_task_limit
 
 
-def test_default_task_limit_is_two() -> None:
-    """Compare runs default to two stress tasks."""
+def test_default_task_limit_is_one() -> None:
+    """Compare runs default to one task."""
     assert _resolve_task_limit(None, None) == DEFAULT_TASK_LIMIT
-    assert DEFAULT_TASK_LIMIT == 2
+    assert DEFAULT_TASK_LIMIT == 1
 
 
 def test_single_task_filter_ignores_default_limit() -> None:

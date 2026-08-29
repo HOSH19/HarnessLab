@@ -56,7 +56,7 @@ Use `--local` while iterating; drop it when you want traces and experiment histo
 | `dataset upload` | Sync tasks to a LangSmith dataset |
 
 ```bash
-# Easier example — research agent (default: minimal + retry × 2 tasks)
+# Easier example — research agent (default: minimal + retry × 1 task)
 python -m harnesslab compare examples/research_agent --local -o report.html
 
 # Harder example — incident manager
