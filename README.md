@@ -71,9 +71,14 @@ Both modes run the **same 2 stress tasks** (or filter with `--task`).
 Default model compare arms: `gpt-4.1-nano`, `gpt-4.1-mini`, `gpt-3.5-turbo`. Override with `--models nano,mini`.
 
 ```bash
-cd harnesslab
+git clone https://github.com/HOSH19/HarnessLab.git && cd HarnessLab
 conda env create -f environment.yml && conda activate harnesslab
+# or: pip install -e ".[dev]"
 cp .env.example .env   # set OPENAI_API_KEY, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
+
+# If `harnesslab` is not found after pip install, use the module form:
+#   python -m harnesslab compare examples/ticket_triage --local -o report.html
+# Or add user scripts to PATH: export PATH="$HOME/.local/bin:$PATH"
 
 # Harness compare (local) — default 2 harnesses × 2 tasks
 harnesslab compare examples/ticket_triage --local -o report.html
