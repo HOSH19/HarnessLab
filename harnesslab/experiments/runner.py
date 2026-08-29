@@ -20,7 +20,7 @@ from langsmith import evaluate
 from harnesslab.config.env import disable_langsmith_tracing
 from harnesslab.config.model_catalog import DEFAULT_MODEL, model_short_name
 
-from examples.ticket_triage.flaky import init_flaky_tools
+from harnesslab.flaky import init_flaky_tools
 
 from harnesslab.config.models import HarnessConfig
 from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
@@ -106,7 +106,7 @@ def _invoke_config(harness: HarnessConfig, *, model: str | None = None) -> dict:
     Model and flaky_tools live on experiment metadata / dataset inputs instead.
     """
     del model
-    project = harness.observability.langsmith_project or "triage"
+    project = harness.observability.langsmith_project or "harnesslab"
     os.environ["LANGSMITH_PROJECT"] = project
 
     configurable: dict[str, Any] = {

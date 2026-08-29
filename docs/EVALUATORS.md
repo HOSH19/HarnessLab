@@ -2,7 +2,7 @@
 
 HarnessLab scores every agent run on **five evaluators**. Together they answer: *did harness X beat harness Y on task Z, and why?*
 
-These are **feedback scores** uploaded to LangSmith (or stored in local JSON). They are separate from the [five logged output fields](LOGGING_FIELDS.md) (`classification`, `final_reply`, `graph_trajectory`, `error_count`, `harness_name`).
+These are **feedback scores** uploaded to LangSmith (or stored in local JSON). They are separate from the [five logged output fields](HARNESSES.md#logged-fields-per-run) on each run.
 
 ---
 
@@ -10,7 +10,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 | # | Evaluator | Score range | What it measures |
 |---|-----------|-------------|------------------|
-| 1 | **`task_pass`** | 0.0–1.0 | Did the agent produce the **correct triage outcome**? |
+| 1 | **`task_pass`** | 0.0–1.0 | Did the agent produce the **correct task outcome**? |
 | 2 | **`graph_trajectory`** | 0.0–1.0 | Did the agent follow the **expected graph path**? |
 | 3 | **`error_recovery`** | 0.0–1.0 | Did the agent stay within the **acceptable tool-error budget**? |
 | 4 | **`efficiency`** | 0.0–1.0 | Was the run **fast and lean** enough? |
@@ -20,7 +20,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 ## 1. `task_pass` — outcome correctness
 
-**Question:** Did the agent classify the ticket correctly and draft a reply that includes required terms?
+**Question:** Did the agent classify correctly and draft a reply that includes required terms?
 
 **Reads from run:** `classification`, `final_reply`
 
@@ -69,7 +69,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 - 0.0 when errors exceed the budget
 - Defaults to zero tolerance when `max_acceptable_errors` is omitted
 
-**Why keep it:** Stress tasks (`T-011`, `T-015`) inject flaky tools. This is where the **retry** harness should outperform **minimal**.
+**Why keep it:** Stress tasks (`R-001`, `I-101`) inject flaky tools. This is where the **retry** harness should outperform **minimal**.
 
 **Example comment:** `error_count=1, max_acceptable=2`
 
@@ -109,43 +109,3 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 **Why keep it:** Speeds up debugging across many tasks. A column of `TOOL_ERROR` vs `WRONG_ANSWER` tells you whether to tune retries vs prompts.
 
 **Example comment:** `WRONG_ANSWER`
-
----
-
-## Evaluators removed (and why)
-
-| Removed | Reason |
-|---------|--------|
-| `tool_sequence` | Largely redundant with `graph_trajectory`; tool order is visible in trajectory data |
-| `step_count` | Overlaps with `efficiency`, which already penalizes excess steps |
-| `reply_text` | Display-only; `task_pass` already scores required reply terms |
-
-The removed evaluator modules remain in `harnesslab/eval/` for unit tests and optional custom runs.
-
----
-
-## How they appear in LangSmith
-
-Each evaluator becomes a **feedback column** on the experiment table (alongside LangSmith's own **Latency** aggregate).
-
-Typical reading order when comparing harnesses:
-
-1. **`task_pass`** — who won on correctness?
-2. **`graph_trajectory`** — did the path explain the delta?
-3. **`error_recovery`** — did retries matter on stress tasks?
-4. **`efficiency`** — at what cost?
-5. **`failure_fingerprint`** — what broke on failures?
-
----
-
-## Mapping: logged fields → evaluators
-
-| Logged field | Evaluators that consume it |
-|--------------|---------------------------|
-| `classification` | `task_pass`, `failure_fingerprint` |
-| `final_reply` | `task_pass`, `failure_fingerprint` |
-| `graph_trajectory` | `graph_trajectory`, `efficiency` |
-| `error_count` | `error_recovery` |
-| `harness_name` | (trace tag only — not scored) |
-
-See [LOGGING_FIELDS.md](LOGGING_FIELDS.md) for the full observability field inventory.

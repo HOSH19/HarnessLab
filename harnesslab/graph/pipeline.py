@@ -1,4 +1,4 @@
-"""Pipeline completion helpers for ticket-triage routing."""
+"""Pipeline completion helpers for agent routing."""
 
 from langchain_core.messages import AIMessage, HumanMessage
 

@@ -2,8 +2,8 @@
 
 from langchain_core.messages import HumanMessage
 
-from examples.ticket_triage import nodes
-from examples.ticket_triage.rules import AGENT_RULES, OPTIONAL_TOOLS, SYSTEM_PROMPT
+from examples.research_agent import nodes
+from examples.research_agent.rules import AGENT_RULES, OPTIONAL_TOOLS, SYSTEM_PROMPT
 
 
 def test_system_prompt_matches_agent_rules() -> None:
@@ -11,19 +11,19 @@ def test_system_prompt_matches_agent_rules() -> None:
     assert SYSTEM_PROMPT == AGENT_RULES
 
 
-def test_agent_rules_cover_sla_and_escalation() -> None:
-    """Stress-task policy includes SLA check and escalation branches."""
+def test_agent_rules_cover_research_workflow() -> None:
+    """Research workflow includes search, read, classify, and draft_reply."""
     rules = AGENT_RULES.lower()
-    assert "check_sla" in rules
-    assert "escalate_ticket" in rules
+    assert "search_literature" in rules
+    assert "read_source" in rules
     assert "classify" in rules
     assert "draft_reply" in rules
     assert "must call classify" in rules
 
 
-def test_optional_tools_match_escalation_branch() -> None:
-    """Optional tools are the SLA/escalation branch only."""
-    assert OPTIONAL_TOOLS == frozenset({"check_sla", "escalate_ticket"})
+def test_optional_tools_empty_for_research_agent() -> None:
+    """Research agent has no optional tool branch."""
+    assert OPTIONAL_TOOLS == frozenset()
 
 
 def test_call_model_injects_system_prompt(monkeypatch) -> None:
@@ -40,6 +40,6 @@ def test_call_model_injects_system_prompt(monkeypatch) -> None:
     fake = _FakeLLM()
     monkeypatch.setattr(nodes, "_model", lambda: fake)
 
-    nodes.call_model({"messages": [HumanMessage(content="Triage T-011")]})
+    nodes.call_model({"messages": [HumanMessage(content="Research R-001")]})
 
     assert fake.messages[0].content == AGENT_RULES

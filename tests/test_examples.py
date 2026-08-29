@@ -11,7 +11,7 @@ from harnesslab.experiments.tasks import load_tasks
 def test_tasks_to_examples_returns_example_objects() -> None:
     """Converted tasks are LangSmith Example schemas with timestamps."""
     root = Path(__file__).resolve().parents[1]
-    tasks_dir = root / "examples" / "ticket_triage" / "tasks"
+    tasks_dir = root / "examples" / "research_agent" / "tasks"
     examples = tasks_to_examples(load_tasks(tasks_dir)[:1])
 
     assert len(examples) == 1
