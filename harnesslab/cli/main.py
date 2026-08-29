@@ -12,10 +12,10 @@ import typer
 from rich.console import Console
 
 from harnesslab.config.env import (
-    LangSmithConfigError,
-    disable_langsmith_tracing,
+    LangfuseConfigError,
+    disable_langfuse_tracing,
     load_local_env,
-    validate_langsmith_upload_config,
+    validate_langfuse_upload_config,
 )
 from harnesslab.config.model_catalog import DEFAULT_CHEAP_MODELS, DEFAULT_MODEL, parse_model_list
 
@@ -40,16 +40,16 @@ DEFAULT_TASK_LIMIT = 2
 
 
 def _bootstrap_env(*, local: bool, example: Path | None = None) -> None:
-    """Load .env and disable LangSmith uploads for local-only commands."""
+    """Load .env and disable Langfuse uploads for local-only commands."""
     if local:
-        disable_langsmith_tracing()
+        disable_langfuse_tracing()
     load_local_env(example=example)
     if local:
-        disable_langsmith_tracing()
+        disable_langfuse_tracing()
 
 
 def _default_dataset_name(example: Path) -> str:
-    """Derive a stable LangSmith dataset name from an example directory."""
+    """Derive a stable Langfuse dataset name from an example directory."""
     return f"{example.name.replace('_', '-')}-stress"
 
 
@@ -97,7 +97,7 @@ def _compare_metadata(
         "arms": arms,
         "harness": harness,
         "models": models,
-        "langsmith_mode": not local,
+        "langfuse_mode": not local,
         "task_count": task_count,
         "tasks_limit": tasks,
         "ticket_id": ticket_id,
@@ -110,7 +110,7 @@ def _compare_metadata(
 def run_command(
     example: Path = typer.Argument(..., help="Path to example project"),
     harness: str = typer.Option(..., "--harness", "-h", help="Harness config name"),
-    local: bool = typer.Option(False, "--local", help="Skip LangSmith upload"),
+    local: bool = typer.Option(False, "--local", help="Skip Langfuse upload"),
     tasks: int | None = typer.Option(
         None,
         "--tasks",
@@ -120,7 +120,7 @@ def run_command(
     dataset: str | None = typer.Option(
         None,
         "--dataset",
-        help="LangSmith dataset name (default: <example>-stress)",
+        help="Langfuse dataset name (default: <example>-stress)",
     ),
     model: str | None = typer.Option(None, "--model", help="Model override for this run"),
     runs_dir: Path = typer.Option(Path(".harnesslab/runs"), "--runs-dir", help="Local results directory"),
@@ -129,8 +129,8 @@ def run_command(
     _bootstrap_env(local=local, example=example)
     if not local:
         try:
-            validate_langsmith_upload_config()
-        except LangSmithConfigError as exc:
+            validate_langfuse_upload_config()
+        except LangfuseConfigError as exc:
             raise typer.BadParameter(str(exc)) from exc
 
     tasks_limit = _resolve_task_limit(tasks, task)
@@ -143,7 +143,7 @@ def run_command(
     resolved_model = model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
 
     console.print(f"[bold]Running harness:[/bold] {config.name}  [dim]model={resolved_model}[/dim]")
-    results = run_experiment(
+    rows = run_experiment(
         build_ticket_triage_graph,
         config,
         tasks_dir,
@@ -153,7 +153,6 @@ def run_command(
         dataset_name=resolved_dataset,
         model=resolved_model,
     )
-    rows = list(results)
     run_path = save_experiment_run(
         resolved_model if model else config.name,
         rows,
@@ -194,7 +193,7 @@ def compare_command(
         help=f"Cheap models to compare (default: {', '.join(DEFAULT_CHEAP_MODELS)})",
     ),
     output: Path = typer.Option(Path("report.html"), "--output", "-o"),
-    local: bool = typer.Option(False, "--local", help="Skip LangSmith upload"),
+    local: bool = typer.Option(False, "--local", help="Skip Langfuse upload"),
     tasks: int | None = typer.Option(
         None,
         "--tasks",
@@ -209,7 +208,7 @@ def compare_command(
     dataset: str | None = typer.Option(
         None,
         "--dataset",
-        help="LangSmith dataset name (default: <example>-stress)",
+        help="Langfuse dataset name (default: <example>-stress)",
     ),
     runs_dir: Path = typer.Option(Path(".harnesslab/runs"), "--runs-dir", help="Local results directory"),
 ) -> None:
@@ -217,8 +216,8 @@ def compare_command(
     _bootstrap_env(local=local, example=example)
     if not local:
         try:
-            validate_langsmith_upload_config()
-        except LangSmithConfigError as exc:
+            validate_langfuse_upload_config()
+        except LangfuseConfigError as exc:
             raise typer.BadParameter(str(exc)) from exc
 
     tasks_limit = _resolve_task_limit(tasks, task)
@@ -287,11 +286,11 @@ def compare_command(
     console.print(f"[green]Results saved to {run_path}[/green]")
 
 
-dataset_app = typer.Typer(help="LangSmith dataset commands.", no_args_is_help=True)
+dataset_app = typer.Typer(help="Langfuse dataset commands.", no_args_is_help=True)
 
 
 def _upload_dataset(example: Path, name: str) -> None:
-    """Upload local task fixtures to a LangSmith dataset."""
+    """Upload local task fixtures to a Langfuse dataset."""
     load_local_env()
     _, tasks_dir = _example_paths(example)
     dataset_name = upload_dataset(tasks_dir, name)
@@ -303,7 +302,7 @@ def dataset_upload_command(
     example: Path = typer.Argument(..., help="Path to example project"),
     name: str = typer.Option("triage-stress", "--name", help="Dataset name"),
 ) -> None:
-    """Upload stress task fixtures to a LangSmith dataset."""
+    """Upload stress task fixtures to a Langfuse dataset."""
     _upload_dataset(example, name)
 
 

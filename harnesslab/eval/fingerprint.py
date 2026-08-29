@@ -3,9 +3,6 @@
 Maps run errors and outputs to harness-relevant failure fingerprints.
 Does not re-execute agents or modify traces.
 """
-
-from langsmith.schemas import Example, Run
-
 from harnesslab.eval.outputs import run_output_field
 from harnesslab.eval.run_metrics import run_latency_seconds
 
@@ -19,8 +16,8 @@ FAILURE_CATEGORIES = (
 )
 
 
-def _classify_failure(run: Run) -> str:
-    """Derive a failure category from a LangSmith run."""
+def _classify_failure(run) -> str:
+    """Derive a failure category from a run-like object."""
     if run.error:
         error_text = str(run.error).lower()
         if "timeout" in error_text:
@@ -39,12 +36,12 @@ def _classify_failure(run: Run) -> str:
     return "WRONG_ANSWER"
 
 
-def failure_fingerprint(run: Run, example: Example) -> dict:
+def failure_fingerprint(run, example) -> dict:
     """Score run outcome by failure category fingerprint.
 
     Args:
-        run: LangSmith run to classify.
-        example: Dataset example (unused, required by LangSmith API).
+        run: Run-like object to classify.
+        example: Dataset example (unused, required by evaluator API).
 
     Returns:
         Dict with score 1.0 for SUCCESS else 0.0 and category comment.

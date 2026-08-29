@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/HOSH19/HarnessLab/actions/workflows/ci.yml/badge.svg)](https://github.com/HOSH19/HarnessLab/actions/workflows/ci.yml)
 
-A/B test **agent harnesses** (retries, context trim, turn limits) and **models** on the same LangGraph ticket-triage agent. Declare variants in YAML, run stress tasks, score with LangSmith evaluators, compare in an HTML report.
+A/B test **agent harnesses** (retries, context trim, turn limits) and **models** on the same LangGraph ticket-triage agent. Declare variants in YAML, run stress tasks, score with Langfuse evaluators, compare in an HTML report.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) and [docs/DEMO.md](docs/DEMO.md) for more detail.
 
@@ -13,12 +13,12 @@ flowchart LR
     YAML[harnesses/*.yaml] --> Builder[graph builder]
     Graph[LangGraph agent] --> Builder
     Builder --> Run[invoke per task]
-    Run --> LS[LangSmith traces]
-    LS --> Eval[evaluators]
+    Run --> LF[Langfuse traces]
+    LF --> Eval[evaluators]
     Eval --> Report[HTML report]
 ```
 
-Harness YAML → compiled LangGraph agent → LangSmith `evaluate()` per task → seven custom evaluators → `report.html` plus local JSON under `.harnesslab/runs/`.
+Harness YAML → compiled LangGraph agent → Langfuse `run_experiment()` per task → eight custom evaluators → `report.html` plus local JSON under `.harnesslab/runs/`.
 
 **Harness variants:** `minimal` (no middleware), `retry` (tool retries), `trim` (message history cap).
 
@@ -26,13 +26,13 @@ Harness YAML → compiled LangGraph agent → LangSmith `evaluate()` per task �
 
 Agent policy lives in `examples/ticket_triage/rules.py` (read → KB search → classify → reply; optional `check_sla` / `escalate_ticket` for SLA/outage tickets).
 
-## LangSmith dashboard
+## Langfuse dashboard
 
-Without `--local`, traces and scores live in LangSmith (project `triage`, dataset `ticket-triage-stress`). A local `report.html` is also written.
+Without `--local`, traces and scores live in Langfuse (tagged with project `triage`, dataset `ticket-triage-stress`). A local `report.html` is also written.
 
 Three harness experiments on 9 stress tasks:
 
-![LangSmith experiment comparison across three harness variants](docs/images/langsmith-dashboard.png)
+![Langfuse experiment comparison across three harness variants](docs/images/langsmith-dashboard.png)
 
 | Area | What you see |
 |---|---|
@@ -45,7 +45,7 @@ Aggregate charts look even — drill into per-task rows for real differences.
 
 ### Per-task scores
 
-![LangSmith per-task evaluator scores for one experiment](docs/images/langsmith-per-task.png)
+![Langfuse per-task evaluator scores for one experiment](docs/images/langsmith-per-task.png)
 
 In this `trim` run, `task_pass` averages **0.50** and `tool_sequence` **0.00** while `efficiency` / `error_recovery` stay at 1.0:
 
@@ -55,7 +55,7 @@ In this `trim` run, `task_pass` averages **0.50** and `tool_sequence` **0.00** w
 
 ### Agent loop trace
 
-![LangSmith trace view showing the agent loop for a single task run](docs/images/langsmith-trace.png)
+![Langfuse trace view showing the agent loop for a single task run](docs/images/langsmith-trace.png)
 
 Trace for ticket **T-015** under the `trim` harness: `trim_context` → `agent` → `tools` (`read_ticket`, `search_kb`, `classify`, `draft_reply`) with flaky `search_kb` retries. The right panel shows evaluator scores and structured output (`classification`, `final_reply`, `graph_trajectory`).
 
@@ -73,24 +73,24 @@ Default model compare arms: `gpt-4.1-nano`, `gpt-4.1-mini`, `gpt-3.5-turbo`. Ove
 ```bash
 cd harnesslab
 conda env create -f environment.yml && conda activate harnesslab
-cp .env.example .env   # set OPENAI_API_KEY, LANGSMITH_API_KEY
+cp .env.example .env   # set OPENAI_API_KEY, LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY
 
 # Harness compare (local) — default 2 harnesses × 2 tasks
 harnesslab compare examples/ticket_triage --local -o report.html
 
-# LangSmith upload (same default)
+# Langfuse upload (same default)
 harnesslab compare examples/ticket_triage -o report.html
 
-# New LangSmith dataset (experiments stay short: minimal-*, retry-*)
+# New Langfuse dataset (experiments stay short: minimal-*, retry-*)
 harnesslab compare examples/ticket_triage --dataset triage-v2 -o report.html
 
-# Cheapest LangSmith upload (1 harness × 1 task)
+# Cheapest Langfuse upload (1 harness × 1 task)
 harnesslab compare examples/ticket_triage --task T-018 -o report.html
 
 # Model compare on one harness (default: nano, mini, turbo × 2 tasks)
 harnesslab compare examples/ticket_triage --by models --harness minimal --dataset triage-v3 -o report.html
 
-# Create/sync a LangSmith dataset first
+# Create/sync a Langfuse dataset first
 harnesslab dataset upload examples/ticket_triage --name triage-v3
 
 pytest -q
@@ -101,23 +101,24 @@ pytest -q
 | Variable | Required | Default |
 |---|---|---|
 | `OPENAI_API_KEY` | yes | — |
-| `LANGSMITH_API_KEY` | yes (unless `--local`) | — |
-| `LANGSMITH_ENDPOINT` | non-US accounts | `https://api.smith.langchain.com` |
+| `LANGFUSE_PUBLIC_KEY` | yes (unless `--local`) | — |
+| `LANGFUSE_SECRET_KEY` | yes (unless `--local`) | — |
+| `LANGFUSE_HOST` | self-hosted only | Langfuse Cloud |
 | `HARNESSLAB_MODEL` | no | `gpt-4.1-nano` |
 
-APAC users: `LANGSMITH_ENDPOINT=https://apac.api.smith.langchain.com`. GitHub Actions needs `OPENAI_API_KEY` as a repo secret.
+Self-hosted: set `LANGFUSE_HOST` to your Langfuse instance URL. GitHub Actions needs `OPENAI_API_KEY` as a repo secret.
 
-## Saving LangSmith traces
+## Saving Langfuse traces
 
-LangSmith counts **every span** (each `agent`, `tools`, and `ChatOpenAI` node), not just top-level experiment rows.
+Langfuse records **every span** (each `agent`, `tools`, and `ChatOpenAI` node), not just top-level experiment rows.
 
 | Goal | Command | Approx. top-level runs |
 |---|---|---|
-| Dev / free | `--local` | 0 LangSmith traces |
+| Dev / free | `--local` | 0 Langfuse traces |
 | Cheapest upload | `--task T-018` | 2 experiments × 1 task |
 | Default upload | (no flags) | 2 harnesses × 2 tasks |
 
-Use `--local` while iterating; upload with the default compare or `--task` when you need the LangSmith dashboard.
+Use `--local` while iterating; upload with the default compare or `--task` when you need the Langfuse dashboard.
 
 ## License
 

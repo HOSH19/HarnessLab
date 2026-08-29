@@ -1,15 +1,13 @@
 """Task pass/fail evaluator for ticket triage outputs.
 
 Checks classification and reply content against task fixtures.
-Does not call LLMs or access LangSmith directly.
+Does not call LLMs or access observability backends directly.
 """
-
-from langsmith.schemas import Example, Run
 
 from harnesslab.eval.outputs import run_output_field
 
 
-def task_pass(run: Run, example: Example) -> dict:
+def task_pass(run, example) -> dict:
     """Score whether the agent produced a correct triage result."""
     outputs = run.outputs or {}
     reference = example.outputs or example.inputs or {}

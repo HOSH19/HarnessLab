@@ -31,9 +31,13 @@ class ContextConfig(BaseModel):
 
 
 class ObservabilityConfig(BaseModel):
-    """Controls LangSmith tracing metadata for a harness variant."""
+    """Controls Langfuse tracing metadata for a harness variant.
 
-    langsmith_project: str | None = None
+    ``harness_name`` is injected by the runner; avoid duplicating dataset
+    fields (model, flaky_tools) in ``trace_metadata``.
+    """
+
+    langfuse_project: str | None = None
     trace_metadata: dict[str, Any] = Field(default_factory=dict)
 
 

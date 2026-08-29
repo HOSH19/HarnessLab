@@ -1,10 +1,8 @@
-"""Efficiency metrics from LangSmith run metadata.
+"""Efficiency metrics from run metadata.
 
 Measures turns, latency, and token usage when available.
 Does not invoke models or re-run agents.
 """
-
-from langsmith.schemas import Example, Run
 
 from harnesslab.eval.run_metrics import (
     run_child_count,
@@ -14,12 +12,12 @@ from harnesslab.eval.run_metrics import (
 )
 
 
-def efficiency(run: Run, example: Example) -> dict:
+def efficiency(run, example) -> dict:
     """Score agent efficiency from run metadata.
 
     Args:
-        run: LangSmith run with timing and token metadata.
-        example: Dataset example (unused, required by LangSmith API).
+        run: Run-like object with timing and token metadata.
+        example: Dataset example with expected_max_steps reference.
 
     Returns:
         Dict with normalized efficiency score and metadata comment.

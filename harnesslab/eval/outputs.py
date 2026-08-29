@@ -1,4 +1,4 @@
-"""Helpers for reading normalized fields from LangSmith run outputs."""
+"""Helpers for reading normalized fields from run outputs."""
 
 from typing import Any
 

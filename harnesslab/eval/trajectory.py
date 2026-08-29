@@ -1,10 +1,8 @@
-"""Graph trajectory evaluator for LangSmith experiments.
+"""Graph trajectory evaluator for Langfuse experiments.
 
 Scores whether observed graph node steps contain expected nodes
 in order. Uses trajectory data attached to run outputs by the runner.
 """
-
-from langsmith.schemas import Example, Run
 
 from harnesslab.eval.outputs import run_output_field
 from harnesslab.eval.sequence import subsequence_progress
@@ -19,11 +17,11 @@ def _flatten_steps(graph_trajectory: dict) -> list[str]:
     return [node for node in flattened if node != "__interrupt__"]
 
 
-def graph_trajectory(run: Run, example: Example) -> dict:
+def graph_trajectory(run, example) -> dict:
     """Score graph node trajectory against expected node subsequence.
 
     Args:
-        run: LangSmith run containing graph_trajectory in outputs.
+        run: Run-like object containing graph_trajectory in outputs.
         example: Dataset example with expected_nodes reference.
 
     Returns:
