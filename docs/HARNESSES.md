@@ -60,8 +60,8 @@ Five fields attached to each trace/output — kept minimal for LangSmith readabi
 | `harness_name` | Trace tag | Groups runs by A/B arm |
 | `output` | Output | LangSmith table preview — mirrors `classification` |
 | `classification` | Output | Primary correctness signal |
-| `final_reply` | Output | Required reply terms |
-| `graph_trajectory` | Output | Node path — explains behavioral differences |
+| `details.final_reply` | Output | Required reply terms (nested so LangSmith table does not pick it) |
+| `details.graph_trajectory` | Output | Node path — explains behavioral differences |
 | `error_count` | Output | Tool errors — stress-task retry differentiator |
 
 `thread_id` is set internally for trajectory extraction. `error` is included only on invoke failure.
