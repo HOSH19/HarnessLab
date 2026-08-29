@@ -1,11 +1,9 @@
-"""Surface draft reply text as a LangSmith experiment column."""
-
-from langsmith.schemas import Example, Run
+"""Surface draft reply text as a Langfuse experiment column."""
 
 from harnesslab.eval.outputs import run_output_field
 
 
-def reply_text(run: Run, example: Example) -> dict:
+def reply_text(run, example) -> dict:
     """Expose draft reply presence and text without colliding with Outputs display."""
     del example
     reply = str(run_output_field(run.outputs or {}, "final_reply", "") or "").strip()

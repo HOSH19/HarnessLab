@@ -43,7 +43,7 @@ def _tool_name_from_call(call: Any) -> str | None:
 
 
 def serialize_messages(messages: list) -> list[dict[str, Any]]:
-    """Convert LangChain messages into JSON-safe dicts for LangSmith outputs."""
+    """Convert LangChain messages into JSON-safe dicts for experiment run outputs."""
     serialized: list[dict[str, Any]] = []
     for message in messages:
         if isinstance(message, dict):
@@ -70,7 +70,7 @@ def serialize_messages(messages: list) -> list[dict[str, Any]]:
 
 
 def format_display_output(classification: str, reply: str) -> str:
-    """Build LangSmith Outputs column text (classification label only)."""
+    """Build run output display text (classification label only)."""
     del reply
     return classification or ""
 
@@ -163,7 +163,7 @@ def extract_tool_names_from_outputs(outputs: dict) -> list[str]:
     """Extract tool names from run outputs using messages or trajectory data.
 
     Args:
-        outputs: LangSmith run outputs dict.
+        outputs: Experiment run outputs dict.
 
     Returns:
         Ordered list of tool names from the best available source.

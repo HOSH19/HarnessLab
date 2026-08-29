@@ -1,7 +1,7 @@
 """Load task JSON fixtures from an example project directory.
 
 Reads task definitions for experiment datasets. Does not upload
-to LangSmith; upload is owned by experiments.dataset.
+to Langfuse; upload is owned by experiments.dataset.
 """
 
 import json
@@ -16,7 +16,7 @@ def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
         ticket_id: Optional filter to a single ticket (e.g. T-011).
 
     Returns:
-        List of task dicts with inputs and outputs for LangSmith.
+        List of task dicts with inputs and outputs for Langfuse datasets.
     """
     tasks: list[dict] = []
     for path in sorted(tasks_dir.glob("task-*.json")):
