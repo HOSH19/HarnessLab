@@ -8,5 +8,5 @@
   "stress": true,
   "expected_category": "ml",
   "required_reply_terms": ["speculative decoding", "transformer", "latency"],
-  "expected_tools": ["search_literature", "read_source", "classify", "draft_reply"]
+  "expected_tools": ["read_topic", "search_literature", "read_source", "classify", "draft_reply"]
 }

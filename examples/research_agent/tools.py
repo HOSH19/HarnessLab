@@ -16,6 +16,24 @@ def _load_fixtures() -> dict:
 
 
 @tool
+def read_topic(topic_id: str) -> str:
+    """Read a research topic by ID.
+
+    Args:
+        topic_id: Topic identifier such as R-001.
+
+    Returns:
+        JSON string with topic title and research question.
+    """
+    maybe_fail("read_topic")
+    fixtures = _load_fixtures()
+    for topic in fixtures["topics"]:
+        if topic["id"] == topic_id:
+            return json.dumps(topic)
+    return json.dumps({"error": f"Topic {topic_id} not found"})
+
+
+@tool
 def search_literature(query: str) -> str:
     """Search indexed papers and memos matching a query.
 
@@ -87,4 +105,4 @@ def draft_reply(topic_id: str, reply: str) -> str:
     return json.dumps({"topic_id": topic_id, "reply": reply})
 
 
-TOOLS = [search_literature, read_source, classify, draft_reply]
+TOOLS = [read_topic, search_literature, read_source, classify, draft_reply]
