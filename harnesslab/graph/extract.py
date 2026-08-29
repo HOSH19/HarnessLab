@@ -42,48 +42,8 @@ def _tool_name_from_call(call: Any) -> str | None:
     return None
 
 
-def serialize_messages(messages: list) -> list[dict[str, Any]]:
-    """Convert LangChain messages into JSON-safe dicts for experiment run outputs."""
-    serialized: list[dict[str, Any]] = []
-    for message in messages:
-        if isinstance(message, dict):
-            serialized.append(message)
-            continue
-
-        role = getattr(message, "type", "unknown")
-        entry: dict[str, Any] = {
-            "role": role,
-            "content": getattr(message, "content", ""),
-        }
-        tool_calls = _tool_calls_from_message(message)
-        if tool_calls:
-            entry["tool_calls"] = [
-                {"name": name}
-                for call in tool_calls
-                if (name := _tool_name_from_call(call)) is not None
-            ]
-        tool_name = getattr(message, "name", None)
-        if tool_name:
-            entry["name"] = tool_name
-        serialized.append(entry)
-    return serialized
-
-
-def format_display_output(classification: str, reply: str) -> str:
-    """Build run output display text (classification label only)."""
-    del reply
-    return classification or ""
-
-
 def extract_fields_from_messages(messages: list) -> dict[str, str]:
-    """Extract classification and final reply from tool messages.
-
-    Args:
-        messages: LangGraph message list from final state.
-
-    Returns:
-        Dict with classification and final_reply string fields.
-    """
+    """Extract classification and final reply from tool messages."""
     classification = ""
     final_reply = ""
 
@@ -110,26 +70,8 @@ def extract_fields_from_messages(messages: list) -> dict[str, str]:
     }
 
 
-def _tool_names_from_openai_message(message: dict) -> list[str]:
-    """Extract tool names from one OpenAI-format trajectory message."""
-    names: list[str] = []
-    for call in message.get("tool_calls", []) or []:
-        function = call.get("function", {}) if isinstance(call, dict) else {}
-        name = function.get("name") if isinstance(function, dict) else None
-        if name:
-            names.append(str(name))
-    return names
-
-
 def extract_tool_names_from_messages(messages: list) -> list[str]:
-    """Extract tool invocation names in order from LangChain messages.
-
-    Args:
-        messages: LangGraph message list from final state or run outputs.
-
-    Returns:
-        Ordered list of tool names observed in the message history.
-    """
+    """Extract tool invocation names in order from LangChain messages."""
     names: list[str] = []
     for message in messages:
         for call in _tool_calls_from_message(message):
@@ -137,49 +79,3 @@ def extract_tool_names_from_messages(messages: list) -> list[str]:
             if name:
                 names.append(name)
     return names
-
-
-def extract_tool_names_from_trajectory(graph_trajectory: dict) -> list[str]:
-    """Extract tool names from graph trajectory result messages.
-
-    Args:
-        graph_trajectory: Trajectory dict attached to run outputs by the runner.
-
-    Returns:
-        Ordered list of tool names parsed from trajectory messages.
-    """
-    names: list[str] = []
-    results = graph_trajectory.get("results", []) if graph_trajectory else []
-    for result in results:
-        if not isinstance(result, dict):
-            continue
-        for message in result.get("messages", []) or []:
-            if isinstance(message, dict):
-                names.extend(_tool_names_from_openai_message(message))
-    return names
-
-
-def extract_tool_names_from_outputs(outputs: dict) -> list[str]:
-    """Extract tool names from run outputs using messages or trajectory data.
-
-    Args:
-        outputs: Experiment run outputs dict.
-
-    Returns:
-        Ordered list of tool names from the best available source.
-    """
-    tool_names = outputs.get("tool_names")
-    if tool_names:
-        return [str(name) for name in tool_names]
-    details = outputs.get("details")
-    if isinstance(details, dict):
-        nested_tools = details.get("tool_names")
-        if nested_tools:
-            return [str(name) for name in nested_tools]
-    messages = outputs.get("messages")
-    if messages:
-        return extract_tool_names_from_messages(messages)
-    trajectory = outputs.get("graph_trajectory")
-    if not trajectory and isinstance(details, dict):
-        trajectory = details.get("graph_trajectory", {})
-    return extract_tool_names_from_trajectory(trajectory or {})
