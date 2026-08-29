@@ -28,7 +28,7 @@ from harnesslab.eval.run_metrics import trajectory_agent_tool_steps
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.tasks import load_tasks
-from harnesslab.graph.extract import extract_fields_from_messages, extract_tool_names_from_messages
+from harnesslab.graph.extract import extract_fields_from_messages
 from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
 
 from examples.ticket_triage.flaky import init_flaky_tools
@@ -74,15 +74,19 @@ def _invoke_config(
     model: str | None = None,
     trace_enabled: bool,
 ) -> dict:
-    """Build LangGraph invoke config with recursion limit and metadata."""
+    """Build LangGraph invoke config with recursion limit and trace tags.
+
+    Trace tags are minimized to harness_name (+ optional user trace_metadata).
+    thread_id is required for trajectory extraction but is not a filter tag.
+    Model and flaky_tools live on experiment metadata / dataset inputs instead.
+    """
+    del model
     project = harness.observability.langfuse_project or "triage"
     configurable: dict[str, Any] = {
         "thread_id": str(uuid.uuid4()),
         "harness_name": harness.name,
         **harness.observability.trace_metadata,
     }
-    if model:
-        configurable["model"] = model
 
     config: dict[str, Any] = {
         "configurable": configurable,
@@ -103,37 +107,28 @@ def _invoke_config(
 
 
 def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
-    """Pull evaluation fields from graph state and trajectory history."""
+    """Pull the minimal evaluation fields from graph state and trajectory."""
     messages = state.get("messages", [])
     parsed = extract_fields_from_messages(messages)
     trajectory = extract_langgraph_trajectory_from_thread(graph, config)
     classification = parsed["classification"] or state.get("classification", "")
     final_reply = parsed["final_reply"] or state.get("final_reply", "")
-    tool_names = extract_tool_names_from_messages(messages)
 
     return {
-        "output": classification or "",
         "classification": classification or "",
-        "details": {
-            "final_reply": final_reply,
-            "tool_names": tool_names,
-            "error_count": state.get("error_count", 0),
-            "graph_trajectory": trajectory["outputs"],
-        },
+        "final_reply": final_reply,
+        "graph_trajectory": trajectory["outputs"],
+        "error_count": state.get("error_count", 0),
     }
 
 
 def _empty_outputs(*, error: str | None = None) -> dict:
     """Return a minimal outputs dict when graph invocation fails."""
     payload = {
-        "output": "",
         "classification": "",
-        "details": {
-            "final_reply": "",
-            "tool_names": [],
-            "error_count": 1 if error else 0,
-            "graph_trajectory": {"steps": [], "results": [], "inputs": []},
-        },
+        "final_reply": "",
+        "graph_trajectory": {"steps": [], "results": [], "inputs": []},
+        "error_count": 1 if error else 0,
     }
     if error:
         payload["error"] = error

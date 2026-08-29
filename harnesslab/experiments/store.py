@@ -53,8 +53,12 @@ def _run_outputs(row: Any) -> dict[str, Any]:
 def serialize_result_row(row: Any) -> dict[str, Any]:
     """Convert a Langfuse experiment result row to a JSON-serializable dict."""
     example = row_value(row, "example", {}) or {}
-    example_inputs = getattr(example, "inputs", None) or example.get("inputs", {}) or {}
-    example_id = getattr(example, "id", None) or example.get("id")
+    if isinstance(example, dict):
+        example_inputs = example.get("inputs", {}) or {}
+        example_id = example.get("id")
+    else:
+        example_inputs = getattr(example, "inputs", None) or {}
+        example_id = getattr(example, "id", None)
 
     outputs = _run_outputs(row)
     run = row_value(row, "run", None)
