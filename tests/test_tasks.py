@@ -21,7 +21,8 @@ def test_load_research_tasks_returns_inputs_and_outputs() -> None:
     assert len(tasks) == 4
     assert "inputs" in tasks[0]
     assert "outputs" in tasks[0]
-    assert "expected_category" in tasks[0]["outputs"]
+    assert "classification" in tasks[0]["outputs"]
+    assert tasks[0]["outputs"]["output"] == tasks[0]["outputs"]["classification"]
     assert tasks[0]["outputs"]["reply_hint"].startswith("include:")
 
 
@@ -40,7 +41,7 @@ def test_research_tasks_have_distinct_categories() -> None:
     tasks_dir = root / "examples" / "research_agent" / "tasks"
     tasks = load_tasks(tasks_dir)
 
-    categories = [task["outputs"]["expected_category"] for task in tasks]
+    categories = [task["outputs"]["classification"] for task in tasks]
     assert categories == ["ml", "systems", "security", "product"]
 
     for task in tasks:
@@ -54,10 +55,10 @@ def test_incident_tasks_have_distinct_expected_outputs() -> None:
     tasks_dir = root / "examples" / "incident_manager" / "tasks"
     tasks = {task["inputs"]["ticket_id"]: task for task in load_tasks(tasks_dir)}
 
-    assert tasks["I-101"]["outputs"]["expected_category"] == "infrastructure"
-    assert tasks["I-103"]["outputs"]["expected_category"] == "deployment"
-    assert tasks["I-104"]["outputs"]["expected_category"] == "security"
-    assert tasks["I-106"]["outputs"]["expected_category"] == "data_loss"
+    assert tasks["I-101"]["outputs"]["classification"] == "infrastructure"
+    assert tasks["I-103"]["outputs"]["classification"] == "deployment"
+    assert tasks["I-104"]["outputs"]["classification"] == "security"
+    assert tasks["I-106"]["outputs"]["classification"] == "data_loss"
 
     for task in tasks.values():
         prompt = task["inputs"]["prompt"].lower()

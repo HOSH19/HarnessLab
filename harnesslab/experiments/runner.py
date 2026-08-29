@@ -130,6 +130,7 @@ def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
     final_reply = parsed["final_reply"] or state.get("final_reply", "")
 
     return {
+        "output": classification or "",
         "classification": classification or "",
         "final_reply": final_reply,
         "graph_trajectory": trajectory["outputs"],
@@ -140,6 +141,7 @@ def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
 def _empty_outputs(*, error: str | None = None) -> dict:
     """Return a minimal outputs dict when graph invocation fails."""
     payload = {
+        "output": "",
         "classification": "",
         "final_reply": "",
         "graph_trajectory": {"steps": [], "results": [], "inputs": []},

@@ -2,7 +2,7 @@
   "task_id": "task-004",
   "ticket_id": "R-004",
   "prompt": "Research topic R-004 and prepare a stakeholder summary.",
-  "expected_category": "product",
+  "classification": "product",
   "required_reply_terms": ["4.2%", "annual-plan", "conversion"],
   "expected_tools": ["read_topic", "search_literature", "read_source", "classify", "draft_reply"]
 }

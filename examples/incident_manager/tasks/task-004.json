@@ -3,7 +3,7 @@
   "ticket_id": "I-104",
   "prompt": "Investigate incident I-104 and draft a stakeholder update.",
   "stress": true,
-  "expected_category": "security",
+  "classification": "security",
   "required_reply_terms": ["sec-441", "credential", "rotation"],
   "expected_tools": ["read_incident", "search_runbooks", "classify", "draft_reply"]
 }

@@ -6,7 +6,7 @@
     "search_literature": 1
   },
   "stress": true,
-  "expected_category": "ml",
+  "classification": "ml",
   "required_reply_terms": ["speculative decoding", "transformer", "latency"],
   "expected_tools": ["read_topic", "search_literature", "read_source", "classify", "draft_reply"]
 }

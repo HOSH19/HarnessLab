@@ -7,7 +7,7 @@
     "correlate_timeline": 1
   },
   "stress": true,
-  "expected_category": "deployment",
+  "classification": "deployment",
   "required_reply_terms": ["v2.14.0", "rollback", "deploy"],
   "expected_tools": [
     "read_incident",

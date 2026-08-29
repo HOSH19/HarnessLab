@@ -2,7 +2,7 @@
   "task_id": "task-002",
   "ticket_id": "R-002",
   "prompt": "Research topic R-002 and prepare a stakeholder summary.",
-  "expected_category": "systems",
+  "classification": "systems",
   "required_reply_terms": ["quorum", "partition", "raft"],
   "expected_tools": ["read_topic", "search_literature", "read_source", "classify", "draft_reply"]
 }
