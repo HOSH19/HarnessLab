@@ -6,7 +6,6 @@ Does not implement scorer logic; delegates to eval package.
 
 from __future__ import annotations
 
-import json
 import os
 import time
 import uuid
@@ -214,10 +213,25 @@ def _resolve_data(
 
 
 def _experiment_metadata(harness: HarnessConfig, model: str | None) -> dict[str, str]:
-    payload: dict[str, Any] = {"harness": harness.model_dump()}
+    """Build Langfuse experiment metadata.
+
+    Langfuse propagates metadata as per-key attributes with a 200-character
+    limit on each value. Keep entries short scalars, not serialized configs.
+    """
+    metadata: dict[str, str] = {
+        "harness_name": harness.name,
+        "langfuse_project": harness.observability.langfuse_project or "triage",
+        "max_turns": str(harness.execution.max_turns),
+        "retry_count": str(harness.tooling.retry_count),
+        "history_limit": (
+            str(harness.context.history_limit)
+            if harness.context.history_limit is not None
+            else ""
+        ),
+    }
     if model:
-        payload["model"] = model
-    return {"harnesslab": json.dumps(payload, sort_keys=True)}
+        metadata["model"] = model
+    return metadata
 
 
 def _item_id(item: Any) -> str | None:
