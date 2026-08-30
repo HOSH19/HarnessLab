@@ -29,6 +29,7 @@ def test_optional_tools_empty_for_research_agent() -> None:
 
 def test_call_model_injects_system_prompt(monkeypatch) -> None:
     """call_model prepends the shared system prompt to task messages."""
+    from harnesslab.examples import agent_nodes
 
     class _FakeLLM:
         def bind_tools(self, _tools):
@@ -39,7 +40,7 @@ def test_call_model_injects_system_prompt(monkeypatch) -> None:
             return messages[-1]
 
     fake = _FakeLLM()
-    monkeypatch.setattr(nodes, "_model", lambda: fake)
+    monkeypatch.setattr(agent_nodes, "ChatOpenAI", lambda **_: fake)
 
     nodes.call_model({"messages": [HumanMessage(content="Research R-001")]})
 

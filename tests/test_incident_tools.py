@@ -2,7 +2,7 @@
 
 import json
 
-from examples.incident_manager.flaky import init_flaky_tools
+from harnesslab.flaky import init_flaky_tools
 from examples.incident_manager.tools import classify, correlate_timeline, read_incident, search_runbooks
 
 

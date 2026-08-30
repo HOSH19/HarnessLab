@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from examples.research_agent.flaky import attempt_count, init_flaky_tools, maybe_fail
+from harnesslab.flaky import attempt_count, init_flaky_tools, maybe_fail
 from examples.research_agent.tools import read_source, search_literature
 
 

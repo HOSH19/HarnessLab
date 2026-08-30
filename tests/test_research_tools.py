@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from examples.research_agent.flaky import init_flaky_tools
+from harnesslab.flaky import init_flaky_tools
 from examples.research_agent.tools import classify, read_source, read_topic, search_literature
 
 

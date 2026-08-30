@@ -5,8 +5,10 @@
   "flaky_tools": {
     "read_incident": 2
   },
-  "stress": true,
   "classification": "infrastructure",
-  "required_reply_terms": ["db-504", "connection pool", "read replicas"],
-  "expected_tools": ["read_incident", "search_runbooks", "classify", "draft_reply"]
+  "required_reply_terms": [
+    "db-504",
+    "connection pool",
+    "read replicas"
+  ]
 }

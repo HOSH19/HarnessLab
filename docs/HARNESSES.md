@@ -53,7 +53,7 @@ python -m harnesslab compare examples/incident_manager --harness minimal,retry,t
 
 ## Logged fields (per run)
 
-Five fields attached to each trace/output — kept minimal for LangSmith readability:
+Each trace carries a harness tag plus five output fields — kept minimal for LangSmith readability:
 
 | Field | Layer | Purpose |
 |---|---|---|

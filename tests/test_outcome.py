@@ -23,7 +23,7 @@ def test_task_pass_full_credit_when_category_and_terms_match() -> None:
     )
     example = _FakeExample(
         {
-            "expected_category": "billing",
+            "classification": "billing",
             "required_reply_terms": ["7788", "9912", "annual", "refund"],
         }
     )
@@ -41,7 +41,7 @@ def test_task_pass_partial_credit_for_some_terms() -> None:
     )
     example = _FakeExample(
         {
-            "expected_category": "billing",
+            "classification": "billing",
             "required_reply_terms": ["7788", "9912", "annual", "refund"],
         }
     )
@@ -59,7 +59,7 @@ def test_task_pass_zero_when_category_wrong() -> None:
     )
     example = _FakeExample(
         {
-            "expected_category": "billing",
+            "classification": "billing",
             "required_reply_terms": ["refund", "annual"],
         }
     )

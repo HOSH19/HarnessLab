@@ -6,15 +6,10 @@
     "fetch_metrics": 2,
     "correlate_timeline": 1
   },
-  "stress": true,
   "classification": "deployment",
-  "required_reply_terms": ["v2.14.0", "rollback", "deploy"],
-  "expected_tools": [
-    "read_incident",
-    "fetch_metrics",
-    "correlate_timeline",
-    "search_runbooks",
-    "classify",
-    "draft_reply"
+  "required_reply_terms": [
+    "v2.14.0",
+    "rollback",
+    "deploy"
   ]
 }
