@@ -1,29 +1,16 @@
-"""LangSmith experiment orchestration for harness A/B runs.
-
-Runs compiled graphs against task datasets and registers evaluators.
-Does not implement scorer logic; delegates to eval package.
-"""
+"""LangSmith experiment orchestration for harness A/B runs."""
 
 import os
-import uuid
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Literal
 
-from langsmith.schemas import Example, Run
-
-from agentevals.graph_trajectory.utils import extract_langgraph_trajectory_from_thread
-from langchain_core.messages import AIMessage, HumanMessage
 from langsmith import evaluate
 
 from harnesslab.config.env import disable_langsmith_tracing
 from harnesslab.config.model_catalog import DEFAULT_MODEL, model_short_name
-
-from harnesslab.flaky import init_flaky_tools
-
 from harnesslab.config.models import HarnessConfig
-from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
 from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.error_recovery import error_recovery
 from harnesslab.eval.fingerprint import failure_fingerprint
@@ -31,8 +18,8 @@ from harnesslab.eval.outcome import task_pass
 from harnesslab.eval.trajectory import graph_trajectory
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
+from harnesslab.experiments.target import make_target
 from harnesslab.experiments.tasks import load_tasks
-from harnesslab.graph.extract import extract_fields_from_messages
 
 CompareDimension = Literal["harness", "models"]
 
@@ -48,7 +35,7 @@ _BASE_EVALUATORS = [
 def _safe_evaluator(evaluator: Callable) -> Callable:
     """Wrap an evaluator so failures still produce feedback in LangSmith."""
 
-    def wrapped(run: Run, example: Example) -> dict:
+    def wrapped(run, example) -> dict:
         try:
             return evaluator(run, example)
         except Exception as exc:  # noqa: BLE001 — evaluators must never abort a row
@@ -82,115 +69,6 @@ def use_model(model: str | None) -> Iterator[None]:
             os.environ.pop("HARNESSLAB_MODEL", None)
         else:
             os.environ["HARNESSLAB_MODEL"] = previous
-
-
-def _build_initial_messages(prompt: str, conversation_history: list[dict] | None) -> list:
-    """Build message list from optional prior turns plus the task prompt."""
-    messages: list = []
-    for turn in conversation_history or []:
-        role = turn.get("role", "human")
-        content = turn.get("content", "")
-        if role in {"human", "user"}:
-            messages.append(HumanMessage(content=content))
-        elif role in {"ai", "assistant"}:
-            messages.append(AIMessage(content=content))
-    messages.append(HumanMessage(content=prompt))
-    return messages
-
-
-def _invoke_config(harness: HarnessConfig, *, model: str | None = None) -> dict:
-    """Build LangGraph invoke config with recursion limit and trace tags.
-
-    Trace tags are minimized to harness_name (+ optional user trace_metadata).
-    thread_id is required for trajectory extraction but is not a filter tag.
-    Model and flaky_tools live on experiment metadata / dataset inputs instead.
-    """
-    del model
-    project = harness.observability.langsmith_project or "harnesslab"
-    os.environ["LANGSMITH_PROJECT"] = project
-
-    configurable: dict[str, Any] = {
-        "thread_id": str(uuid.uuid4()),
-        "harness_name": harness.name,
-        **harness.observability.trace_metadata,
-    }
-
-    return {
-        "configurable": configurable,
-        "recursion_limit": graph_recursion_limit(harness.execution),
-    }
-
-
-def _extract_outputs(state: dict, graph: Any, config: dict) -> dict:
-    """Pull the minimal evaluation fields from graph state and trajectory.
-
-  Top-level outputs stay scalar so LangSmith's experiment table preview picks
-  ``output``/``classification`` instead of the longer ``final_reply`` text.
-  """
-    messages = state.get("messages", [])
-    parsed = extract_fields_from_messages(messages)
-    trajectory = extract_langgraph_trajectory_from_thread(graph, config)
-    classification = parsed["classification"] or state.get("classification", "")
-    final_reply = parsed["final_reply"] or state.get("final_reply", "")
-
-    return {
-        "output": classification or "",
-        "classification": classification or "",
-        "error_count": state.get("error_count", 0),
-        "details": {
-            "final_reply": final_reply,
-            "graph_trajectory": trajectory["outputs"],
-        },
-    }
-
-
-def _empty_outputs(*, error: str | None = None) -> dict:
-    """Return a minimal outputs dict when graph invocation fails."""
-    payload = {
-        "output": "",
-        "classification": "",
-        "error_count": 1 if error else 0,
-        "details": {
-            "final_reply": "",
-            "graph_trajectory": {"steps": [], "results": [], "inputs": []},
-        },
-    }
-    if error:
-        payload["error"] = error
-    return payload
-
-
-def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessConfig):
-    """Create a LangSmith-compatible target function for a harness variant."""
-    graph = graph_factory(harness)
-
-    def target(inputs: dict) -> dict:
-        """Run the agent on a single task input."""
-        prompt = inputs.get("prompt", "")
-        ticket_id = inputs.get("ticket_id", "")
-        flaky_tools = inputs.get("flaky_tools")
-        conversation_history = inputs.get("conversation_history")
-        model = os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
-        config = _invoke_config(harness, model=model)
-        if flaky_tools:
-            config["configurable"]["flaky_tools"] = flaky_tools
-        init_flaky_tools(flaky_tools)
-        try:
-            state = graph.invoke(
-                {
-                    "messages": _build_initial_messages(prompt, conversation_history),
-                    "ticket_id": ticket_id,
-                    "classification": "",
-                    "final_reply": "",
-                    "error_count": 0,
-                },
-                config=config,
-            )
-            return _extract_outputs(state, graph, config)
-        except Exception as exc:  # noqa: BLE001 — always return outputs for evaluators
-            return _empty_outputs(error=str(exc))
-
-    return target
 
 
 def _resolve_data(

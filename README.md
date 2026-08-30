@@ -18,7 +18,7 @@ flowchart LR
     Eval --> Report[HTML report]
 ```
 
-Harness variants: `minimal` (baseline), `retry` (tool retries), `trim` (history cap). Same three presets work for every example — only the `langsmith_project` name changes per agent.
+Harness variants: `minimal` (baseline), `retry` (tool retries), `trim` (history cap). The same three presets work for every example — only the `langsmith_project` name changes per agent.
 
 | Example | Path | Tasks | Difficulty |
 |---|---|---|---|
@@ -69,7 +69,18 @@ python -m harnesslab compare examples/research_agent --by models --harness minim
 python -m harnesslab compare examples/incident_manager --task I-103 --local
 ```
 
-Docs: [EVALUATORS.md](docs/EVALUATORS.md) · [HARNESSES.md](docs/HARNESSES.md) · [Session worklog (29 Aug 2026)](docs/SESSION_2026-08-29.md)
+## Project layout
+
+| Path | Role |
+|---|---|
+| `harnesslab/cli/` | Typer commands (`run`, `compare`, `dataset upload`) |
+| `harnesslab/config/` | Harness YAML schema and env loading |
+| `harnesslab/eval/` | Five LangSmith evaluators |
+| `harnesslab/experiments/` | Dataset sync, runner, local result store |
+| `harnesslab/graph/` | Shared LangGraph builder and middleware hooks |
+| `examples/*/` | Drop-in agent examples with tasks and harness presets |
+
+Docs: [EVALUATORS.md](docs/EVALUATORS.md) · [HARNESSES.md](docs/HARNESSES.md)
 
 ## License
 

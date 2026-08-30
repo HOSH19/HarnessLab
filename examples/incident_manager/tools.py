@@ -8,7 +8,7 @@ from pathlib import Path
 
 from langchain_core.tools import tool
 
-from examples.incident_manager.flaky import maybe_fail
+from harnesslab.flaky import maybe_fail
 
 FIXTURES_PATH = Path(__file__).parent / "fixtures" / "data.json"
 

@@ -105,10 +105,6 @@ def _write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
 
 
-def _task_count(rows: list) -> int:
-    return len(rows)
-
-
 def _build_manifest(
     *,
     arms: list[str],
@@ -141,7 +137,7 @@ def save_experiment_run(
 
     manifest = _build_manifest(
         arms=[harness_name],
-        task_count=_task_count(rows),
+        task_count=len(rows),
         metadata=metadata,
     )
     _write_json(run_dir / "manifest.json", manifest)
@@ -163,7 +159,7 @@ def save_compare_run(
     run_dir.mkdir(parents=True, exist_ok=True)
 
     arms = list(comparisons.keys())
-    task_count = _task_count(next(iter(comparisons.values()))) if comparisons else 0
+    task_count = len(next(iter(comparisons.values()))) if comparisons else 0
     manifest = _build_manifest(arms=arms, task_count=task_count, metadata=metadata)
     _write_json(run_dir / "manifest.json", manifest)
 

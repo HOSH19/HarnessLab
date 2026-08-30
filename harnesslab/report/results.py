@@ -10,13 +10,7 @@ SUMMARY_KEYS = [
     "failure_fingerprint",
 ]
 
-DETAIL_KEYS = [
-    "task_pass",
-    "graph_trajectory",
-    "error_recovery",
-    "efficiency",
-    "failure_fingerprint",
-]
+DETAIL_KEYS = SUMMARY_KEYS
 
 
 def row_value(row: Any, key: str, default: Any = None) -> Any:

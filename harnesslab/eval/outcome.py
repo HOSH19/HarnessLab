@@ -13,7 +13,7 @@ def task_pass(run: Run, example: Example) -> dict:
     """Score whether the agent produced a correct task result."""
     outputs = run.outputs or {}
     reference = example.outputs or example.inputs or {}
-    expected_category = reference.get("classification") or reference.get("expected_category", "")
+    expected_category = reference.get("classification", "")
     required_terms = reference.get("required_reply_terms", [])
 
     classification = str(run_output_field(outputs, "classification", "")).lower()

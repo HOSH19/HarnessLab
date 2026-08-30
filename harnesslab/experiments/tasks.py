@@ -13,7 +13,7 @@ def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
 
     Args:
         tasks_dir: Directory containing task-*.json files.
-        ticket_id: Optional filter to a single ticket (e.g. T-011).
+        ticket_id: Optional filter to a single task id (e.g. R-001, I-103).
 
     Returns:
         List of task dicts with inputs and outputs for LangSmith.
@@ -28,7 +28,7 @@ def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
         if required_terms:
             reply_hint = "include: " + ", ".join(required_terms)
 
-        classification = raw.get("classification") or raw.get("expected_category", "")
+        classification = raw["classification"]
 
         tasks.append(
             {
@@ -48,7 +48,6 @@ def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
                     "reply_hint": reply_hint,
                     "required_reply_terms": required_terms,
                     "expected_nodes": raw.get("expected_nodes", []),
-                    **({"expected_tools": raw["expected_tools"]} if "expected_tools" in raw else {}),
                     **(
                         {"expected_max_steps": raw["expected_max_steps"]}
                         if "expected_max_steps" in raw
@@ -59,7 +58,6 @@ def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
                         if "max_acceptable_errors" in raw
                         else {}
                     ),
-                    **({"stress": raw["stress"]} if "stress" in raw else {}),
                 },
             }
         )

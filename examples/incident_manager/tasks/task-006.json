@@ -6,16 +6,11 @@
     "search_runbooks": 2,
     "correlate_timeline": 1
   },
-  "stress": true,
   "max_acceptable_errors": 0,
   "classification": "data_loss",
-  "required_reply_terms": ["replica lag", "stale", "billing reconciliation"],
-  "expected_tools": [
-    "read_incident",
-    "fetch_metrics",
-    "search_runbooks",
-    "correlate_timeline",
-    "classify",
-    "draft_reply"
+  "required_reply_terms": [
+    "replica lag",
+    "stale",
+    "billing reconciliation"
   ]
 }

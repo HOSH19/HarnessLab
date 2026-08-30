@@ -3,6 +3,9 @@
   "ticket_id": "R-003",
   "prompt": "Research topic R-003 and prepare a stakeholder summary.",
   "classification": "security",
-  "required_reply_terms": ["client secret", "revoke", "overlap"],
-  "expected_tools": ["read_topic", "search_literature", "read_source", "classify", "draft_reply"]
+  "required_reply_terms": [
+    "client secret",
+    "revoke",
+    "overlap"
+  ]
 }

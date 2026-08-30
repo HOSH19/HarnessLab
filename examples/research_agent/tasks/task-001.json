@@ -5,8 +5,10 @@
   "flaky_tools": {
     "search_literature": 1
   },
-  "stress": true,
   "classification": "ml",
-  "required_reply_terms": ["speculative decoding", "transformer", "latency"],
-  "expected_tools": ["read_topic", "search_literature", "read_source", "classify", "draft_reply"]
+  "required_reply_terms": [
+    "speculative decoding",
+    "transformer",
+    "latency"
+  ]
 }

@@ -1,23 +1,23 @@
 """CLI helper tests."""
 
-from harnesslab.cli.main import DEFAULT_COMPARE_HARNESSES, DEFAULT_TASK_LIMIT, _resolve_task_limit
+from harnesslab.cli.helpers import DEFAULT_COMPARE_HARNESSES, DEFAULT_TASK_LIMIT, resolve_task_limit
 
 
 def test_default_task_limit_is_one() -> None:
     """Compare runs default to one task."""
-    assert _resolve_task_limit(None, None) == DEFAULT_TASK_LIMIT
+    assert resolve_task_limit(None, None) == DEFAULT_TASK_LIMIT
     assert DEFAULT_TASK_LIMIT == 1
 
 
 def test_single_task_filter_ignores_default_limit() -> None:
     """A --task filter runs one ticket without applying the task cap."""
-    assert _resolve_task_limit(None, "R-001") is None
-    assert _resolve_task_limit(6, "R-001") == 6
+    assert resolve_task_limit(None, "R-001") is None
+    assert resolve_task_limit(6, "R-001") == 6
 
 
 def test_explicit_tasks_override_default() -> None:
     """--tasks overrides the default cap when no ticket filter is set."""
-    assert _resolve_task_limit(6, None) == 6
+    assert resolve_task_limit(6, None) == 6
 
 
 def test_default_compare_harnesses_are_minimal_and_retry() -> None:
@@ -29,11 +29,11 @@ def test_resolve_dataset_name_uses_explicit_value() -> None:
     """--dataset overrides the example-derived default."""
     from pathlib import Path
 
-    from harnesslab.cli.main import _default_dataset_name, _resolve_dataset_name
+    from harnesslab.cli.helpers import default_dataset_name, resolve_dataset_name
 
     example = Path("examples/research_agent")
-    assert _resolve_dataset_name(example, "research-v2") == "research-v2"
-    assert _resolve_dataset_name(example, None) == _default_dataset_name(example)
+    assert resolve_dataset_name(example, "research-v2") == "research-v2"
+    assert resolve_dataset_name(example, None) == default_dataset_name(example)
 
 
 def test_dataset_upload_command_registered() -> None:
