@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import Any
 
 from harnesslab.eval.outputs import run_output_field
+from harnesslab.eval.token_usage import aggregate_usage_metadata, usage_dict_total_tokens
 
 
 def run_latency_seconds(run: Any) -> float:
@@ -30,10 +31,37 @@ def run_total_tokens(run: Any) -> int:
     if tokens is not None:
         return int(tokens)
 
+    outputs = getattr(run, "outputs", None) or {}
+    if isinstance(outputs, dict):
+        output_tokens = outputs.get("total_tokens")
+        if output_tokens is not None:
+            return int(output_tokens)
+
+        usage = outputs.get("usage_metadata")
+        if isinstance(usage, dict):
+            if usage and all(isinstance(value, dict) for value in usage.values()):
+                total, _ = aggregate_usage_metadata(usage)
+                if total > 0:
+                    return total
+            token_total = usage_dict_total_tokens(usage)
+            if token_total > 0:
+                return token_total
+
     extra = getattr(run, "extra", None) or {}
     usage = extra.get("usage_metadata") or extra.get("token_usage") or {}
-    if isinstance(usage, dict) and usage.get("total_tokens") is not None:
-        return int(usage["total_tokens"])
+    if isinstance(usage, dict):
+        if usage.get("total_tokens") is not None:
+            return int(usage["total_tokens"])
+        if usage and all(isinstance(value, dict) for value in usage.values()):
+            total, _ = aggregate_usage_metadata(usage)
+            if total > 0:
+                return total
+
+    children = getattr(run, "child_runs", None) or []
+    child_total = sum(run_total_tokens(child) for child in children)
+    if child_total > 0:
+        return child_total
+
     return 0
 
 

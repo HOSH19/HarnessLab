@@ -4,13 +4,14 @@ from langsmith.schemas import Example, Run
 
 from harnesslab.eval.cost import estimate_run_cost_usd
 from harnesslab.eval.outcome import task_pass
+from harnesslab.eval.run_metrics import run_total_tokens
 
 
 def run_cost_usd(run: Run, example: Example) -> dict:
     """Publish estimated USD cost per run (lower is better; score is raw dollars)."""
     _ = example
     cost = estimate_run_cost_usd(run)
-    tokens = getattr(run, "total_tokens", None) or 0
+    tokens = run_total_tokens(run)
     return {
         "key": "run_cost_usd",
         "score": cost,

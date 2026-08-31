@@ -11,6 +11,10 @@ from harnesslab.eval.run_metrics import run_total_tokens
 
 def resolve_run_model(run: Any) -> str:
     """Read the model name from run metadata when available."""
+    outputs = getattr(run, "outputs", None) or {}
+    if isinstance(outputs, dict) and outputs.get("model"):
+        return str(outputs["model"])
+
     extra = getattr(run, "extra", None) or {}
     if isinstance(extra, dict):
         metadata = extra.get("metadata") or {}
