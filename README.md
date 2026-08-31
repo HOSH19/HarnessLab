@@ -23,7 +23,7 @@ flowchart LR
 | Research agent | `examples/research_agent/` | `R-001` to `R-004` (4) |
 | Incident manager | `examples/incident_manager/` | `I-101` to `I-106` (6) |
 
-Harness presets: `minimal`, `retry`, `trim` on every example. Incident manager also ships `cache` and `circuit_breaker`. See [HARNESSES.md](docs/HARNESSES.md).
+Harness presets: `minimal`, `retry`, `trim` on every example. Both examples also ship `cache` and `circuit_breaker`. See [HARNESSES.md](docs/HARNESSES.md).
 
 ## Quick start
 

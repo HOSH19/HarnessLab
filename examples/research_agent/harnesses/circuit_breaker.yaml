@@ -1,0 +1,13 @@
+name: circuit_breaker
+execution:
+  max_turns: 8
+  stop_on_tool_error: false
+tooling:
+  retry_count: 0
+  tool_timeout_s: 30
+  error_format: minimal
+  circuit_breaker_threshold: 2
+context:
+  history_limit: null
+observability:
+  langsmith_project: research-agent

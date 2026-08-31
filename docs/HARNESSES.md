@@ -43,10 +43,10 @@ Harness files live in `examples/<agent>/harnesses/`.
 | `minimal` | none | Baseline — no retries, no trimming |
 | `retry` | tool retries (×2) | Flaky tool recovery (`R-001`, `I-101`) |
 | `trim` | `history_limit` | Long-context / multi-turn tasks (`I-104`) |
-| `cache` | `cache_reads: true` | Idempotent read tools — lower cost, fewer re-fetches |
+| `cache` | `cache_reads: true` | Idempotent read tools, lower cost on re-fetches |
 | `circuit_breaker` | `circuit_breaker_threshold: 2` | Stop calling a tool after repeated failures |
 
-Research agent uses `max_turns: 8`; incident manager uses `max_turns: 12` — tuned per workflow complexity, not a new harness type.
+Research agent uses `max_turns: 8`; incident manager uses `max_turns: 12`.
 
 ```bash
 python -m harnesslab compare examples/research_agent --local -o report.html
