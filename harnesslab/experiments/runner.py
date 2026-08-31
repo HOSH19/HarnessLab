@@ -19,6 +19,7 @@ from harnesslab.eval.outcome import task_pass
 from harnesslab.eval.trajectory import graph_trajectory
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
+from harnesslab.experiments.local_runner import run_local_experiment
 from harnesslab.experiments.target import make_target
 from harnesslab.experiments.tasks import load_tasks
 
@@ -130,6 +131,15 @@ def run_experiment(
 
         if not upload_results:
             disable_langsmith_tracing()
+            if not isinstance(data, list):
+                raise TypeError("Local experiments require in-memory Example data.")
+            return run_local_experiment(
+                target,
+                data=data,
+                evaluators=EVALUATORS,
+                experiment_prefix=prefix,
+                metadata=metadata,
+            )
 
         return evaluate(
             target,

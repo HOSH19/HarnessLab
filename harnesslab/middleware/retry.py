@@ -5,6 +5,7 @@ Does not modify tool definitions or agent prompts.
 """
 
 from collections.abc import Callable
+from typing import Optional
 
 from langchain_core.runnables import RunnableConfig
 
@@ -27,7 +28,7 @@ def make_retry_wrapper(
     """
     retries = config.retry_count
 
-    def retrying_tool_node(state: AgentState, config: RunnableConfig | None = None) -> dict:
+    def retrying_tool_node(state: AgentState, config: Optional[RunnableConfig] = None) -> dict:
         """Execute tools with up to retry_count attempts on error."""
         last_error: Exception | None = None
         attempts = retries + 1

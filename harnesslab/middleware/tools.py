@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Optional
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.prebuilt import ToolNode
@@ -20,11 +20,11 @@ def prepare_tools(tools: list[Any], harness: HarnessConfig) -> list[Any]:
     return [wrap_tool(tool, harness) for tool in tools]
 
 
-def make_tools_node(tools: list[Any]) -> Callable[[AgentState, RunnableConfig | None], dict]:
+def make_tools_node(tools: list[Any]) -> Callable[[AgentState, Optional[RunnableConfig]], dict]:
     """Create a LangGraph-compatible tools node from a tool list."""
     tool_node = ToolNode(tools)
 
-    def call_tools(state: AgentState, config: RunnableConfig | None = None) -> dict:
+    def call_tools(state: AgentState, config: Optional[RunnableConfig] = None) -> dict:
         """Execute pending tool calls from the latest assistant message."""
         return tool_node.invoke(state, config)
 

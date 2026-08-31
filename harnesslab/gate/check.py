@@ -9,6 +9,7 @@ from harnesslab.gate.significance import bootstrap_mean_delta, collect_task_scor
 
 
 LOWER_IS_BETTER = frozenset({"run_cost_usd"})
+BLOCKING_EVALUATORS = frozenset({"task_pass", "error_recovery"})
 
 
 @dataclass

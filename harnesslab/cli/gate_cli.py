@@ -9,7 +9,7 @@ from harnesslab.cli.compare_runner import run_harness_compare
 from harnesslab.cli.helpers import DEFAULT_COMPARE_HARNESSES
 from harnesslab.config.env import LangSmithConfigError
 from harnesslab.gate.baseline import build_baseline, load_baseline, write_baseline
-from harnesslab.gate.check import check_regression
+from harnesslab.gate.check import BLOCKING_EVALUATORS, check_regression
 from harnesslab.report.results import SUMMARY_KEYS
 
 console = Console()
@@ -87,10 +87,29 @@ def register_gate_commands(app: typer.Typer) -> None:
 
 
 def _print_gate_details(details: list[dict]) -> None:
-    """Print bootstrap delta details for each arm and evaluator."""
-    for detail in details:
+    """Print bootstrap delta details for evaluators that moved or can block."""
+    shown = [detail for detail in details if _is_informative_gate_detail(detail)]
+    for detail in shown:
         console.print(
             f"[dim]{detail['arm']}/{detail['evaluator']}: "
             f"delta={detail['mean_delta']}, "
             f"ci=[{detail['ci_lower']}, {detail['ci_upper']}][/dim]"
         )
+
+    omitted = len(details) - len(shown)
+    if omitted:
+        console.print(
+            f"[dim]{omitted} unchanged non-blocking evaluators omitted "
+            f"(for example graph_trajectory, efficiency, failure_fingerprint)[/dim]"
+        )
+
+
+def _is_informative_gate_detail(detail: dict) -> bool:
+    """Return whether a gate row adds information beyond a no-change result."""
+    if detail["evaluator"] in BLOCKING_EVALUATORS:
+        return True
+    return not (
+        detail["mean_delta"] == 0.0
+        and detail["ci_lower"] == 0.0
+        and detail["ci_upper"] == 0.0
+    )
