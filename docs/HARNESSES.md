@@ -121,11 +121,9 @@ These only need a new file under `examples/<agent>/harnesses/`:
 | Harness idea | Mechanism | Use case |
 |---|---|---|
 | **timeout** | Per-tool deadline enforcement | Slow external APIs |
-| **cache** | Memoize idempotent tool calls | Repeated literature/runbook lookups |
 | **fallback_model** | Downgrade model after N failures | Cost vs reliability on flaky arms |
 | **checkpoint** | Persist/resume mid-task | Long incident investigations |
 | **parallel_tools** | Fan-out independent tool calls | Multi-source correlation |
-| **circuit_breaker** | Stop calling a tool after N consecutive failures | Cascading outage scenarios |
 | **rate_limit** | Cap tool calls per turn | Agents that over-search |
 
 ---
