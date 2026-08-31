@@ -27,6 +27,7 @@ def register_gate_commands(app: typer.Typer) -> None:
         tasks: int | None = typer.Option(None, "--tasks"),
         task: str | None = typer.Option(None, "--task"),
         max_regression: float = typer.Option(0.05, "--max-regression"),
+        verbose: bool = typer.Option(False, "--verbose", "-v", help="Print all evaluator deltas"),
     ) -> None:
         """Fail when harness scores regress vs a committed baseline."""
         try:
@@ -48,7 +49,7 @@ def register_gate_commands(app: typer.Typer) -> None:
             summary_keys=SUMMARY_KEYS,
             max_regression=max_regression,
         )
-        _print_gate_details(result.details)
+        _print_gate_details(result.details, verbose=verbose)
 
         if result.passed:
             console.print("[green]Gate passed[/green]")
@@ -86,9 +87,9 @@ def register_gate_commands(app: typer.Typer) -> None:
         console.print(f"[green]Baseline written to {path}[/green]")
 
 
-def _print_gate_details(details: list[dict]) -> None:
+def _print_gate_details(details: list[dict], *, verbose: bool = False) -> None:
     """Print bootstrap delta details for evaluators that moved or can block."""
-    shown = [detail for detail in details if _is_informative_gate_detail(detail)]
+    shown = details if verbose else [detail for detail in details if _is_informative_gate_detail(detail)]
     for detail in shown:
         console.print(
             f"[dim]{detail['arm']}/{detail['evaluator']}: "
@@ -96,7 +97,7 @@ def _print_gate_details(details: list[dict]) -> None:
             f"ci=[{detail['ci_lower']}, {detail['ci_upper']}][/dim]"
         )
 
-    omitted = len(details) - len(shown)
+    omitted = 0 if verbose else len(details) - len(shown)
     if omitted:
         console.print(
             f"[dim]{omitted} unchanged non-blocking evaluators omitted "
