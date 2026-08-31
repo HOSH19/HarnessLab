@@ -2,7 +2,7 @@
 
 import os
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Optional
 
 from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableConfig
@@ -17,7 +17,7 @@ def make_agent_nodes(
     *,
     system_prompt: str,
     tools: list[Any],
-) -> tuple[Callable[[AgentState], dict], Callable[[AgentState, RunnableConfig | None], dict]]:
+) -> tuple[Callable[[AgentState], dict], Callable[[AgentState, Optional[RunnableConfig]], dict]]:
     """Return call_model and call_tools nodes for a tool-using agent."""
 
     def call_model(state: AgentState) -> dict:
@@ -30,7 +30,7 @@ def make_agent_nodes(
 
     tool_node = ToolNode(tools)
 
-    def call_tools(state: AgentState, config: RunnableConfig | None = None) -> dict:
+    def call_tools(state: AgentState, config: Optional[RunnableConfig] = None) -> dict:
         """Execute tool calls from the latest assistant message."""
         return tool_node.invoke(state, config)
 

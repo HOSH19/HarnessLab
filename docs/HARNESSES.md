@@ -17,6 +17,8 @@ tooling:
   retry_count: 0
   tool_timeout_s: 30
   error_format: minimal
+  cache_reads: false
+  circuit_breaker_threshold: null
 context:
   history_limit: null
 observability:
@@ -26,7 +28,7 @@ observability:
 | Section | Controls |
 |---|---|
 | `execution` | `max_turns`, `stop_on_tool_error` |
-| `tooling` | `retry_count`, `tool_timeout_s`, `error_format` |
+| `tooling` | `retry_count`, `tool_timeout_s`, `error_format`, `cache_reads`, `circuit_breaker_threshold` |
 | `context` | `history_limit` — trim messages before each LLM call |
 | `observability` | `langsmith_project`, optional `trace_metadata` |
 
@@ -41,13 +43,21 @@ Harness files live in `examples/<agent>/harnesses/`.
 | `minimal` | none | Baseline — no retries, no trimming |
 | `retry` | tool retries (×2) | Flaky tool recovery (`R-001`, `I-101`) |
 | `trim` | `history_limit` | Long-context / multi-turn tasks (`I-104`) |
+| `cache` | `cache_reads: true` | Idempotent read tools, lower cost on re-fetches |
+| `circuit_breaker` | `circuit_breaker_threshold: 2` | Stop calling a tool after repeated failures |
 
-Research agent uses `max_turns: 8`; incident manager uses `max_turns: 12` — tuned per workflow complexity, not a new harness type.
+Research agent uses `max_turns: 8`; incident manager uses `max_turns: 12`.
 
 ```bash
 python -m harnesslab compare examples/research_agent --local -o report.html
-python -m harnesslab compare examples/incident_manager --harness minimal,retry,trim --local
+python -m harnesslab compare examples/incident_manager --harness minimal,retry,trim,cache --local
 ```
+
+---
+
+## Regression gate
+
+See [GATE.md](GATE.md) for `benchmark` and `gate` usage, smoke tests, and CI integration.
 
 ---
 
@@ -62,6 +72,8 @@ Each trace carries a harness tag plus five output fields — kept minimal for La
 | `classification` | Output | Primary correctness signal |
 | `details.final_reply` | Output | Required reply terms (nested so LangSmith table does not pick it) |
 | `details.graph_trajectory` | Output | Node path — explains behavioral differences |
+| `details.total_tokens` | Output | Token count for cost evaluators (nested so LangSmith table does not pick it) |
+| `details.model` | Output | Model name for cost pricing (nested so LangSmith table does not pick it) |
 | `error_count` | Output | Tool errors — stress-task retry differentiator |
 
 `thread_id` is set internally for trajectory extraction. `error` is included only on invoke failure.
@@ -99,11 +111,9 @@ These only need a new file under `examples/<agent>/harnesses/`:
 | Harness idea | Mechanism | Use case |
 |---|---|---|
 | **timeout** | Per-tool deadline enforcement | Slow external APIs |
-| **cache** | Memoize idempotent tool calls | Repeated literature/runbook lookups |
 | **fallback_model** | Downgrade model after N failures | Cost vs reliability on flaky arms |
 | **checkpoint** | Persist/resume mid-task | Long incident investigations |
 | **parallel_tools** | Fan-out independent tool calls | Multi-source correlation |
-| **circuit_breaker** | Stop calling a tool after N consecutive failures | Cascading outage scenarios |
 | **rate_limit** | Cap tool calls per turn | Agents that over-search |
 
 ---

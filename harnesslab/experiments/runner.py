@@ -11,6 +11,7 @@ from langsmith import evaluate
 from harnesslab.config.env import disable_langsmith_tracing
 from harnesslab.config.model_catalog import DEFAULT_MODEL, model_short_name
 from harnesslab.config.models import HarnessConfig
+from harnesslab.eval.cost_evaluators import cost_efficiency, run_cost_usd
 from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.error_recovery import error_recovery
 from harnesslab.eval.fingerprint import failure_fingerprint
@@ -18,6 +19,7 @@ from harnesslab.eval.outcome import task_pass
 from harnesslab.eval.trajectory import graph_trajectory
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
+from harnesslab.experiments.local_runner import run_local_experiment
 from harnesslab.experiments.target import make_target
 from harnesslab.experiments.tasks import load_tasks
 
@@ -29,6 +31,8 @@ _BASE_EVALUATORS = [
     error_recovery,
     efficiency,
     failure_fingerprint,
+    run_cost_usd,
+    cost_efficiency,
 ]
 
 
@@ -127,6 +131,15 @@ def run_experiment(
 
         if not upload_results:
             disable_langsmith_tracing()
+            if not isinstance(data, list):
+                raise TypeError("Local experiments require in-memory Example data.")
+            return run_local_experiment(
+                target,
+                data=data,
+                evaluators=EVALUATORS,
+                experiment_prefix=prefix,
+                metadata=metadata,
+            )
 
         return evaluate(
             target,

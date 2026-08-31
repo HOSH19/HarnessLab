@@ -25,8 +25,13 @@ def test_run_output_field_reads_nested_reply_and_trajectory() -> None:
         "details": {
             "final_reply": "Pool exhaustion on payments-api.",
             "graph_trajectory": {"steps": [["agent"], ["tools"]], "results": [], "inputs": []},
+            "total_tokens": 100,
+            "model": "gpt-4.1-nano",
         },
     }
     assert run_output_field(outputs, "final_reply") == "Pool exhaustion on payments-api."
     assert run_output_field(outputs, "graph_trajectory")["steps"] == [["agent"], ["tools"]]
+    assert run_output_field(outputs, "total_tokens") == 100
+    assert run_output_field(outputs, "model") == "gpt-4.1-nano"
     assert "final_reply" not in outputs
+    assert "model" not in outputs

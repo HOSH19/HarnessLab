@@ -8,6 +8,8 @@ SUMMARY_KEYS = [
     "error_recovery",
     "efficiency",
     "failure_fingerprint",
+    "run_cost_usd",
+    "cost_efficiency",
 ]
 
 DETAIL_KEYS = SUMMARY_KEYS

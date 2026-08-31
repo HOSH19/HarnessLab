@@ -1,13 +1,10 @@
-"""Generate HTML comparison reports from experiment results.
-
-Formats harness A/B outcomes as tables. Does not fetch from LangSmith
-API in v1; accepts in-memory experiment result lists.
-"""
+"""HTML comparison reports for harness A/B experiment results."""
 
 import re
 from pathlib import Path
 from typing import Any
 
+from harnesslab.report.pareto import pareto_frontier, pareto_points, render_pareto_svg
 from harnesslab.report.results import (
     DETAIL_KEYS,
     SUMMARY_KEYS,
@@ -43,57 +40,46 @@ def _detail_metric_cells(row: Any) -> str:
     return "".join(cells)
 
 
+def _summary_table(comparisons: dict[str, list], dimension: str) -> tuple[list[str], str]:
+    """Build summary table headers and HTML body rows."""
+    headers = [dimension, *SUMMARY_KEYS]
+    rows = []
+    for arm_name, results in comparisons.items():
+        cells = "".join(f"<td>{avg_score(results, key):.2f}</td>" for key in SUMMARY_KEYS)
+        rows.append(f"<tr><td>{arm_name}</td>{cells}</tr>")
+    return headers, "\n".join(rows)
+
+
+def _detail_table(comparisons: dict[str, list], dimension: str) -> tuple[list[str], str]:
+    """Build per-task detail table headers and HTML body rows."""
+    headers = [dimension, "Task", *DETAIL_KEYS, "latency_ms", "tokens", "steps"]
+    rows = []
+    for arm_name, results in comparisons.items():
+        for row in results:
+            rows.append(
+                f"<tr><td>{arm_name}</td><td>{task_label(row)}</td>{_detail_metric_cells(row)}</tr>"
+            )
+    return headers, "\n".join(rows)
+
+
 def render_comparison_html(
     comparisons: dict[str, list[dict]],
     *,
     dimension: str = "Harness",
 ) -> str:
-    """Render comparison results as an HTML table.
-
-    Args:
-        comparisons: Mapping of arm name (harness or model) to experiment result rows.
-        dimension: Column label for the comparison arm ("Harness" or "Model").
-
-    Returns:
-        HTML string with per-arm score summary and per-task detail.
-    """
-    summary_headers = [dimension, *SUMMARY_KEYS]
-    summary_rows = []
-    for arm_name, results in comparisons.items():
-        summary_rows.append(
-            "<tr>"
-            f"<td>{arm_name}</td>"
-            + "".join(f"<td>{avg_score(results, key):.2f}</td>" for key in SUMMARY_KEYS)
-            + "</tr>"
-        )
-
-    detail_headers = [
-        dimension,
-        "Task",
-        *DETAIL_KEYS,
-        "latency_ms",
-        "tokens",
-        "steps",
-    ]
-    detail_rows = []
-    for arm_name, results in comparisons.items():
-        for row in results:
-            detail_rows.append(
-                "<tr>"
-                f"<td>{arm_name}</td>"
-                f"<td>{task_label(row)}</td>"
-                f"{_detail_metric_cells(row)}"
-                "</tr>"
-            )
-
+    """Render comparison results as HTML tables plus a Pareto chart."""
+    summary_headers, summary_body = _summary_table(comparisons, dimension)
+    detail_headers, detail_body = _detail_table(comparisons, dimension)
+    points = pareto_points(comparisons)
+    pareto_svg = render_pareto_svg(points, pareto_frontier(points))
     title = f"HarnessLab {dimension} Comparison"
-    summary_body = "\n".join(summary_rows)
-    detail_body = "\n".join(detail_rows)
+
     return f"""<!DOCTYPE html>
 <html>
 <head><title>{title}</title></head>
 <body>
   <h1>{title}</h1>
+  {pareto_svg}
   <h2>Summary</h2>
   <table border="1" cellpadding="8">
     <tr>{''.join(f'<th>{header}</th>' for header in summary_headers)}</tr>
@@ -114,16 +100,6 @@ def write_report(
     *,
     dimension: str = "Harness",
 ) -> Path:
-    """Write comparison HTML report to disk.
-
-    Args:
-        comparisons: Mapping of arm name to experiment result rows.
-        output_path: Destination file path.
-        dimension: Column label for the comparison arm.
-
-    Returns:
-        Resolved output path.
-    """
-    html = render_comparison_html(comparisons, dimension=dimension)
-    output_path.write_text(html)
+    """Write comparison HTML report to disk and return the resolved path."""
+    output_path.write_text(render_comparison_html(comparisons, dimension=dimension))
     return output_path.resolve()
