@@ -57,19 +57,7 @@ python -m harnesslab compare examples/incident_manager --harness minimal,retry,t
 
 ## Regression gate
 
-Export a baseline from a golden compare run, then fail CI when scores regress:
-
-```bash
-# Export baseline (after a good run)
-python -m harnesslab benchmark examples/incident_manager \
-  --harness minimal,retry --tasks 6 --local \
-  -o benchmarks/incident-manager.json
-
-# Check PR branch against baseline
-python -m harnesslab gate examples/incident_manager \
-  --baseline benchmarks/incident-manager.json \
-  --harness minimal,retry --tasks 6 --local
-```
+See [GATE.md](GATE.md) for `benchmark` and `gate` usage, smoke tests, and CI integration.
 
 ---
 

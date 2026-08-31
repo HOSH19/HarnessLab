@@ -23,7 +23,7 @@ def register_gate_commands(app: typer.Typer) -> None:
         example: Path = typer.Argument(..., help="Path to example project"),
         baseline: Path = typer.Option(..., "--baseline", help="Benchmark baseline JSON path"),
         harness: str = typer.Option(DEFAULT_COMPARE_HARNESSES, "--harness"),
-        local: bool = typer.Option(True, "--local", help="Skip LangSmith upload"),
+        local: bool = typer.Option(True, "--local/--no-local", help="Skip LangSmith upload (default: local)"),
         tasks: int | None = typer.Option(None, "--tasks"),
         task: str | None = typer.Option(None, "--task"),
         max_regression: float = typer.Option(0.05, "--max-regression"),
@@ -63,7 +63,7 @@ def register_gate_commands(app: typer.Typer) -> None:
         example: Path = typer.Argument(..., help="Path to example project"),
         output: Path = typer.Option(..., "--output", "-o"),
         harness: str = typer.Option(DEFAULT_COMPARE_HARNESSES, "--harness"),
-        local: bool = typer.Option(True, "--local"),
+        local: bool = typer.Option(True, "--local/--no-local"),
         tasks: int | None = typer.Option(None, "--tasks"),
         task: str | None = typer.Option(None, "--task"),
     ) -> None:
