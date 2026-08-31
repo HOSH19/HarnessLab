@@ -30,45 +30,76 @@ def check_regression(
 ) -> GateResult:
     """Compare current compare results against a stored baseline."""
     blocking = blocking_evaluators or ["task_pass", "error_recovery"]
-    baseline_arms = baseline.get("arms", {})
     failures: list[str] = []
     details: list[dict[str, Any]] = []
 
     for arm_name, rows in comparisons.items():
-        if arm_name not in baseline_arms:
+        arm_base = baseline.get("arms", {}).get(arm_name)
+        if arm_base is None:
             failures.append(f"Missing baseline for arm: {arm_name}")
             continue
-
-        arm_base = baseline_arms[arm_name]
-        for key in summary_keys:
-            if key not in blocking and key not in arm_base:
-                continue
-
-            base_avg = float(arm_base.get(key, 0.0))
-            current_scores = collect_task_scores(rows, key)
-            baseline_scores = [
-                float(task_scores.get(key, base_avg))
-                for task_scores in arm_base.get("per_task", {}).values()
-            ] or [base_avg]
-
-            mean_delta, lower, upper = bootstrap_mean_delta(baseline_scores, current_scores)
-            if key in LOWER_IS_BETTER:
-                mean_delta = -mean_delta
-                lower, upper = -upper, -lower
-
-            detail = {
-                "arm": arm_name,
-                "evaluator": key,
-                "baseline": base_avg,
-                "mean_delta": mean_delta,
-                "ci_lower": lower,
-                "ci_upper": upper,
-            }
-            details.append(detail)
-
-            if key in blocking and upper < -max_regression:
-                failures.append(
-                    f"{arm_name}/{key} regressed: delta={mean_delta:.4f}, ci_upper={upper:.4f}"
-                )
+        arm_failures, arm_details = _evaluate_arm(
+            arm_name,
+            rows,
+            arm_base,
+            summary_keys=summary_keys,
+            blocking=blocking,
+            max_regression=max_regression,
+        )
+        failures.extend(arm_failures)
+        details.extend(arm_details)
 
     return GateResult(passed=not failures, failures=failures, details=details)
+
+
+def _evaluate_arm(
+    arm_name: str,
+    rows: list,
+    arm_base: dict[str, Any],
+    *,
+    summary_keys: list[str],
+    blocking: list[str],
+    max_regression: float,
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """Evaluate one harness arm against its baseline entry."""
+    failures: list[str] = []
+    details: list[dict[str, Any]] = []
+
+    for key in summary_keys:
+        if key not in blocking and key not in arm_base:
+            continue
+
+        detail = _bootstrap_detail(arm_name, key, rows, arm_base)
+        details.append(detail)
+
+        if key in blocking and detail["ci_upper"] < -max_regression:
+            failures.append(
+                f"{arm_name}/{key} regressed: delta={detail['mean_delta']:.4f}, "
+                f"ci_upper={detail['ci_upper']:.4f}"
+            )
+
+    return failures, details
+
+
+def _bootstrap_detail(arm_name: str, key: str, rows: list, arm_base: dict[str, Any]) -> dict[str, Any]:
+    """Compute bootstrap delta detail for one evaluator on one arm."""
+    base_avg = float(arm_base.get(key, 0.0))
+    current_scores = collect_task_scores(rows, key)
+    baseline_scores = [
+        float(task_scores.get(key, base_avg))
+        for task_scores in arm_base.get("per_task", {}).values()
+    ] or [base_avg]
+
+    mean_delta, lower, upper = bootstrap_mean_delta(baseline_scores, current_scores)
+    if key in LOWER_IS_BETTER:
+        mean_delta = -mean_delta
+        lower, upper = -upper, -lower
+
+    return {
+        "arm": arm_name,
+        "evaluator": key,
+        "baseline": base_avg,
+        "mean_delta": mean_delta,
+        "ci_lower": lower,
+        "ci_upper": upper,
+    }
