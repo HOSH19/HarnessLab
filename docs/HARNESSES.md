@@ -72,6 +72,8 @@ Each trace carries a harness tag plus five output fields — kept minimal for La
 | `classification` | Output | Primary correctness signal |
 | `details.final_reply` | Output | Required reply terms (nested so LangSmith table does not pick it) |
 | `details.graph_trajectory` | Output | Node path — explains behavioral differences |
+| `details.total_tokens` | Output | Token count for cost evaluators (nested so LangSmith table does not pick it) |
+| `details.model` | Output | Model name for cost pricing (nested so LangSmith table does not pick it) |
 | `error_count` | Output | Tool errors — stress-task retry differentiator |
 
 `thread_id` is set internally for trajectory extraction. `error` is included only on invoke failure.

@@ -33,10 +33,23 @@ def run_total_tokens(run: Any) -> int:
 
     outputs = getattr(run, "outputs", None) or {}
     if isinstance(outputs, dict):
-        output_tokens = outputs.get("total_tokens")
+        output_tokens = run_output_field(outputs, "total_tokens")
         if output_tokens is not None:
             return int(output_tokens)
 
+        usage = run_output_field(outputs, "usage_metadata")
+        if isinstance(usage, dict):
+            if usage and all(isinstance(value, dict) for value in usage.values()):
+                total, _ = aggregate_usage_metadata(usage)
+                if total > 0:
+                    return total
+            token_total = usage_dict_total_tokens(usage)
+            if token_total > 0:
+                return token_total
+
+        # Backward compat: flat keys from older runs
+        if outputs.get("total_tokens") is not None:
+            return int(outputs["total_tokens"])
         usage = outputs.get("usage_metadata")
         if isinstance(usage, dict):
             if usage and all(isinstance(value, dict) for value in usage.values()):

@@ -69,15 +69,15 @@ def extract_outputs(
         "output": classification or "",
         "classification": classification or "",
         "error_count": state.get("error_count", 0),
-        "total_tokens": total_tokens,
-        "model": model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL),
         "details": {
             "final_reply": final_reply,
             "graph_trajectory": trajectory["outputs"],
+            "total_tokens": total_tokens,
+            "model": model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL),
         },
     }
     if usage_metadata:
-        outputs["usage_metadata"] = usage_metadata
+        outputs["details"]["usage_metadata"] = usage_metadata
     return outputs
 
 
@@ -87,11 +87,11 @@ def empty_outputs(*, error: str | None = None) -> dict:
         "output": "",
         "classification": "",
         "error_count": 1 if error else 0,
-        "total_tokens": 0,
-        "model": os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL),
         "details": {
             "final_reply": "",
             "graph_trajectory": {"steps": [], "results": [], "inputs": []},
+            "total_tokens": 0,
+            "model": os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL),
         },
     }
     if error:

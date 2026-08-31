@@ -171,6 +171,7 @@ python3 -m harnesslab compare examples/research_agent \
 | Gate `cost_efficiency` delta in six figures | Baseline created before cost fix (`run_cost_usd: 0`) | Re-run `benchmark` after pulling cost-tracking fix |
 | Gate `task_pass` delta ~0.14 | `--tasks 6` baseline vs `--task I-101` gate | Match `--tasks` / `--task` flags between benchmark and gate |
 | Gate many `0.0` rows | Stable evaluators on identical tasks | Expected; use `--verbose` only when you need all rows |
+| LangSmith Outputs shows model name | Top-level `model` field in run outputs | Fixed: nest `model`/`total_tokens` under `details` (same as `final_reply`) |
 | `run_cost_usd: delta=-0.0` with old baseline | Both sides had zero cost | Re-baseline after cost fix |
 
 ---

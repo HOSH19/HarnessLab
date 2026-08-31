@@ -26,18 +26,20 @@ def test_run_total_tokens_reads_extra_usage() -> None:
 
 
 def test_run_total_tokens_reads_outputs() -> None:
-    """Local evaluate runs store token counts on run.outputs."""
-    run = _FakeRun(outputs={"total_tokens": 456, "model": "gpt-4.1-nano"})
+    """Local evaluate runs store token counts on run.outputs.details."""
+    run = _FakeRun(outputs={"details": {"total_tokens": 456, "model": "gpt-4.1-nano"}})
     assert run_total_tokens(run) == 456
 
 
-def test_run_total_tokens_reads_per_model_usage_in_outputs() -> None:
-    """Callback-style usage metadata on outputs is aggregated."""
+def test_run_total_tokens_reads_per_model_usage_in_details() -> None:
+    """Callback-style usage metadata nested under details is aggregated."""
     run = _FakeRun(
         outputs={
-            "usage_metadata": {
-                "gpt-4.1-nano": {"total_tokens": 80},
-                "gpt-4.1-mini": {"total_tokens": 20},
+            "details": {
+                "usage_metadata": {
+                    "gpt-4.1-nano": {"total_tokens": 80},
+                    "gpt-4.1-mini": {"total_tokens": 20},
+                }
             }
         }
     )

@@ -21,9 +21,12 @@ def test_extract_outputs_includes_token_fields() -> None:
         model="gpt-4.1-nano",
         usage_metadata={"gpt-4.1-nano": {"total_tokens": 250}},
     )
-    assert outputs["total_tokens"] == 250
-    assert outputs["model"] == "gpt-4.1-nano"
-    assert outputs["usage_metadata"]["gpt-4.1-nano"]["total_tokens"] == 250
+    assert "model" not in outputs
+    assert "total_tokens" not in outputs
+    assert "usage_metadata" not in outputs
+    assert outputs["details"]["model"] == "gpt-4.1-nano"
+    assert outputs["details"]["total_tokens"] == 250
+    assert outputs["details"]["usage_metadata"]["gpt-4.1-nano"]["total_tokens"] == 250
 
 
 def test_make_target_attaches_usage_from_callback(monkeypatch) -> None:
@@ -48,7 +51,8 @@ def test_make_target_attaches_usage_from_callback(monkeypatch) -> None:
     target = make_target(lambda _: graph, harness)
     outputs = target({"prompt": "hello", "ticket_id": "T-1"})
 
-    assert outputs["total_tokens"] == 321
-    assert outputs["model"] == "gpt-4.1-nano"
+    assert outputs["details"]["total_tokens"] == 321
+    assert outputs["details"]["model"] == "gpt-4.1-nano"
+    assert "model" not in outputs
     run_config = graph.invoke.call_args.kwargs["config"]
     assert run_config["callbacks"]

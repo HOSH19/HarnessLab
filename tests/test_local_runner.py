@@ -25,10 +25,9 @@ def test_run_local_experiment_returns_scored_rows() -> None:
     """Local runner produces rows with evaluator scores without LangSmith evaluate."""
     target = MagicMock(
         return_value={
+            "output": "infrastructure",
             "classification": "infrastructure",
             "error_count": 0,
-            "total_tokens": 120,
-            "model": "gpt-4.1-nano",
             "details": {
                 "final_reply": "payments-api db pool exhaustion",
                 "graph_trajectory": {
@@ -36,6 +35,8 @@ def test_run_local_experiment_returns_scored_rows() -> None:
                     "results": [],
                     "inputs": [],
                 },
+                "total_tokens": 120,
+                "model": "gpt-4.1-nano",
             },
         }
     )
@@ -53,4 +54,4 @@ def test_run_local_experiment_returns_scored_rows() -> None:
     scores = {item.key: item.score for item in row["evaluation_results"]["results"]}
     assert scores["task_pass"] > 0
     assert scores["run_cost_usd"] > 0
-    assert row["run"].outputs["total_tokens"] == 120
+    assert row["run"].outputs["details"]["total_tokens"] == 120

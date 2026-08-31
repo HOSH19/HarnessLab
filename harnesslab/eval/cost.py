@@ -6,14 +6,17 @@ import os
 from typing import Any
 
 from harnesslab.config.model_catalog import DEFAULT_MODEL, model_cost_per_1k_tokens
+from harnesslab.eval.outputs import run_output_field
 from harnesslab.eval.run_metrics import run_total_tokens
 
 
 def resolve_run_model(run: Any) -> str:
     """Read the model name from run metadata when available."""
     outputs = getattr(run, "outputs", None) or {}
-    if isinstance(outputs, dict) and outputs.get("model"):
-        return str(outputs["model"])
+    if isinstance(outputs, dict):
+        model = run_output_field(outputs, "model")
+        if model:
+            return str(model)
 
     extra = getattr(run, "extra", None) or {}
     if isinstance(extra, dict):

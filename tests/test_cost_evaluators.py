@@ -28,7 +28,9 @@ def test_run_cost_usd_uses_token_pricing() -> None:
 def test_run_cost_usd_reads_tokens_from_outputs() -> None:
     """Local runs without run.total_tokens still get priced from outputs."""
     run = _FakeRun(
-        outputs={"total_tokens": 3000, "model": "gpt-4.1-nano"},
+        outputs={
+            "details": {"total_tokens": 3000, "model": "gpt-4.1-nano"},
+        },
         total_tokens=None,
     )
     result = run_cost_usd(run, _FakeExample({}))
