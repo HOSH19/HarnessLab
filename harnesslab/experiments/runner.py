@@ -11,6 +11,7 @@ from langsmith import evaluate
 from harnesslab.config.env import disable_langsmith_tracing
 from harnesslab.config.model_catalog import DEFAULT_MODEL, model_short_name
 from harnesslab.config.models import HarnessConfig
+from harnesslab.eval.cost_evaluators import cost_efficiency, run_cost_usd
 from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.error_recovery import error_recovery
 from harnesslab.eval.fingerprint import failure_fingerprint
@@ -29,6 +30,8 @@ _BASE_EVALUATORS = [
     error_recovery,
     efficiency,
     failure_fingerprint,
+    run_cost_usd,
+    cost_efficiency,
 ]
 
 

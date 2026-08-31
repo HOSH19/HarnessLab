@@ -22,6 +22,8 @@ class ToolingConfig(BaseModel):
     retry_count: int = Field(default=0, ge=0, le=5)
     tool_timeout_s: float = Field(default=30.0, ge=1.0)
     error_format: str = Field(default="minimal", pattern="^(minimal|verbose)$")
+    cache_reads: bool = False
+    circuit_breaker_threshold: int | None = Field(default=None, ge=1, le=10)
 
 
 class ContextConfig(BaseModel):

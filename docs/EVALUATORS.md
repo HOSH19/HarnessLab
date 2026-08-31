@@ -1,12 +1,12 @@
 # HarnessLab Evaluators
 
-HarnessLab scores every agent run on **five evaluators**. Together they answer: *did harness X beat harness Y on task Z, and why?*
+HarnessLab scores every agent run on **seven evaluators**. Together they answer: *did harness X beat harness Y on task Z, and why?*
 
 These are **feedback scores** uploaded to LangSmith (or stored in local JSON). They are separate from the [five logged output fields](HARNESSES.md#logged-fields-per-run) on each run.
 
 ---
 
-## The five evaluators
+## The seven evaluators
 
 | # | Evaluator | Score range | What it measures |
 |---|-----------|-------------|------------------|
@@ -15,6 +15,8 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 | 3 | **`error_recovery`** | 0.0–1.0 | Did the agent stay within the **acceptable tool-error budget**? |
 | 4 | **`efficiency`** | 0.0–1.0 | Was the run **fast and lean** enough? |
 | 5 | **`failure_fingerprint`** | 0.0–1.0 | What **failure category** best describes the run? |
+| 6 | **`run_cost_usd`** | USD | Estimated **dollar cost** per run (lower is better) |
+| 7 | **`cost_efficiency`** | ratio | **`task_pass` per USD** — value for money (higher is better) |
 
 ---
 
@@ -109,3 +111,31 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 **Why keep it:** Speeds up debugging across many tasks. A column of `TOOL_ERROR` vs `WRONG_ANSWER` tells you whether to tune retries vs prompts.
 
 **Example comment:** `WRONG_ANSWER`
+
+---
+
+## 6. `run_cost_usd` — estimated run cost
+
+**Question:** How much did this run cost in USD?
+
+**Reads from run:** Token metadata, model name from run metadata / `HARNESSLAB_MODEL`
+
+**Compares to dataset:** (none — priced from [`model_catalog.py`](../harnesslab/config/model_catalog.py))
+
+**Scoring:** `tokens / 1000 × model_rate` — published as the score (lower is better)
+
+**Why keep it:** Compare harness arms on cost in LangSmith Experiments alongside `task_pass`.
+
+**Example comment:** `cost_usd=0.002300, tokens=890`
+
+---
+
+## 7. `cost_efficiency` — value for money
+
+**Question:** How much task quality did we get per dollar?
+
+**Reads from run:** Same cost inputs as `run_cost_usd`, plus classification/reply for inline `task_pass`
+
+**Scoring:** `task_pass_score / max(cost_usd, 1e-6)` — higher is better
+
+**Example comment:** `task_pass=1.00, cost_usd=0.002300, ratio=434.78`

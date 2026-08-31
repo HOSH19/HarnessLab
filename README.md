@@ -52,7 +52,9 @@ Use `--local` while iterating; drop it when you want traces and experiment histo
 | Command | Purpose |
 |---|---|
 | `run` | One harness × N tasks |
-| `compare` | Harness or model A/B → `report.html` |
+| `compare` | Harness or model A/B → `report.html` (includes Pareto cost chart) |
+| `gate` | Fail when scores regress vs a baseline JSON |
+| `benchmark` | Export compare results as a regression baseline |
 | `dataset upload` | Sync tasks to a LangSmith dataset |
 
 ```bash

@@ -13,6 +13,7 @@ from harnesslab.config.models import HarnessConfig
 from harnesslab.flaky import init_flaky_tools
 from harnesslab.graph.extract import extract_fields_from_messages
 from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
+from harnesslab.middleware.runtime import clear_run_context, init_run_context
 
 
 def build_initial_messages(prompt: str, conversation_history: list[dict] | None) -> list:
@@ -95,6 +96,7 @@ def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessC
         if flaky_tools:
             config["configurable"]["flaky_tools"] = flaky_tools
         init_flaky_tools(flaky_tools)
+        init_run_context()
         try:
             state = graph.invoke(
                 {
@@ -109,5 +111,7 @@ def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessC
             return extract_outputs(state, graph, config)
         except Exception as exc:  # noqa: BLE001 — always return outputs for evaluators
             return empty_outputs(error=str(exc))
+        finally:
+            clear_run_context()
 
     return target

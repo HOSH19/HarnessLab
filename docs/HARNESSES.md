@@ -17,6 +17,8 @@ tooling:
   retry_count: 0
   tool_timeout_s: 30
   error_format: minimal
+  cache_reads: false
+  circuit_breaker_threshold: null
 context:
   history_limit: null
 observability:
@@ -26,7 +28,7 @@ observability:
 | Section | Controls |
 |---|---|
 | `execution` | `max_turns`, `stop_on_tool_error` |
-| `tooling` | `retry_count`, `tool_timeout_s`, `error_format` |
+| `tooling` | `retry_count`, `tool_timeout_s`, `error_format`, `cache_reads`, `circuit_breaker_threshold` |
 | `context` | `history_limit` — trim messages before each LLM call |
 | `observability` | `langsmith_project`, optional `trace_metadata` |
 
@@ -41,12 +43,32 @@ Harness files live in `examples/<agent>/harnesses/`.
 | `minimal` | none | Baseline — no retries, no trimming |
 | `retry` | tool retries (×2) | Flaky tool recovery (`R-001`, `I-101`) |
 | `trim` | `history_limit` | Long-context / multi-turn tasks (`I-104`) |
+| `cache` | `cache_reads: true` | Idempotent read tools — lower cost, fewer re-fetches |
+| `circuit_breaker` | `circuit_breaker_threshold: 2` | Stop calling a tool after repeated failures |
 
 Research agent uses `max_turns: 8`; incident manager uses `max_turns: 12` — tuned per workflow complexity, not a new harness type.
 
 ```bash
 python -m harnesslab compare examples/research_agent --local -o report.html
-python -m harnesslab compare examples/incident_manager --harness minimal,retry,trim --local
+python -m harnesslab compare examples/incident_manager --harness minimal,retry,trim,cache --local
+```
+
+---
+
+## Regression gate
+
+Export a baseline from a golden compare run, then fail CI when scores regress:
+
+```bash
+# Export baseline (after a good run)
+python -m harnesslab benchmark examples/incident_manager \
+  --harness minimal,retry --tasks 6 --local \
+  -o benchmarks/incident-manager.json
+
+# Check PR branch against baseline
+python -m harnesslab gate examples/incident_manager \
+  --baseline benchmarks/incident-manager.json \
+  --harness minimal,retry --tasks 6 --local
 ```
 
 ---

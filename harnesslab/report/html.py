@@ -43,6 +43,55 @@ def _detail_metric_cells(row: Any) -> str:
     return "".join(cells)
 
 
+def _pareto_frontier(points: list[tuple[str, float, float]]) -> set[str]:
+    """Return arm names on the Pareto frontier (max task_pass, min cost)."""
+    frontier: set[str] = set()
+    for name, pass_score, cost in points:
+        dominated = False
+        for other_name, other_pass, other_cost in points:
+            if other_name == name:
+                continue
+            if other_pass >= pass_score and other_cost <= cost and (
+                other_pass > pass_score or other_cost < cost
+            ):
+                dominated = True
+                break
+        if not dominated:
+            frontier.add(name)
+    return frontier
+
+
+def _render_pareto_svg(points: list[tuple[str, float, float]], frontier: set[str]) -> str:
+    """Render a simple SVG scatter for task_pass vs run_cost_usd."""
+    if not points:
+        return ""
+
+    width, height, pad = 420, 260, 40
+    max_cost = max(cost for _, _, cost in points) or 1e-6
+    max_pass = max(pass_score for _, pass_score, _ in points) or 1.0
+
+    circles = []
+    for name, pass_score, cost in points:
+        x = pad + (cost / max_cost) * (width - 2 * pad)
+        y = height - pad - (pass_score / max_pass) * (height - 2 * pad)
+        color = "#2a9d8f" if name in frontier else "#457b9d"
+        circles.append(
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="7" fill="{color}" />'
+            f'<text x="{x + 10:.1f}" y="{y + 4:.1f}" font-size="12">{name}</text>'
+        )
+
+    return f"""
+  <h2>Cost vs accuracy (Pareto)</h2>
+  <p>Green dots are non-dominated arms (high task_pass, low run_cost_usd).</p>
+  <svg width="{width}" height="{height}" style="border:1px solid #ccc">
+    <line x1="{pad}" y1="{height - pad}" x2="{width - pad}" y2="{height - pad}" stroke="#333" />
+    <line x1="{pad}" y1="{pad}" x2="{pad}" y2="{height - pad}" stroke="#333" />
+    <text x="{width // 2}" y="{height - 8}" font-size="12" text-anchor="middle">run_cost_usd (avg)</text>
+    <text x="12" y="{height // 2}" font-size="12" transform="rotate(-90 12,{height // 2})">task_pass (avg)</text>
+    {''.join(circles)}
+  </svg>"""
+
+
 def render_comparison_html(
     comparisons: dict[str, list[dict]],
     *,
@@ -89,11 +138,20 @@ def render_comparison_html(
     title = f"HarnessLab {dimension} Comparison"
     summary_body = "\n".join(summary_rows)
     detail_body = "\n".join(detail_rows)
+
+    pareto_points = [
+        (arm_name, avg_score(results, "task_pass"), avg_score(results, "run_cost_usd"))
+        for arm_name, results in comparisons.items()
+    ]
+    frontier = _pareto_frontier(pareto_points)
+    pareto_svg = _render_pareto_svg(pareto_points, frontier)
+
     return f"""<!DOCTYPE html>
 <html>
 <head><title>{title}</title></head>
 <body>
   <h1>{title}</h1>
+  {pareto_svg}
   <h2>Summary</h2>
   <table border="1" cellpadding="8">
     <tr>{''.join(f'<th>{header}</th>' for header in summary_headers)}</tr>

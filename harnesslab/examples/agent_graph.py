@@ -9,18 +9,20 @@ from harnesslab.config.models import HarnessConfig
 from harnesslab.graph.builder import compile_harnessed_graph
 from harnesslab.graph.state import AgentState
 from harnesslab.middleware.retry import make_retry_wrapper
+from harnesslab.middleware.tools import make_tools_node, prepare_tools
 
 
 def compile_agent_graph(
     harness: HarnessConfig,
     *,
     call_model: Callable[[AgentState], dict],
-    call_tools: Callable[..., dict],
+    tools: list[Any],
 ) -> Any:
     """Compile an example agent graph with harness middleware applied."""
-    tools_node = call_tools
+    wrapped_tools = prepare_tools(tools, harness)
+    tools_node = make_tools_node(wrapped_tools)
     if harness.tooling.retry_count > 0:
-        tools_node = make_retry_wrapper(call_tools, harness.tooling)
+        tools_node = make_retry_wrapper(tools_node, harness.tooling)
 
     graph = StateGraph(AgentState)
     graph.add_node("agent", call_model)

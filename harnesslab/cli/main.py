@@ -23,7 +23,10 @@ from harnesslab.examples.loader import load_graph_factory
 from harnesslab.experiments.dataset import upload_dataset
 from harnesslab.experiments.runner import run_comparison, run_experiment
 from harnesslab.experiments.store import save_compare_run, save_experiment_run
+from harnesslab.gate.baseline import build_baseline, load_baseline, write_baseline
+from harnesslab.gate.check import check_regression
 from harnesslab.report.html import write_report
+from harnesslab.report.results import SUMMARY_KEYS
 
 console = Console()
 app = typer.Typer(
@@ -209,6 +212,117 @@ def compare_command(
     )
     console.print(f"[green]Report written to {report_path}[/green]")
     console.print(f"[green]Results saved to {run_path}[/green]")
+
+
+def _run_harness_compare(
+    example: Path,
+    *,
+    harness: str,
+    local: bool,
+    tasks: int | None,
+    task: str | None,
+    dataset: str | None,
+    model: str | None,
+) -> dict[str, list]:
+    """Run a harness-dimension compare and return result rows."""
+    bootstrap_env(local=local, example=example)
+    if not local:
+        validate_langsmith_upload_config()
+
+    harness_dir, tasks_dir = example_paths(example)
+    all_configs = load_harness_dir(harness_dir)
+    harness_names = [name.strip() for name in harness.split(",") if name.strip()]
+    model_names = [model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)]
+    for name in harness_names:
+        if name not in all_configs:
+            raise typer.BadParameter(f"Unknown harness: {name}")
+
+    return run_comparison(
+        load_graph_factory(example),
+        harness_dir,
+        tasks_dir,
+        all_configs,
+        compare_by="harness",
+        harness_names=harness_names,
+        model_names=model_names,
+        upload_results=not local,
+        task_limit=resolve_task_limit(tasks, task),
+        ticket_id=task,
+        dataset_name=resolve_dataset_name(example, dataset),
+    )
+
+
+@app.command("gate")
+def gate_command(
+    example: Path = typer.Argument(..., help="Path to example project"),
+    baseline: Path = typer.Option(..., "--baseline", help="Benchmark baseline JSON path"),
+    harness: str = typer.Option(DEFAULT_COMPARE_HARNESSES, "--harness", help="Harness names to check"),
+    local: bool = typer.Option(True, "--local", help="Skip LangSmith upload"),
+    tasks: int | None = typer.Option(None, "--tasks", help="Limit stress tasks"),
+    task: str | None = typer.Option(None, "--task", help="Single task id filter"),
+    max_regression: float = typer.Option(0.05, "--max-regression", help="Max allowed score drop"),
+) -> None:
+    """Fail when harness scores regress vs a committed baseline."""
+    try:
+        comparisons = _run_harness_compare(
+            example,
+            harness=harness,
+            local=local,
+            tasks=tasks,
+            task=task,
+            dataset=None,
+            model=None,
+        )
+    except LangSmithConfigError as exc:
+        raise typer.BadParameter(str(exc)) from exc
+
+    result = check_regression(
+        baseline=load_baseline(baseline),
+        comparisons=comparisons,
+        summary_keys=SUMMARY_KEYS,
+        max_regression=max_regression,
+    )
+    for detail in result.details:
+        console.print(
+            f"[dim]{detail['arm']}/{detail['evaluator']}: "
+            f"delta={detail['mean_delta']}, ci=[{detail['ci_lower']}, {detail['ci_upper']}][/dim]"
+        )
+
+    if result.passed:
+        console.print("[green]Gate passed[/green]")
+        return
+
+    for failure in result.failures:
+        console.print(f"[red]REGRESSION: {failure}[/red]")
+    raise typer.Exit(1)
+
+
+@app.command("benchmark")
+def benchmark_command(
+    example: Path = typer.Argument(..., help="Path to example project"),
+    output: Path = typer.Option(..., "--output", "-o", help="Baseline JSON output path"),
+    harness: str = typer.Option(DEFAULT_COMPARE_HARNESSES, "--harness", help="Harness names to benchmark"),
+    local: bool = typer.Option(True, "--local", help="Skip LangSmith upload"),
+    tasks: int | None = typer.Option(None, "--tasks", help="Limit stress tasks"),
+    task: str | None = typer.Option(None, "--task", help="Single task id filter"),
+) -> None:
+    """Export compare results as a regression-gate baseline JSON file."""
+    comparisons = _run_harness_compare(
+        example,
+        harness=harness,
+        local=local,
+        tasks=tasks,
+        task=task,
+        dataset=None,
+        model=None,
+    )
+    payload = build_baseline(
+        example=str(example.resolve()),
+        comparisons=comparisons,
+        summary_keys=SUMMARY_KEYS,
+    )
+    path = write_baseline(output, payload)
+    console.print(f"[green]Baseline written to {path}[/green]")
 
 
 dataset_app = typer.Typer(help="LangSmith dataset commands.", no_args_is_help=True)
