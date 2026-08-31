@@ -68,6 +68,6 @@ python -m harnesslab compare examples/incident_manager \
 python -m harnesslab compare examples/research_agent --by models --harness minimal --local
 ```
 
-Docs: [HARNESSES.md](docs/HARNESSES.md) · [EVALUATORS.md](docs/EVALUATORS.md) · [GATE.md](docs/GATE.md)
+Docs: [HARNESSES.md](docs/HARNESSES.md) · [EVALUATORS.md](docs/EVALUATORS.md) · [GATE.md](docs/GATE.md) · [2026-08-31 worklog](docs/2026-08-31-harness-extensions.md)
 
 MIT License

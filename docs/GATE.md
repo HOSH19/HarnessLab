@@ -93,5 +93,8 @@ You still need `OPENAI_API_KEY` and `LANGSMITH_API_KEY` in `.env`. The gate deci
 | `--task` | none | Single task id (e.g. `I-101`) |
 | `--max-regression` | `0.05` | Max allowed score drop for blocking evaluators |
 | `--local` / `--no-local` | `--local` | Skip or enable LangSmith upload |
+| `--verbose` / `-v` | off | Print all evaluator deltas (not just blocking + changed) |
 
 Blocking evaluators: `task_pass`, `error_recovery`. See [EVALUATORS.md](EVALUATORS.md).
+
+For session notes on this feature set, see [2026-08-31-harness-extensions.md](2026-08-31-harness-extensions.md).
