@@ -99,9 +99,27 @@ def empty_outputs(*, error: str | None = None) -> dict:
     return payload
 
 
-def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessConfig):
-    """Create a LangSmith-compatible target function for a harness variant."""
-    graph = graph_factory(harness)
+def _compile_graph(
+    graph_factory: Callable[..., Any],
+    harness: HarnessConfig,
+    graph_config: Any | None,
+) -> Any:
+    """Invoke a graph factory with optional GraphConfig (backward compatible)."""
+    if graph_config is not None:
+        return graph_factory(harness, graph_config)
+    try:
+        return graph_factory(harness, None)
+    except TypeError:
+        return graph_factory(harness)
+
+
+def make_target(
+    graph_factory: Callable[..., Any],
+    harness: HarnessConfig,
+    graph_config: Any | None = None,
+):
+    """Create a LangSmith-compatible target function for a harness / graph variant."""
+    graph = _compile_graph(graph_factory, harness, graph_config)
 
     def target(inputs: dict) -> dict:
         """Run the agent on a single task input."""
@@ -125,6 +143,10 @@ def make_target(graph_factory: Callable[[HarnessConfig], Any], harness: HarnessC
                         "classification": "",
                         "final_reply": "",
                         "error_count": 0,
+                        "plan": "",
+                        "worker_results": [],
+                        "verification": "",
+                        "stage": "",
                     },
                     config=run_config,
                 )

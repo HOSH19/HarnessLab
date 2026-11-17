@@ -9,6 +9,7 @@ from harnesslab.config.env import disable_langsmith_tracing, load_local_env
 from harnesslab.config.model_catalog import DEFAULT_MODEL
 
 DEFAULT_COMPARE_HARNESSES = "minimal,retry"
+DEFAULT_COMPARE_GRAPHS = "react,pipeline"
 DEFAULT_TASK_LIMIT = 1
 
 
@@ -31,6 +32,16 @@ def example_paths(example: Path) -> tuple[Path, Path]:
     if not harness_dir.exists() or not tasks_dir.exists():
         raise typer.BadParameter(f"Invalid example path: {example}")
     return harness_dir, tasks_dir
+
+
+def example_graphs_dir(example: Path) -> Path:
+    """Return the graphs/ directory for an example (may not exist)."""
+    return example / "graphs"
+
+
+def parse_name_list(raw: str) -> list[str]:
+    """Split a comma-separated name list into trimmed non-empty names."""
+    return [name.strip() for name in raw.split(",") if name.strip()]
 
 
 def resolve_task_limit(tasks: int | None, task: str | None) -> int | None:
@@ -60,6 +71,7 @@ def compare_metadata(
     ticket_id: str | None,
     model: str | None = None,
     dataset: str | None = None,
+    graphs: list[str] | None = None,
 ) -> dict:
     """Build metadata persisted alongside local experiment results."""
     return {
@@ -68,6 +80,7 @@ def compare_metadata(
         "arms": arms,
         "harness": harness,
         "models": models,
+        "graphs": graphs,
         "langsmith_mode": not local,
         "task_count": task_count,
         "tasks_limit": tasks,

@@ -49,6 +49,11 @@ def load_tasks(tasks_dir: Path, *, ticket_id: str | None = None) -> list[dict]:
                     "required_reply_terms": required_terms,
                     "expected_nodes": raw.get("expected_nodes", []),
                     **(
+                        {"required_stages": raw["required_stages"]}
+                        if "required_stages" in raw
+                        else {}
+                    ),
+                    **(
                         {"expected_max_steps": raw["expected_max_steps"]}
                         if "expected_max_steps" in raw
                         else {}

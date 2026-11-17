@@ -1,0 +1,8 @@
+name: pipeline_verify
+topology: pipeline
+require_verifier: true
+expected_nodes:
+  - gather
+  - analyze
+  - finalize
+  - verify

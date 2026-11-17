@@ -5,14 +5,18 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
+from typing import Literal
+
 from harnesslab.cli.compare_runner import run_harness_compare
-from harnesslab.cli.helpers import DEFAULT_COMPARE_HARNESSES
+from harnesslab.cli.helpers import DEFAULT_COMPARE_GRAPHS, DEFAULT_COMPARE_HARNESSES
 from harnesslab.config.env import LangSmithConfigError
 from harnesslab.gate.baseline import build_baseline, load_baseline, write_baseline
 from harnesslab.gate.check import BLOCKING_EVALUATORS, check_regression
 from harnesslab.report.results import SUMMARY_KEYS
 
 console = Console()
+
+GateBy = Literal["harness", "graphs"]
 
 
 def register_gate_commands(app: typer.Typer) -> None:
@@ -23,13 +27,15 @@ def register_gate_commands(app: typer.Typer) -> None:
         example: Path = typer.Argument(..., help="Path to example project"),
         baseline: Path = typer.Option(..., "--baseline", help="Benchmark baseline JSON path"),
         harness: str = typer.Option(DEFAULT_COMPARE_HARNESSES, "--harness"),
+        graph: str = typer.Option(DEFAULT_COMPARE_GRAPHS, "--graph"),
+        compare_by: GateBy = typer.Option("harness", "--by"),
         local: bool = typer.Option(True, "--local/--no-local", help="Skip LangSmith upload (default: local)"),
         tasks: int | None = typer.Option(None, "--tasks"),
         task: str | None = typer.Option(None, "--task"),
         max_regression: float = typer.Option(0.05, "--max-regression"),
         verbose: bool = typer.Option(False, "--verbose", "-v", help="Print all evaluator deltas"),
     ) -> None:
-        """Fail when harness scores regress vs a committed baseline."""
+        """Fail when harness or graph scores regress vs a committed baseline."""
         try:
             comparisons = run_harness_compare(
                 example,
@@ -39,6 +45,8 @@ def register_gate_commands(app: typer.Typer) -> None:
                 task=task,
                 dataset=None,
                 model=None,
+                compare_by=compare_by,
+                graph=graph,
             )
         except LangSmithConfigError as exc:
             raise typer.BadParameter(str(exc)) from exc
@@ -64,6 +72,8 @@ def register_gate_commands(app: typer.Typer) -> None:
         example: Path = typer.Argument(..., help="Path to example project"),
         output: Path = typer.Option(..., "--output", "-o"),
         harness: str = typer.Option(DEFAULT_COMPARE_HARNESSES, "--harness"),
+        graph: str = typer.Option(DEFAULT_COMPARE_GRAPHS, "--graph"),
+        compare_by: GateBy = typer.Option("harness", "--by"),
         local: bool = typer.Option(True, "--local/--no-local"),
         tasks: int | None = typer.Option(None, "--tasks"),
         task: str | None = typer.Option(None, "--task"),
@@ -77,6 +87,8 @@ def register_gate_commands(app: typer.Typer) -> None:
             task=task,
             dataset=None,
             model=None,
+            compare_by=compare_by,
+            graph=graph,
         )
         payload = build_baseline(
             example=str(example.resolve()),

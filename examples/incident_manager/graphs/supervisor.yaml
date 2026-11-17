@@ -1,0 +1,10 @@
+name: supervisor
+topology: supervisor
+max_workers: 3
+expected_nodes:
+  - intake
+  - metrics_worker
+  - runbooks_worker
+  - timeline_worker
+  - synthesize
+  - finalize

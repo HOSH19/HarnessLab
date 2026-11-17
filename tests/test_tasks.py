@@ -59,6 +59,9 @@ def test_incident_tasks_have_distinct_expected_outputs() -> None:
     assert tasks["I-103"]["outputs"]["classification"] == "deployment"
     assert tasks["I-104"]["outputs"]["classification"] == "security"
     assert tasks["I-106"]["outputs"]["classification"] == "data_loss"
+    assert tasks["I-107"]["outputs"]["required_stages"][0] == "intake"
+    assert tasks["I-108"]["outputs"]["required_stages"][-1] == "verify"
+    assert tasks["I-109"]["outputs"]["required_stages"][0] == "planner"
 
     for task in tasks.values():
         prompt = task["inputs"]["prompt"].lower()

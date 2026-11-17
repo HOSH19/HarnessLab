@@ -9,8 +9,10 @@ from typing import Any, Literal
 from langsmith import evaluate
 
 from harnesslab.config.env import disable_langsmith_tracing
+from harnesslab.config.graph_models import GraphConfig
 from harnesslab.config.model_catalog import DEFAULT_MODEL, model_short_name
 from harnesslab.config.models import HarnessConfig
+from harnesslab.eval.coordination import coordination_pass
 from harnesslab.eval.cost_evaluators import cost_efficiency, run_cost_usd
 from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.error_recovery import error_recovery
@@ -23,11 +25,12 @@ from harnesslab.experiments.local_runner import run_local_experiment
 from harnesslab.experiments.target import make_target
 from harnesslab.experiments.tasks import load_tasks
 
-CompareDimension = Literal["harness", "models"]
+CompareDimension = Literal["harness", "models", "graphs"]
 
 _BASE_EVALUATORS = [
     task_pass,
     graph_trajectory,
+    coordination_pass,
     error_recovery,
     efficiency,
     failure_fingerprint,
@@ -101,7 +104,7 @@ def _resolve_data(
 
 
 def run_experiment(
-    graph_factory: Callable[[HarnessConfig], Any],
+    graph_factory: Callable[..., Any],
     harness: HarnessConfig,
     tasks_dir: Path,
     *,
@@ -112,12 +115,15 @@ def run_experiment(
     dataset_name: str | None = None,
     model: str | None = None,
     experiment_prefix: str | None = None,
+    graph_config: GraphConfig | None = None,
 ) -> Any:
-    """Run a LangSmith evaluation experiment for one harness variant."""
-    prefix = experiment_prefix or harness.name
+    """Run a LangSmith evaluation experiment for one harness / graph variant."""
+    prefix = experiment_prefix or (graph_config.name if graph_config else harness.name)
     metadata: dict[str, Any] = {"harness": harness.model_dump()}
     if model:
         metadata["model"] = model
+    if graph_config is not None:
+        metadata["graph"] = graph_config.model_dump()
 
     with use_model(model):
         data = _resolve_data(
@@ -127,7 +133,7 @@ def run_experiment(
             task_limit=task_limit,
             ticket_id=ticket_id,
         )
-        target = make_target(graph_factory, harness)
+        target = make_target(graph_factory, harness, graph_config)
 
         if not upload_results:
             disable_langsmith_tracing()
@@ -153,7 +159,7 @@ def run_experiment(
 
 
 def run_comparison(
-    graph_factory: Callable[[HarnessConfig], Any],
+    graph_factory: Callable[..., Any],
     harness_dir: Path,
     tasks_dir: Path,
     all_configs: dict[str, HarnessConfig],
@@ -165,8 +171,10 @@ def run_comparison(
     task_limit: int | None = None,
     ticket_id: str | None = None,
     dataset_name: str | None = None,
+    graph_configs: dict[str, GraphConfig] | None = None,
+    graph_names: list[str] | None = None,
 ) -> dict[str, list]:
-    """Run a comparison across harnesses or models."""
+    """Run a comparison across harnesses, models, or graph topologies."""
     comparisons: dict[str, list] = {}
 
     if compare_by == "models":
@@ -186,6 +194,32 @@ def run_comparison(
                 experiment_prefix=model_short_name(model),
             )
             comparisons[model] = list(results)
+        return comparisons
+
+    if compare_by == "graphs":
+        if len(harness_names) != 1:
+            raise ValueError("Graph comparisons require exactly one --harness value.")
+        if not graph_configs or not graph_names:
+            raise ValueError("Graph comparisons require graph_configs and graph_names.")
+        harness = all_configs[harness_names[0]]
+        fixed_model = model_names[0] if model_names else os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
+        for name in graph_names:
+            if name not in graph_configs:
+                raise ValueError(f"Unknown graph: {name}")
+            with use_model(fixed_model):
+                results = run_experiment(
+                    graph_factory,
+                    harness,
+                    tasks_dir,
+                    upload_results=upload_results,
+                    task_limit=task_limit,
+                    ticket_id=ticket_id,
+                    dataset_name=dataset_name,
+                    model=fixed_model,
+                    experiment_prefix=name,
+                    graph_config=graph_configs[name],
+                )
+            comparisons[name] = list(results)
         return comparisons
 
     fixed_model = os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
