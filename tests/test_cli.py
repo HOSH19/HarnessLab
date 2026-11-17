@@ -26,14 +26,17 @@ def test_default_compare_harnesses_are_minimal_and_retry() -> None:
 
 
 def test_resolve_dataset_name_uses_explicit_value() -> None:
-    """--dataset overrides the example-derived default."""
+    """--dataset overrides the graph-engineering default."""
     from pathlib import Path
 
     from harnesslab.cli.helpers import default_dataset_name, resolve_dataset_name
+    from harnesslab.config.langsmith_names import DEFAULT_LANGSMITH_DATASET, experiment_name
 
     example = Path("examples/research_agent")
     assert resolve_dataset_name(example, "research-v2") == "research-v2"
     assert resolve_dataset_name(example, None) == default_dataset_name(example)
+    assert default_dataset_name(example) == DEFAULT_LANGSMITH_DATASET == "graph engineering"
+    assert experiment_name("minimal") == "graph-engineering-minimal"
 
 
 def test_dataset_upload_command_registered() -> None:

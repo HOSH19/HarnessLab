@@ -10,6 +10,7 @@ from langsmith import evaluate
 
 from harnesslab.config.env import disable_langsmith_tracing
 from harnesslab.config.graph_models import GraphConfig
+from harnesslab.config.langsmith_names import DEFAULT_LANGSMITH_DATASET, experiment_name
 from harnesslab.config.model_catalog import DEFAULT_MODEL, model_short_name
 from harnesslab.config.models import HarnessConfig
 from harnesslab.eval.coordination import coordination_pass
@@ -88,7 +89,7 @@ def _resolve_data(
 ) -> Any:
     """Build LangSmith evaluate data from local tasks or a remote dataset."""
     if upload_results:
-        resolved_dataset = dataset_name or f"{tasks_dir.parent.name.replace('_', '-')}-stress"
+        resolved_dataset = dataset_name or DEFAULT_LANGSMITH_DATASET
         ensure_dataset(
             tasks_dir,
             resolved_dataset,
@@ -118,7 +119,8 @@ def run_experiment(
     graph_config: GraphConfig | None = None,
 ) -> Any:
     """Run a LangSmith evaluation experiment for one harness / graph variant."""
-    prefix = experiment_prefix or (graph_config.name if graph_config else harness.name)
+    arm = experiment_prefix or (graph_config.name if graph_config else harness.name)
+    prefix = experiment_name(str(arm))
     metadata: dict[str, Any] = {"harness": harness.model_dump()}
     if model:
         metadata["model"] = model
