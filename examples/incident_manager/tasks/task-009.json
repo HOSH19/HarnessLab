@@ -1,0 +1,26 @@
+{
+  "task_id": "task-009",
+  "ticket_id": "I-109",
+  "prompt": "Investigate incident I-109 and draft a stakeholder update. Plan the work, execute tools despite intermittent failures, then classify.",
+  "flaky_tools": {
+    "fetch_metrics": 1,
+    "search_runbooks": 1
+  },
+  "classification": "infrastructure",
+  "required_reply_terms": [
+    "401",
+    "issuer",
+    "rotate"
+  ],
+  "required_stages": [
+    "planner",
+    "executor",
+    "critic"
+  ],
+  "expected_nodes": [
+    "planner",
+    "executor",
+    "critic"
+  ],
+  "max_acceptable_errors": 2
+}

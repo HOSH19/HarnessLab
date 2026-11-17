@@ -1,6 +1,6 @@
 # Regression gate
 
-`benchmark` and `gate` compare harness arms locally by default. They do not require LangSmith credentials unless you pass `--no-local`.
+`benchmark` and `gate` compare harness **or graph** arms locally by default. They do not require LangSmith credentials unless you pass `--no-local`.
 
 Use them to catch score regressions in CI without paying for experiment uploads on every PR check.
 
@@ -8,8 +8,10 @@ Use them to catch score regressions in CI without paying for experiment uploads 
 
 ## How it works
 
-1. **`benchmark`** runs a harness compare and writes per-arm evaluator averages to a JSON file.
+1. **`benchmark`** runs a harness or graph compare and writes per-arm evaluator averages to a JSON file.
 2. **`gate`** runs the same compare, bootstraps per-task score deltas, and exits non-zero when `task_pass` or `error_recovery` regresses beyond a threshold.
+
+Pass `--by graphs --graph react,pipeline` (and a single `--harness`) to baseline topology arms the same way as harness arms.
 
 Both commands use the same in-memory evaluation path as `compare --local`. LangSmith is optional (`--no-local`).
 

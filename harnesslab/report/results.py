@@ -5,6 +5,7 @@ from typing import Any
 SUMMARY_KEYS = [
     "task_pass",
     "graph_trajectory",
+    "coordination_pass",
     "error_recovery",
     "efficiency",
     "failure_fingerprint",

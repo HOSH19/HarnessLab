@@ -2,6 +2,8 @@
 
 A **harness** is a YAML configuration that wraps the same LangGraph agent with different execution policies — retries, context trimming, turn limits. HarnessLab A/B tests harness variants on identical tasks to answer: *did harness X beat harness Y, and why?*
 
+**Harness wraps nodes; graph owns edges.** Topology presets (react, pipeline, supervisor, plan-execute) are documented in [GRAPHS.md](GRAPHS.md). Compare them with `--by graphs` without changing harness YAML.
+
 **You do not need new harness types per agent.** The same three presets (`minimal`, `retry`, `trim`) apply to every example. Each agent only needs its own `harnesses/` folder — mainly to set a distinct `langsmith_project` and optionally tune `max_turns` for simpler workflows.
 
 ---

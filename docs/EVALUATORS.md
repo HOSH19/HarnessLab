@@ -1,22 +1,23 @@
 # HarnessLab Evaluators
 
-HarnessLab scores every agent run on **seven evaluators**. Together they answer: *did harness X beat harness Y on task Z, and why?*
+HarnessLab scores every agent run on **eight evaluators**. Together they answer: *did harness/model/graph X beat Y on task Z, and why?*
 
 These are **feedback scores** uploaded to LangSmith (or stored in local JSON). They are separate from the [five logged output fields](HARNESSES.md#logged-fields-per-run) on each run.
 
 ---
 
-## The seven evaluators
+## The eight evaluators
 
 | # | Evaluator | Score range | What it measures |
 |---|-----------|-------------|------------------|
 | 1 | **`task_pass`** | 0.0–1.0 | Did the agent produce the **correct task outcome**? |
 | 2 | **`graph_trajectory`** | 0.0–1.0 | Did the agent follow the **expected graph path**? |
-| 3 | **`error_recovery`** | 0.0–1.0 | Did the agent stay within the **acceptable tool-error budget**? |
-| 4 | **`efficiency`** | 0.0–1.0 | Was the run **fast and lean** enough? |
-| 5 | **`failure_fingerprint`** | 0.0–1.0 | What **failure category** best describes the run? |
-| 6 | **`run_cost_usd`** | USD | Estimated **dollar cost** per run (lower is better) |
-| 7 | **`cost_efficiency`** | ratio | **`task_pass` per USD** — value for money (higher is better) |
+| 3 | **`coordination_pass`** | 0.0–1.0 | Did required **stages** appear in order (multi-node topologies)? |
+| 4 | **`error_recovery`** | 0.0–1.0 | Did the agent stay within the **acceptable tool-error budget**? |
+| 5 | **`efficiency`** | 0.0–1.0 | Was the run **fast and lean** enough? |
+| 6 | **`failure_fingerprint`** | 0.0–1.0 | What **failure category** best describes the run? |
+| 7 | **`run_cost_usd`** | USD | Estimated **dollar cost** per run (lower is better) |
+| 8 | **`cost_efficiency`** | ratio | **`task_pass` per USD** — value for money (higher is better) |
 
 ---
 
@@ -56,9 +57,30 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 **Example comment:** `matched=False, progress=0.75, actual=['agent', 'tools', 'agent', 'tools']`
 
+Specialist topologies emit named nodes such as `gather`, `supervisor` workers (`metrics_worker`, …), `planner`, and `verify`. Set `expected_nodes` accordingly when comparing `--by graphs`.
+
 ---
 
-## 3. `error_recovery` — flaky-tool resilience
+## 3. `coordination_pass` — required stages
+
+**Question:** Did the run traverse required coordination stages in order?
+
+**Reads from run:** `details.graph_trajectory`
+
+**Compares to dataset:** `required_stages` (preferred) or falls back to `expected_nodes`
+
+**Scoring:**
+- Full credit when required stages appear as a subsequence of visited nodes
+- Partial credit via the same progress metric as `graph_trajectory`
+- Skipped (1.0) when the task defines neither field
+
+**Why keep it:** Separates “did the multi-node graph coordinate?” from generic path matching. Useful for supervisor / pipeline / plan-execute arms.
+
+**Example comment:** `progress=1.00, required=['intake', 'metrics_worker', 'finalize'], actual=[...]`
+
+---
+
+## 4. `error_recovery` — flaky-tool resilience
 
 **Question:** Did the agent accumulate no more tool errors than the task allows?
 
@@ -77,7 +99,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 ---
 
-## 4. `efficiency` — cost and speed
+## 5. `efficiency` — cost and speed
 
 **Question:** Was the run reasonably fast, token-efficient, and within step budget?
 
@@ -96,7 +118,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 ---
 
-## 5. `failure_fingerprint` — failure taxonomy
+## 6. `failure_fingerprint` — failure taxonomy
 
 **Question:** When something goes wrong, *what kind* of failure is it?
 
@@ -114,7 +136,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 ---
 
-## 6. `run_cost_usd` — estimated run cost
+## 7. `run_cost_usd` — estimated run cost
 
 **Question:** How much did this run cost in USD?
 
@@ -130,7 +152,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 
 ---
 
-## 7. `cost_efficiency` — value for money
+## 8. `cost_efficiency` — value for money
 
 **Question:** How much task quality did we get per dollar?
 

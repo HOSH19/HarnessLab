@@ -1,0 +1,23 @@
+{
+  "task_id": "task-008",
+  "ticket_id": "I-108",
+  "prompt": "Investigate incident I-108 and draft a stakeholder update. Gather evidence, analyze, then classify with remediation steps.",
+  "classification": "infrastructure",
+  "required_reply_terms": [
+    "stampede",
+    "TTL",
+    "coalescing"
+  ],
+  "required_stages": [
+    "gather",
+    "analyze",
+    "finalize",
+    "verify"
+  ],
+  "expected_nodes": [
+    "gather",
+    "analyze",
+    "finalize",
+    "verify"
+  ]
+}

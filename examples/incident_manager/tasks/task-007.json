@@ -1,0 +1,27 @@
+{
+  "task_id": "task-007",
+  "ticket_id": "I-107",
+  "prompt": "Investigate incident I-107 and draft a stakeholder update. Correlate metrics, runbooks, and timeline before classifying.",
+  "classification": "deployment",
+  "required_reply_terms": [
+    "v2.15.1",
+    "canary",
+    "rollback"
+  ],
+  "required_stages": [
+    "intake",
+    "metrics_worker",
+    "runbooks_worker",
+    "timeline_worker",
+    "synthesize",
+    "finalize"
+  ],
+  "expected_nodes": [
+    "intake",
+    "metrics_worker",
+    "runbooks_worker",
+    "timeline_worker",
+    "synthesize",
+    "finalize"
+  ]
+}

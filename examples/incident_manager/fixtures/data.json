@@ -37,6 +37,26 @@
       "title": "Replica lag causing stale billing reads",
       "summary": "analytics-db replica lag is 47 minutes. Billing reconciliation is reading stale balances and finance reports incorrect invoice previews.",
       "service": "analytics-db"
+    },
+    {
+      "id": "I-107",
+      "title": "Multi-signal checkout brownout",
+      "summary": "checkout p95 latency and error_rate rose after canary deploy. Metrics, runbooks, and timeline must be correlated before classifying.",
+      "service": "checkout",
+      "deploy_version": "v2.15.1",
+      "deploy_time_utc": "2026-03-02T06:00:00Z"
+    },
+    {
+      "id": "I-108",
+      "title": "Incomplete draft risk for cache stampede",
+      "summary": "cache-service stampede after config push. Stakeholder update must include classify and draft with concrete remediation terms.",
+      "service": "cache-service"
+    },
+    {
+      "id": "I-109",
+      "title": "Flaky evidence path for auth outage",
+      "summary": "auth-gateway intermittent 401 spike. Tooling may flake; plan, gather evidence, then classify and draft a recovery update.",
+      "service": "auth-gateway"
     }
   ],
   "metrics": {
@@ -71,6 +91,22 @@
       "replica_lag_minutes": 47,
       "stale_read_count": 12840,
       "status": "critical"
+    },
+    "I-107": {
+      "error_rate_pct": 9.2,
+      "p95_latency_ms": 2400,
+      "deploy_version": "v2.15.1",
+      "status": "degraded"
+    },
+    "I-108": {
+      "cache_miss_rate_pct": 88.0,
+      "stampede_events": 1200,
+      "status": "critical"
+    },
+    "I-109": {
+      "http_status": 401,
+      "error_rate_pct": 11.5,
+      "status": "degraded"
     }
   },
   "runbooks": [
@@ -103,6 +139,21 @@
       "id": "RB-006",
       "title": "Replica lag stale-read playbook",
       "content": "Pause billing reconciliation jobs, restore replication consistency from backup if needed, and verify balances before resuming invoices."
+    },
+    {
+      "id": "RB-007",
+      "title": "Canary brownout correlation",
+      "content": "For multi-signal checkout brownouts after canary deploy v2.15.1, pause the canary, compare metrics to baseline, and roll back if error_rate stays elevated."
+    },
+    {
+      "id": "RB-008",
+      "title": "Cache stampede mitigation",
+      "content": "Enable request coalescing, raise TTL jitter, and warm keys before traffic returns after a cache stampede."
+    },
+    {
+      "id": "RB-009",
+      "title": "Auth gateway 401 spike",
+      "content": "Check token issuer health, rotate signing keys if needed, and shed non-critical clients during auth-gateway 401 spikes."
     }
   ],
   "timeline": {
@@ -116,6 +167,21 @@
       {"time_utc": "2026-03-01T04:10:00Z", "event": "Replica lag crossed 30 minute threshold"},
       {"time_utc": "2026-03-01T04:40:00Z", "event": "Billing reconciliation began reading stale balances"},
       {"time_utc": "2026-03-01T04:55:00Z", "event": "Finance tooling flagged incorrect invoice previews"}
+    ],
+    "I-107": [
+      {"time_utc": "2026-03-02T05:55:00Z", "event": "Canary deploy v2.15.1 started"},
+      {"time_utc": "2026-03-02T06:00:00Z", "event": "Canary reached 10% traffic"},
+      {"time_utc": "2026-03-02T06:08:00Z", "event": "p95 latency crossed 2s and error_rate rose"}
+    ],
+    "I-108": [
+      {"time_utc": "2026-03-02T07:00:00Z", "event": "Config push disabled TTL jitter"},
+      {"time_utc": "2026-03-02T07:05:00Z", "event": "Cache miss rate spiked to 88%"},
+      {"time_utc": "2026-03-02T07:07:00Z", "event": "Origin stampeded with repeated identical keys"}
+    ],
+    "I-109": [
+      {"time_utc": "2026-03-02T08:10:00Z", "event": "Token issuer latency elevated"},
+      {"time_utc": "2026-03-02T08:15:00Z", "event": "Auth-gateway 401 rate crossed alert threshold"},
+      {"time_utc": "2026-03-02T08:20:00Z", "event": "Clients began retry storms"}
     ]
   }
 }

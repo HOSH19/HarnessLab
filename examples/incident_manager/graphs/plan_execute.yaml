@@ -1,0 +1,6 @@
+name: plan_execute
+topology: plan_execute
+expected_nodes:
+  - planner
+  - executor
+  - critic
