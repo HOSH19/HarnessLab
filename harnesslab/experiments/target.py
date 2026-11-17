@@ -10,10 +10,11 @@ from langchain_core.callbacks import get_usage_metadata_callback
 from langchain_core.messages import AIMessage, HumanMessage
 
 from harnesslab.config.model_catalog import DEFAULT_MODEL
-from harnesslab.eval.token_usage import aggregate_usage_metadata, message_tokens
 from harnesslab.config.models import HarnessConfig
+from harnesslab.eval.token_usage import aggregate_usage_metadata, message_tokens
 from harnesslab.flaky import init_flaky_tools
 from harnesslab.graph.extract import extract_fields_from_messages
+from harnesslab.graph.llm import bind_trace_root, clear_trace_root
 from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
 from harnesslab.middleware.runtime import clear_run_context, init_run_context
 
@@ -33,9 +34,21 @@ def build_initial_messages(prompt: str, conversation_history: list[dict] | None)
 
 
 def invoke_config(harness: HarnessConfig) -> dict:
-    """Build LangGraph invoke config with recursion limit and trace tags."""
-    project = harness.observability.langsmith_project or "harnesslab"
-    os.environ["LANGSMITH_PROJECT"] = project
+    """Build LangGraph invoke config with recursion limit and trace tags.
+
+    When already inside a LangSmith evaluate Target run, do not override
+    ``LANGSMITH_PROJECT`` — child spans must stay in the experiment session.
+    """
+    try:
+        from langsmith.run_helpers import get_current_run_tree
+
+        in_evaluate = get_current_run_tree() is not None
+    except Exception:
+        in_evaluate = False
+
+    if not in_evaluate:
+        project = harness.observability.langsmith_project or "harnesslab"
+        os.environ["LANGSMITH_PROJECT"] = project
 
     configurable: dict[str, Any] = {
         "thread_id": str(uuid.uuid4()),
@@ -132,6 +145,7 @@ def make_target(
             config["configurable"]["flaky_tools"] = flaky_tools
         init_flaky_tools(flaky_tools)
         init_run_context()
+        bind_trace_root()
         model_name = os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
         try:
             with get_usage_metadata_callback() as usage_cb:
@@ -163,6 +177,7 @@ def make_target(
         except Exception as exc:  # noqa: BLE001 — always return outputs for evaluators
             return empty_outputs(error=str(exc))
         finally:
+            clear_trace_root()
             clear_run_context()
 
     return target

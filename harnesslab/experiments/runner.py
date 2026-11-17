@@ -10,6 +10,7 @@ from langsmith import evaluate
 
 from harnesslab.config.env import disable_langsmith_tracing
 from harnesslab.config.graph_models import GraphConfig
+from harnesslab.config.langsmith_compat import prefer_smithdb_experiment_traces
 from harnesslab.config.langsmith_names import DEFAULT_LANGSMITH_DATASET, experiment_name
 from harnesslab.config.model_catalog import DEFAULT_MODEL, model_short_name
 from harnesslab.config.models import HarnessConfig
@@ -149,6 +150,7 @@ def run_experiment(
                 metadata=metadata,
             )
 
+        prefer_smithdb_experiment_traces()
         return evaluate(
             target,
             data=data,
