@@ -8,7 +8,7 @@ from typing import Any
 from harnesslab.gate.significance import bootstrap_mean_delta, collect_task_scores
 
 
-LOWER_IS_BETTER = frozenset({"run_cost_usd"})
+LOWER_IS_BETTER = frozenset({"run_cost_usd", "ttft_seconds"})
 BLOCKING_EVALUATORS = frozenset({"task_pass", "error_recovery"})
 
 

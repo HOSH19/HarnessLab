@@ -16,7 +16,7 @@ flowchart LR
     Graph[LangGraph agent] --> Builder
     Builder --> Run[invoke per task]
     Run --> LS[LangSmith traces]
-    LS --> Eval[8 evaluators]
+    LS --> Eval[5 evaluators]
     Eval --> Report[HTML report]
 ```
 
@@ -59,7 +59,7 @@ python -m harnesslab compare examples/incident_manager \
 | `dataset upload` | Sync tasks to a LangSmith dataset |
 
 ```bash
-# Default compare (minimal + retry, 1 task)
+# Default compare (minimal × 1 task smoke); scale with --harness / --tasks
 python -m harnesslab compare examples/research_agent --local -o report.html
 
 # All incident tasks, five harness arms

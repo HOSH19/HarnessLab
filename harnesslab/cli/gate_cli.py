@@ -113,7 +113,7 @@ def _print_gate_details(details: list[dict], *, verbose: bool = False) -> None:
     if omitted:
         console.print(
             f"[dim]{omitted} unchanged non-blocking evaluators omitted "
-            f"(for example graph_trajectory, efficiency, failure_fingerprint)[/dim]"
+            f"(for example graph_trajectory, coordination_pass, ttft_seconds)[/dim]"
         )
 
 

@@ -14,7 +14,7 @@ dependencies = [
     "langgraph>=0.4",
     "langchain>=0.3",
     "langchain-openai>=0.3",
-    "langsmith>=0.2",
+    "langsmith>=0.14.17",
     "agentevals",
     "pydantic>=2.0",
     "pyyaml>=6.0",

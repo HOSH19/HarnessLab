@@ -8,10 +8,12 @@ import typer
 from harnesslab.config.env import disable_langsmith_tracing, load_local_env
 from harnesslab.config.model_catalog import DEFAULT_MODEL
 
-DEFAULT_COMPARE_HARNESSES = "minimal,retry"
-DEFAULT_COMPARE_GRAPHS = "react,pipeline"
-DEFAULT_TASK_LIMIT = 1
+from harnesslab.config.langsmith_names import DEFAULT_LANGSMITH_DATASET
 
+# Smoke-sized defaults: one harness × one graph × one task before scaling up.
+DEFAULT_COMPARE_HARNESSES = "minimal"
+DEFAULT_COMPARE_GRAPHS = "react"
+DEFAULT_TASK_LIMIT = 1
 
 def bootstrap_env(*, local: bool, example: Path | None = None) -> None:
     """Load .env and disable LangSmith uploads for local-only commands."""
@@ -21,8 +23,9 @@ def bootstrap_env(*, local: bool, example: Path | None = None) -> None:
 
 
 def default_dataset_name(example: Path) -> str:
-    """Derive a stable LangSmith dataset name from an example directory."""
-    return f"{example.name.replace('_', '-')}-stress"
+    """Return the LangSmith dataset name used for uploaded experiments."""
+    _ = example  # example path kept for call-site compatibility
+    return DEFAULT_LANGSMITH_DATASET
 
 
 def example_paths(example: Path) -> tuple[Path, Path]:

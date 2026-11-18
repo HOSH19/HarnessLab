@@ -1,12 +1,34 @@
 """Pareto frontier helpers for harness cost vs accuracy reports."""
 
-from harnesslab.report.results import avg_score
+from typing import Any
+
+from harnesslab.eval.cost import estimate_run_cost_usd
+from harnesslab.report.results import avg_score, row_value, score_for_key
+
+
+def _row_cost_usd(row: Any) -> float | None:
+    """Cost from legacy feedback, else estimate from run tokens (not published)."""
+    scored = score_for_key(row, "run_cost_usd")
+    if scored is not None:
+        return scored
+    run = row_value(row, "run")
+    if run is None:
+        return None
+    return estimate_run_cost_usd(run)
+
+
+def avg_cost_usd(results: list) -> float:
+    """Average per-row USD cost for an arm (feedback or token estimate)."""
+    costs = [cost for row in results if (cost := _row_cost_usd(row)) is not None]
+    if not costs:
+        return 0.0
+    return sum(costs) / len(costs)
 
 
 def pareto_points(comparisons: dict[str, list]) -> list[tuple[str, float, float]]:
-    """Build (arm, task_pass, run_cost_usd) tuples for each compare arm."""
+    """Build (arm, task_pass, cost_usd) tuples for each compare arm."""
     return [
-        (arm_name, avg_score(results, "task_pass"), avg_score(results, "run_cost_usd"))
+        (arm_name, avg_score(results, "task_pass"), avg_cost_usd(results))
         for arm_name, results in comparisons.items()
     ]
 
@@ -37,7 +59,7 @@ def _is_dominated(
 
 
 def render_pareto_svg(points: list[tuple[str, float, float]], frontier: set[str]) -> str:
-    """Render an inline SVG scatter of task_pass vs run_cost_usd."""
+    """Render an inline SVG scatter of task_pass vs estimated cost."""
     if not points:
         return ""
 
@@ -49,11 +71,11 @@ def render_pareto_svg(points: list[tuple[str, float, float]], frontier: set[str]
 
     return f"""
   <h2>Cost vs accuracy (Pareto)</h2>
-  <p>Green dots are non-dominated arms (high task_pass, low run_cost_usd).</p>
+  <p>Green dots are non-dominated arms (high task_pass, low estimated cost_usd).</p>
   <svg width="{width}" height="{height}" style="border:1px solid #ccc">
     <line x1="{pad}" y1="{height - pad}" x2="{width - pad}" y2="{height - pad}" stroke="#333" />
     <line x1="{pad}" y1="{pad}" x2="{pad}" y2="{height - pad}" stroke="#333" />
-    <text x="{width // 2}" y="{height - 8}" font-size="12" text-anchor="middle">run_cost_usd (avg)</text>
+    <text x="{width // 2}" y="{height - 8}" font-size="12" text-anchor="middle">cost_usd (avg, estimated)</text>
     <text x="12" y="{height // 2}" font-size="12" transform="rotate(-90 12,{height // 2})">task_pass (avg)</text>
     {''.join(circles)}
   </svg>"""

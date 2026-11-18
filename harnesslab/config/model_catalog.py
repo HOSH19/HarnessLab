@@ -1,10 +1,9 @@
 """Cheap model catalog for HarnessLab model-comparison experiments."""
 
 # OpenAI models suitable for low-cost harness and model A/B testing.
-# All defaults are cheaper than gpt-4o-mini; override with --models if needed.
 DEFAULT_CHEAP_MODELS: tuple[str, ...] = (
-    "gpt-4.1-nano",
-    "gpt-4.1-mini",
+    "gpt-4o-mini",
+    "gpt-4o",
     "gpt-3.5-turbo",
 )
 
@@ -12,19 +11,19 @@ DEFAULT_MODEL = DEFAULT_CHEAP_MODELS[0]
 
 # Short labels for experiment names (what varies in model-comparison runs).
 MODEL_SHORT_NAMES: dict[str, str] = {
-    "gpt-4.1-nano": "nano",
-    "gpt-4.1-mini": "mini",
+    "gpt-4o-mini": "mini",
+    "gpt-4o": "4o",
     "gpt-3.5-turbo": "turbo",
 }
 
 # Approximate USD per 1K tokens (input+output blended) for portfolio cost estimates.
 MODEL_COST_PER_1K_TOKENS: dict[str, float] = {
-    "gpt-4.1-nano": 0.0001,
-    "gpt-4.1-mini": 0.0004,
+    "gpt-4o-mini": 0.0003,
+    "gpt-4o": 0.005,
     "gpt-3.5-turbo": 0.0005,
 }
 
-DEFAULT_COST_PER_1K = 0.0002
+DEFAULT_COST_PER_1K = 0.0003
 
 
 def parse_model_list(models: str | None) -> list[str]:

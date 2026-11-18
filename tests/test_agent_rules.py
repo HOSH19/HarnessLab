@@ -35,9 +35,9 @@ def test_call_model_injects_system_prompt(monkeypatch) -> None:
         def bind_tools(self, _tools):
             return self
 
-        def invoke(self, messages):
+        def stream(self, messages):
             self.messages = messages
-            return messages[-1]
+            yield messages[-1]
 
     fake = _FakeLLM()
     monkeypatch.setattr(agent_nodes, "ChatOpenAI", lambda **_: fake)

@@ -52,6 +52,13 @@ def test_run_local_experiment_returns_scored_rows() -> None:
     assert len(results) == 1
     row = results[0]
     scores = {item.key: item.score for item in row["evaluation_results"]["results"]}
+    assert set(scores) == {
+        "task_pass",
+        "graph_trajectory",
+        "coordination_pass",
+        "error_recovery",
+        "ttft_seconds",
+    }
     assert scores["task_pass"] > 0
-    assert scores["run_cost_usd"] > 0
+    assert "run_cost_usd" not in scores
     assert row["run"].outputs["details"]["total_tokens"] == 120

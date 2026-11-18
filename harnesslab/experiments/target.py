@@ -8,14 +8,21 @@ from typing import Any
 from agentevals.graph_trajectory.utils import extract_langgraph_trajectory_from_thread
 from langchain_core.callbacks import get_usage_metadata_callback
 from langchain_core.messages import AIMessage, HumanMessage
+from langsmith import traceable
 
 from harnesslab.config.model_catalog import DEFAULT_MODEL
-from harnesslab.eval.token_usage import aggregate_usage_metadata, message_tokens
 from harnesslab.config.models import HarnessConfig
+from harnesslab.eval.token_usage import aggregate_usage_metadata, message_tokens
 from harnesslab.flaky import init_flaky_tools
 from harnesslab.graph.extract import extract_fields_from_messages
+from harnesslab.graph.llm import bind_trace_root, clear_trace_root, measured_ttft_seconds
 from harnesslab.middleware.limits import recursion_limit as graph_recursion_limit
 from harnesslab.middleware.runtime import clear_run_context, init_run_context
+
+
+def _target_process_inputs(inputs: dict) -> dict:
+    """Match langsmith.evaluate's Target input logging shape."""
+    return inputs["inputs"] if "inputs" in inputs else inputs
 
 
 def build_initial_messages(prompt: str, conversation_history: list[dict] | None) -> list:
@@ -33,9 +40,21 @@ def build_initial_messages(prompt: str, conversation_history: list[dict] | None)
 
 
 def invoke_config(harness: HarnessConfig) -> dict:
-    """Build LangGraph invoke config with recursion limit and trace tags."""
-    project = harness.observability.langsmith_project or "harnesslab"
-    os.environ["LANGSMITH_PROJECT"] = project
+    """Build LangGraph invoke config with recursion limit and trace tags.
+
+    When already inside a LangSmith evaluate Target run, do not override
+    ``LANGSMITH_PROJECT`` — child spans must stay in the experiment session.
+    """
+    try:
+        from langsmith.run_helpers import get_current_run_tree
+
+        in_evaluate = get_current_run_tree() is not None
+    except Exception:
+        in_evaluate = False
+
+    if not in_evaluate:
+        project = harness.observability.langsmith_project or "harnesslab"
+        os.environ["LANGSMITH_PROJECT"] = project
 
     configurable: dict[str, Any] = {
         "thread_id": str(uuid.uuid4()),
@@ -57,6 +76,7 @@ def extract_outputs(
     total_tokens: int = 0,
     model: str | None = None,
     usage_metadata: dict | None = None,
+    ttft_seconds: float | None = None,
 ) -> dict:
     """Pull evaluation fields from graph state and trajectory."""
     messages = state.get("messages", [])
@@ -65,20 +85,23 @@ def extract_outputs(
     classification = parsed["classification"] or state.get("classification", "")
     final_reply = parsed["final_reply"] or state.get("final_reply", "")
 
-    outputs: dict[str, Any] = {
+    details: dict[str, Any] = {
+        "final_reply": final_reply,
+        "graph_trajectory": trajectory["outputs"],
+        "total_tokens": total_tokens,
+        "model": model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL),
+    }
+    if usage_metadata:
+        details["usage_metadata"] = usage_metadata
+    if ttft_seconds is not None:
+        details["ttft_seconds"] = ttft_seconds
+
+    return {
         "output": classification or "",
         "classification": classification or "",
         "error_count": state.get("error_count", 0),
-        "details": {
-            "final_reply": final_reply,
-            "graph_trajectory": trajectory["outputs"],
-            "total_tokens": total_tokens,
-            "model": model or os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL),
-        },
+        "details": details,
     }
-    if usage_metadata:
-        outputs["details"]["usage_metadata"] = usage_metadata
-    return outputs
 
 
 def empty_outputs(*, error: str | None = None) -> dict:
@@ -118,9 +141,14 @@ def make_target(
     harness: HarnessConfig,
     graph_config: Any | None = None,
 ):
-    """Create a LangSmith-compatible target function for a harness / graph variant."""
+    """Create a LangSmith target. Pre-wrapped ``run_type="llm"`` so evaluate keeps TTFT."""
     graph = _compile_graph(graph_factory, harness, graph_config)
 
+    @traceable(
+        name="Target",
+        run_type="llm",
+        process_inputs=_target_process_inputs,
+    )
     def target(inputs: dict) -> dict:
         """Run the agent on a single task input."""
         prompt = inputs.get("prompt", "")
@@ -132,6 +160,7 @@ def make_target(
             config["configurable"]["flaky_tools"] = flaky_tools
         init_flaky_tools(flaky_tools)
         init_run_context()
+        bind_trace_root()
         model_name = os.getenv("HARNESSLAB_MODEL", DEFAULT_MODEL)
         try:
             with get_usage_metadata_callback() as usage_cb:
@@ -159,10 +188,12 @@ def make_target(
                     total_tokens=total_tokens,
                     model=callback_model or model_name,
                     usage_metadata=usage_cb.usage_metadata or None,
+                    ttft_seconds=measured_ttft_seconds(),
                 )
         except Exception as exc:  # noqa: BLE001 — always return outputs for evaluators
             return empty_outputs(error=str(exc))
         finally:
+            clear_trace_root()
             clear_run_context()
 
     return target

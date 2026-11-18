@@ -20,20 +20,30 @@ def test_explicit_tasks_override_default() -> None:
     assert resolve_task_limit(6, None) == 6
 
 
-def test_default_compare_harnesses_are_minimal_and_retry() -> None:
-    """Harness compare defaults to minimal and retry arms."""
-    assert DEFAULT_COMPARE_HARNESSES == "minimal,retry"
+def test_default_compare_harnesses_is_minimal_smoke() -> None:
+    """Harness compare defaults to a single minimal arm for cheap smoke runs."""
+    assert DEFAULT_COMPARE_HARNESSES == "minimal"
+
+
+def test_default_compare_graphs_is_react_smoke() -> None:
+    """Graph compare defaults to a single react arm for cheap smoke runs."""
+    from harnesslab.cli.helpers import DEFAULT_COMPARE_GRAPHS
+
+    assert DEFAULT_COMPARE_GRAPHS == "react"
 
 
 def test_resolve_dataset_name_uses_explicit_value() -> None:
-    """--dataset overrides the example-derived default."""
+    """--dataset overrides the graph-engineering default."""
     from pathlib import Path
 
     from harnesslab.cli.helpers import default_dataset_name, resolve_dataset_name
+    from harnesslab.config.langsmith_names import DEFAULT_LANGSMITH_DATASET, experiment_name
 
     example = Path("examples/research_agent")
     assert resolve_dataset_name(example, "research-v2") == "research-v2"
     assert resolve_dataset_name(example, None) == default_dataset_name(example)
+    assert default_dataset_name(example) == DEFAULT_LANGSMITH_DATASET == "graph engineering"
+    assert experiment_name("minimal") == "graph-engineering-minimal"
 
 
 def test_dataset_upload_command_registered() -> None:

@@ -10,15 +10,15 @@ from langsmith import evaluate
 
 from harnesslab.config.env import disable_langsmith_tracing
 from harnesslab.config.graph_models import GraphConfig
+from harnesslab.config.langsmith_compat import prefer_smithdb_experiment_traces
+from harnesslab.config.langsmith_names import DEFAULT_LANGSMITH_DATASET, experiment_name
 from harnesslab.config.model_catalog import DEFAULT_MODEL, model_short_name
 from harnesslab.config.models import HarnessConfig
 from harnesslab.eval.coordination import coordination_pass
-from harnesslab.eval.cost_evaluators import cost_efficiency, run_cost_usd
-from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.error_recovery import error_recovery
-from harnesslab.eval.fingerprint import failure_fingerprint
 from harnesslab.eval.outcome import task_pass
 from harnesslab.eval.trajectory import graph_trajectory
+from harnesslab.eval.ttft import ttft_seconds
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.local_runner import run_local_experiment
@@ -27,15 +27,14 @@ from harnesslab.experiments.tasks import load_tasks
 
 CompareDimension = Literal["harness", "models", "graphs"]
 
+# Top 5 published feedback keys. `efficiency` still exists under harnesslab/eval/
+# but is not wired here — TTFT visibility uses `ttft_seconds` instead.
 _BASE_EVALUATORS = [
     task_pass,
     graph_trajectory,
     coordination_pass,
     error_recovery,
-    efficiency,
-    failure_fingerprint,
-    run_cost_usd,
-    cost_efficiency,
+    ttft_seconds,
 ]
 
 
@@ -88,7 +87,7 @@ def _resolve_data(
 ) -> Any:
     """Build LangSmith evaluate data from local tasks or a remote dataset."""
     if upload_results:
-        resolved_dataset = dataset_name or f"{tasks_dir.parent.name.replace('_', '-')}-stress"
+        resolved_dataset = dataset_name or DEFAULT_LANGSMITH_DATASET
         ensure_dataset(
             tasks_dir,
             resolved_dataset,
@@ -118,7 +117,8 @@ def run_experiment(
     graph_config: GraphConfig | None = None,
 ) -> Any:
     """Run a LangSmith evaluation experiment for one harness / graph variant."""
-    prefix = experiment_prefix or (graph_config.name if graph_config else harness.name)
+    arm = experiment_prefix or (graph_config.name if graph_config else harness.name)
+    prefix = experiment_name(str(arm))
     metadata: dict[str, Any] = {"harness": harness.model_dump()}
     if model:
         metadata["model"] = model
@@ -147,6 +147,7 @@ def run_experiment(
                 metadata=metadata,
             )
 
+        prefer_smithdb_experiment_traces()
         return evaluate(
             target,
             data=data,
