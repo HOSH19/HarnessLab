@@ -90,7 +90,7 @@ You still need `OPENAI_API_KEY` and `LANGSMITH_API_KEY` in `.env`. The gate deci
 |---|---|---|
 | `--baseline` | required for `gate` | Path to baseline JSON |
 | `-o` / `--output` | required for `benchmark` | Where to write baseline JSON |
-| `--harness` | `minimal,retry` | Comma-separated harness names |
+| `--harness` | `minimal` | Comma-separated harness names |
 | `--tasks` | `1` | Number of stress tasks |
 | `--task` | none | Single task id (e.g. `I-101`) |
 | `--max-regression` | `0.05` | Max allowed score drop for blocking evaluators |

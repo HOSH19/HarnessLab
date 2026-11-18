@@ -28,7 +28,7 @@ def test_informative_gate_detail_hides_stable_non_blocking() -> None:
 def test_informative_gate_detail_shows_nonzero_delta() -> None:
     """Non-blocking evaluators with movement are shown."""
     detail = {
-        "evaluator": "efficiency",
+        "evaluator": "ttft_seconds",
         "mean_delta": -0.0017,
         "ci_lower": -0.005,
         "ci_upper": 0.0,

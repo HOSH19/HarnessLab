@@ -1,12 +1,14 @@
 # HarnessLab Evaluators
 
-HarnessLab scores every agent run on **eight evaluators**. Together they answer: *did harness/model/graph X beat Y on task Z, and why?*
+HarnessLab scores every agent run on **five evaluators**. Together they answer: *did harness/model/graph X beat Y on task Z, and why?*
 
 These are **feedback scores** uploaded to LangSmith (or stored in local JSON). They are separate from the [five logged output fields](HARNESSES.md#logged-fields-per-run) on each run.
 
+Modules for `efficiency`, `failure_fingerprint`, `run_cost_usd`, and `cost_efficiency` still exist under `harnesslab/eval/` but are **not** wired into the published `EVALUATORS` list. HTML Pareto charts estimate cost from run tokens locally instead of publishing those feedback keys.
+
 ---
 
-## The eight evaluators
+## The five evaluators
 
 | # | Evaluator | Score range | What it measures |
 |---|-----------|-------------|------------------|
@@ -14,10 +16,7 @@ These are **feedback scores** uploaded to LangSmith (or stored in local JSON). T
 | 2 | **`graph_trajectory`** | 0.0–1.0 | Did the agent follow the **expected graph path**? |
 | 3 | **`coordination_pass`** | 0.0–1.0 | Did required **stages** appear in order (multi-node topologies)? |
 | 4 | **`error_recovery`** | 0.0–1.0 | Did the agent stay within the **acceptable tool-error budget**? |
-| 5 | **`efficiency`** | 0.0–1.0 | Was the run **fast and lean** enough? |
-| 6 | **`failure_fingerprint`** | 0.0–1.0 | What **failure category** best describes the run? |
-| 7 | **`run_cost_usd`** | USD | Estimated **dollar cost** per run (lower is better) |
-| 8 | **`cost_efficiency`** | ratio | **`task_pass` per USD** — value for money (higher is better) |
+| 5 | **`ttft_seconds`** | seconds | Wall-clock **time to first token** (lower is better) |
 
 ---
 
@@ -99,65 +98,21 @@ Specialist topologies emit named nodes such as `gather`, `supervisor` workers (`
 
 ---
 
-## 5. `efficiency` — cost and speed
+## 5. `ttft_seconds` — time to first token
 
-**Question:** Was the run reasonably fast, token-efficient, and within step budget?
+**Question:** How long until the first streamed model token?
 
-**Reads from run:** LangSmith timing/token metadata, `graph_trajectory` step count
+**Reads from run:** `details.ttft_seconds` (preferred), else `first_token_time` / root `new_token` events
 
-**Compares to dataset:** `expected_max_steps`
+**Scoring:** Wall-clock seconds (lower is better). `0.0` with comment `ttft_unavailable` when timing is missing.
 
-**Scoring:** Starts at 1.0, then penalizes:
-- High latency (>6s)
-- High token usage (>1,500)
-- Too many agent/tool steps vs `expected_max_steps`
+**Why keep it:** LangSmith’s built-in **Time to First Token** column stays blank for agent `evaluate` Target rows even when `first_token_time` is set. This feedback key is the user-visible TTFT cell in the experiment table. Prefer this column over the native TTFT header.
 
-**Why keep it:** Harness A/B is not only about correctness. A harness that passes every task but burns 3× latency or tokens is not a win in production.
-
-**Example comment:** `latency_ms=4200, tokens=890, steps=8, graph_steps=8`
+**Example comment:** `ttft_seconds=2.164`
 
 ---
 
-## 6. `failure_fingerprint` — failure taxonomy
+## Looking at LangSmith
 
-**Question:** When something goes wrong, *what kind* of failure is it?
-
-**Reads from run:** `classification`, `details.final_reply`, `run.error`, latency
-
-**Compares to dataset:** (none — rule-based classification)
-
-**Categories:** `SUCCESS`, `TIMEOUT`, `TOOL_ERROR`, `PARSE_ERROR`, `WRONG_ANSWER`, `MAX_TURNS`
-
-**Scoring:** 1.0 for `SUCCESS`, 0.0 for failure categories (stored in comment)
-
-**Why keep it:** Speeds up debugging across many tasks. A column of `TOOL_ERROR` vs `WRONG_ANSWER` tells you whether to tune retries vs prompts.
-
-**Example comment:** `WRONG_ANSWER`
-
----
-
-## 7. `run_cost_usd` — estimated run cost
-
-**Question:** How much did this run cost in USD?
-
-**Reads from run:** Token metadata, model name from run metadata / `HARNESSLAB_MODEL`
-
-**Compares to dataset:** (none — priced from [`model_catalog.py`](../harnesslab/config/model_catalog.py))
-
-**Scoring:** `tokens / 1000 × model_rate` — published as the score (lower is better)
-
-**Why keep it:** Compare harness arms on cost in LangSmith Experiments alongside `task_pass`.
-
-**Example comment:** `cost_usd=0.002300, tokens=890`
-
----
-
-## 8. `cost_efficiency` — value for money
-
-**Question:** How much task quality did we get per dollar?
-
-**Reads from run:** Same cost inputs as `run_cost_usd`, plus classification/reply for inline `task_pass`
-
-**Scoring:** `task_pass_score / max(cost_usd, 1e-6)` — higher is better
-
-**Example comment:** `task_pass=1.00, cost_usd=0.002300, ratio=434.78`
+- Open the **newest** experiment after a compare. Older experiments keep whatever feedback keys they were published with forever (including dropped keys like `efficiency`, `failure_fingerprint`, `run_cost_usd`).
+- Ignore the built-in **Time to First Token** column when it is blank; use feedback **`ttft_seconds`** instead.

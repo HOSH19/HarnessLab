@@ -1,4 +1,4 @@
-"""LLM helpers that stream tokens for LangSmith TTFT while returning full messages."""
+"""Stream LLM calls for LangSmith TTFT; return a merged full message."""
 
 from __future__ import annotations
 
@@ -6,75 +6,86 @@ from contextvars import ContextVar
 from datetime import datetime, timezone
 from typing import Any
 
-# Bound at evaluate Target entry — LangChain tracers do not set RunTree.parent_run,
-# so walking parents during stream cannot reach the experiment row.
+# Evaluate Target RunTree — LangChain tracers omit parent_run, so we bind it here.
 _trace_root: ContextVar[Any] = ContextVar("harnesslab_trace_root", default=None)
+_run_started_at: ContextVar[datetime | None] = ContextVar(
+    "harnesslab_run_started_at", default=None
+)
+_first_token_at: ContextVar[datetime | None] = ContextVar(
+    "harnesslab_first_token_at", default=None
+)
 
 
 def bind_trace_root() -> Any | None:
-    """Capture the current LangSmith run (evaluate Target) for TTFT marking.
-
-    LangSmith's experiment-table **Time to First Token** column only renders for
-    roots with ``run_type="llm"`` (see run data format). Evaluate wraps agent
-    targets as ``chain``, so we retarget the root type when binding.
-    """
+    """Bind the current evaluate Target run for first-token marking."""
+    started = datetime.now(timezone.utc)
+    _run_started_at.set(started)
+    _first_token_at.set(None)
     try:
         from langsmith.run_helpers import get_current_run_tree
-    except Exception:
-        _trace_root.set(None)
-        return None
 
-    try:
         root = get_current_run_tree()
     except Exception:
         root = None
 
     if root is not None:
         try:
-            root.run_type = "llm"
-        except Exception:
+            root.run_type = "llm"  # safety if evaluate retargeted the root
+        except AttributeError:
             pass
+        start = getattr(root, "start_time", None)
+        if isinstance(start, datetime):
+            if start.tzinfo is None:
+                start = start.replace(tzinfo=timezone.utc)
+            _run_started_at.set(start)
 
     _trace_root.set(root)
     return root
 
 
 def clear_trace_root() -> None:
-    """Drop the bound evaluate-root run handle."""
+    """Clear the bound evaluate-root run handle."""
     _trace_root.set(None)
+    _run_started_at.set(None)
+    _first_token_at.set(None)
+
+
+def measured_ttft_seconds() -> float | None:
+    """Return Target-start → first-token seconds when both times are known."""
+    start = _run_started_at.get()
+    first = _first_token_at.get()
+    if start is None or first is None:
+        return None
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=timezone.utc)
+    if first.tzinfo is None:
+        first = first.replace(tzinfo=timezone.utc)
+    return max(0.0, round((first - start).total_seconds(), 3))
 
 
 def mark_first_token_on_trace_root() -> None:
-    """Emit a root-level new_token event so LangSmith derives first_token_time."""
+    """Emit a once-per-run root ``new_token`` event (LangSmith first_token_time)."""
+    if _first_token_at.get() is not None:
+        return
+    now = datetime.now(timezone.utc)
+    _first_token_at.set(now)
     root = _trace_root.get()
-    if root is None:
+    if root is None or not hasattr(root, "add_event"):
         return
-    try:
-        events = getattr(root, "events", None) or []
-        if any(isinstance(event, dict) and event.get("name") == "new_token" for event in events):
-            return
-        # Match the ingest shape LangSmith documents for TTFT (kwargs.token required
-        # for some ingest paths; naive UTC timestamp matches ChatOpenAI tracers).
-        token_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")
-        root.add_event(
-            {
-                "name": "new_token",
-                "time": token_time,
-                "kwargs": {"token": [""]},
-            }
-        )
-        if getattr(root, "run_type", None) != "llm":
-            root.run_type = "llm"
-    except Exception:
+    events = getattr(root, "events", None) or []
+    if any(isinstance(e, dict) and e.get("name") == "new_token" for e in events):
         return
+    root.add_event(
+        {
+            "name": "new_token",
+            "time": now.isoformat(),
+            "kwargs": {"token": ""},
+        }
+    )
+
 
 def invoke_llm_streaming(llm: Any, messages: list, config: Any | None = None) -> Any:
-    """Stream an LLM call and merge chunks into one complete message.
-
-    LangSmith records time-to-first-token from ``new_token`` events, which only
-    fire when the model is actually streamed (not ``invoke``). Pass LangGraph
-    ``config`` so callbacks/tracing stay attached to the active run tree.
-    """
+    """Stream an LLM call, mark TTFT on first chunk, merge into one message."""
     stream = getattr(llm, "stream", None)
     if stream is None:
         if config is None:

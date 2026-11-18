@@ -1,6 +1,5 @@
 """HTML comparison reports for harness A/B experiment results."""
 
-import re
 from pathlib import Path
 from typing import Any
 
@@ -9,20 +8,9 @@ from harnesslab.report.results import (
     DETAIL_KEYS,
     SUMMARY_KEYS,
     avg_score,
-    comment_for_key,
     score_for_key,
     task_label,
 )
-
-
-def _parse_efficiency_comment(comment: str) -> dict[str, str]:
-    """Parse latency, token, and step fields from efficiency comments."""
-    parsed: dict[str, str] = {}
-    for field in ("latency_ms", "tokens", "steps"):
-        match = re.search(rf"{field}=([^,\s]+)", comment)
-        if match:
-            parsed[field] = match.group(1)
-    return parsed
 
 
 def _detail_metric_cells(row: Any) -> str:
@@ -32,11 +20,6 @@ def _detail_metric_cells(row: Any) -> str:
         score = score_for_key(row, key)
         score_text = f"{score:.2f}" if score is not None else "-"
         cells.append(f"<td>{score_text}</td>")
-
-    efficiency = _parse_efficiency_comment(comment_for_key(row, "efficiency"))
-    cells.append(f"<td>{efficiency.get('latency_ms', '-')}</td>")
-    cells.append(f"<td>{efficiency.get('tokens', '-')}</td>")
-    cells.append(f"<td>{efficiency.get('steps', '-')}</td>")
     return "".join(cells)
 
 
@@ -52,7 +35,7 @@ def _summary_table(comparisons: dict[str, list], dimension: str) -> tuple[list[s
 
 def _detail_table(comparisons: dict[str, list], dimension: str) -> tuple[list[str], str]:
     """Build per-task detail table headers and HTML body rows."""
-    headers = [dimension, "Task", *DETAIL_KEYS, "latency_ms", "tokens", "steps"]
+    headers = [dimension, "Task", *DETAIL_KEYS]
     rows = []
     for arm_name, results in comparisons.items():
         for row in results:

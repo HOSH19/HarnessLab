@@ -1,4 +1,4 @@
-"""Tests for streaming LLM helper used for LangSmith TTFT."""
+"""Tests for streaming LLM helper and LangSmith TTFT marking."""
 
 from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage
 
@@ -36,7 +36,6 @@ class _FakeRoot:
 
 
 def test_invoke_llm_streaming_merges_chunks() -> None:
-    """Streamed chunks are merged into one message with full content."""
     llm = _StreamLLM(
         [
             AIMessageChunk(content="Hel"),
@@ -50,44 +49,41 @@ def test_invoke_llm_streaming_merges_chunks() -> None:
 
 
 def test_invoke_llm_streaming_falls_back_to_invoke() -> None:
-    """Models without stream use invoke()."""
     llm = _InvokeOnlyLLM()
     result = invoke_llm_streaming(llm, [HumanMessage(content="hi")])
     assert result.content == "fallback"
 
 
 def test_mark_first_token_uses_bound_trace_root() -> None:
-    """TTFT marker writes new_token onto the evaluate Target run handle."""
     root = _FakeRoot()
     token = llm_mod._trace_root.set(root)
+    token_ft = llm_mod._first_token_at.set(None)
     try:
         mark_first_token_on_trace_root()
         mark_first_token_on_trace_root()  # idempotent
     finally:
         llm_mod._trace_root.reset(token)
+        llm_mod._first_token_at.reset(token_ft)
     assert len(root.events) == 1
     assert root.events[0]["name"] == "new_token"
     assert "token" in root.events[0]["kwargs"]
+    assert "T" in root.events[0]["time"]
 
 
-def test_bind_trace_root_sets_run_type_llm(monkeypatch) -> None:
-    """Experiment TTFT column requires the evaluate root to be typed as llm."""
+def test_make_target_is_prewrapped_as_llm() -> None:
+    from langsmith.evaluation._runner import _ensure_traceable
+    from langsmith.run_helpers import is_traceable_function
 
-    class _Root:
-        def __init__(self):
-            self.run_type = "chain"
+    from harnesslab.config.models import HarnessConfig
+    from harnesslab.experiments.target import make_target
 
-    root = _Root()
-    monkeypatch.setattr(
-        "langsmith.run_helpers.get_current_run_tree",
-        lambda: root,
-        raising=False,
-    )
-    # Import path used inside bind_trace_root
-    import langsmith.run_helpers as rh
-
-    monkeypatch.setattr(rh, "get_current_run_tree", lambda: root)
-    bound = llm_mod.bind_trace_root()
-    assert bound is root
-    assert root.run_type == "llm"
-    llm_mod.clear_trace_root()
+    harness = HarnessConfig(name="minimal")
+    target = make_target(lambda *_args, **_kwargs: object(), harness)
+    assert is_traceable_function(target)
+    freevars = target.__code__.co_freevars
+    cells = target.__closure__
+    assert freevars and cells
+    container = dict(zip(freevars, (c.cell_contents for c in cells))).get("container_input")
+    assert isinstance(container, dict)
+    assert container.get("run_type") == "llm"
+    assert _ensure_traceable(target) is target

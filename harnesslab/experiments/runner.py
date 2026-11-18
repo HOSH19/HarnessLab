@@ -15,12 +15,10 @@ from harnesslab.config.langsmith_names import DEFAULT_LANGSMITH_DATASET, experim
 from harnesslab.config.model_catalog import DEFAULT_MODEL, model_short_name
 from harnesslab.config.models import HarnessConfig
 from harnesslab.eval.coordination import coordination_pass
-from harnesslab.eval.cost_evaluators import cost_efficiency, run_cost_usd
-from harnesslab.eval.efficiency import efficiency
 from harnesslab.eval.error_recovery import error_recovery
-from harnesslab.eval.fingerprint import failure_fingerprint
 from harnesslab.eval.outcome import task_pass
 from harnesslab.eval.trajectory import graph_trajectory
+from harnesslab.eval.ttft import ttft_seconds
 from harnesslab.experiments.dataset import ensure_dataset
 from harnesslab.experiments.examples import tasks_to_examples
 from harnesslab.experiments.local_runner import run_local_experiment
@@ -29,15 +27,14 @@ from harnesslab.experiments.tasks import load_tasks
 
 CompareDimension = Literal["harness", "models", "graphs"]
 
+# Top 5 published feedback keys. `efficiency` still exists under harnesslab/eval/
+# but is not wired here — TTFT visibility uses `ttft_seconds` instead.
 _BASE_EVALUATORS = [
     task_pass,
     graph_trajectory,
     coordination_pass,
     error_recovery,
-    efficiency,
-    failure_fingerprint,
-    run_cost_usd,
-    cost_efficiency,
+    ttft_seconds,
 ]
 
 

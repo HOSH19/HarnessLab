@@ -20,9 +20,16 @@ def test_explicit_tasks_override_default() -> None:
     assert resolve_task_limit(6, None) == 6
 
 
-def test_default_compare_harnesses_are_minimal_and_retry() -> None:
-    """Harness compare defaults to minimal and retry arms."""
-    assert DEFAULT_COMPARE_HARNESSES == "minimal,retry"
+def test_default_compare_harnesses_is_minimal_smoke() -> None:
+    """Harness compare defaults to a single minimal arm for cheap smoke runs."""
+    assert DEFAULT_COMPARE_HARNESSES == "minimal"
+
+
+def test_default_compare_graphs_is_react_smoke() -> None:
+    """Graph compare defaults to a single react arm for cheap smoke runs."""
+    from harnesslab.cli.helpers import DEFAULT_COMPARE_GRAPHS
+
+    assert DEFAULT_COMPARE_GRAPHS == "react"
 
 
 def test_resolve_dataset_name_uses_explicit_value() -> None:

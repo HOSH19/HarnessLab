@@ -7,10 +7,7 @@ SUMMARY_KEYS = [
     "graph_trajectory",
     "coordination_pass",
     "error_recovery",
-    "efficiency",
-    "failure_fingerprint",
-    "run_cost_usd",
-    "cost_efficiency",
+    "ttft_seconds",
 ]
 
 DETAIL_KEYS = SUMMARY_KEYS

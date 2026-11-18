@@ -10,8 +10,9 @@ from harnesslab.config.model_catalog import DEFAULT_MODEL
 
 from harnesslab.config.langsmith_names import DEFAULT_LANGSMITH_DATASET
 
-DEFAULT_COMPARE_HARNESSES = "minimal,retry"
-DEFAULT_COMPARE_GRAPHS = "react,pipeline"
+# Smoke-sized defaults: one harness × one graph × one task before scaling up.
+DEFAULT_COMPARE_HARNESSES = "minimal"
+DEFAULT_COMPARE_GRAPHS = "react"
 DEFAULT_TASK_LIMIT = 1
 
 def bootstrap_env(*, local: bool, example: Path | None = None) -> None:

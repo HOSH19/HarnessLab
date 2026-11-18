@@ -34,7 +34,9 @@ def test_render_comparison_html_includes_harness_names() -> None:
     assert "retry" in html
     assert "task_pass" in html
     assert "graph_trajectory" in html
-    assert "failure_fingerprint" in html
+    assert "ttft_seconds" in html
+    assert "efficiency" not in html
+    assert "failure_fingerprint" not in html
     assert "Per-task breakdown" in html
 
 
@@ -46,20 +48,18 @@ def test_render_comparison_html_supports_model_dimension() -> None:
 
 
 def test_render_comparison_html_includes_per_task_rows() -> None:
-    """Per-task section lists arm, task, and parsed efficiency metrics."""
+    """Per-task section lists arm, task, and published evaluator scores."""
     row = _FakeRow(
         "T-011",
         {
             "task_pass": 1.0,
             "graph_trajectory": 1.0,
+            "coordination_pass": 1.0,
             "error_recovery": 1.0,
-            "efficiency": 0.9,
-            "failure_fingerprint": 1.0,
+            "ttft_seconds": 1.25,
         },
-        {"efficiency": "latency_ms=1200, tokens=500, steps=6"},
     )
     html = render_comparison_html({"minimal": [row]})
     assert "T-011" in html
-    assert "1200" in html
-    assert "500" in html
     assert "1.00" in html
+    assert "1.25" in html

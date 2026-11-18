@@ -73,6 +73,6 @@ See also: [HARNESSES.md](HARNESSES.md) · [EVALUATORS.md](EVALUATORS.md) · [GAT
 
 ## LangSmith notes
 
-- Experiments upload under dataset **`graph engineering`**. Open the **newest** experiment after a compare — older sessions stay blank for TTFT even after the fix.
-- **Time to first token** (experiment table column): LangSmith only paints that cell when the evaluate root has `run_type="llm"` plus a `new_token` event. Agent targets are normally `chain`, so HarnessLab retargets the Target root to `llm`, streams child LLM calls, and marks `new_token` on the first chunk. Child `ChatOpenAI` streaming alone is not enough.
+- Experiments use dataset **`graph engineering`**. Open the **newest** experiment after a compare.
+- **TTFT**: LangSmith’s built-in **Time to First Token** column often stays blank for agent `evaluate` rows. HarnessLab still streams + marks root `new_token`, and publishes feedback **`ttft_seconds`** so the table shows a numeric TTFT cell. Look for that feedback column on the newest experiment.
 - **Deprecated API warning** (removal Jan 31, 2027): upstream `langsmith.evaluate` still prefers legacy `list_runs` on dual ClickHouse+SmithDB Cloud backends ([langsmith-python#108](https://github.com/langchain-ai/langsmith-python/issues/108)). HarnessLab applies `prefer_smithdb_experiment_traces()` before evaluate so experiment trace loads use SmithDB v2 instead. Historical key usage from older runs/scripts can linger on the dashboard until it ages out; keep `langsmith>=0.14.17`.
